@@ -37,10 +37,10 @@
       padding: 24px;
     }
 
-    /* Top bar (minimal) */
+    /* Top bar */
     .topbar{
       display:flex;
-      align-items:center;
+      align-items:flex-end;
       justify-content: space-between;
       gap: 12px;
       flex-wrap: wrap;
@@ -48,7 +48,7 @@
     }
     .title{
       font-size: 16px;
-      font-weight: 800;
+      font-weight: 900;
       letter-spacing: .4px;
       margin: 0;
     }
@@ -56,6 +56,7 @@
       font-size: 12px;
       color: var(--muted);
       margin-top: 4px;
+      line-height: 1.35;
     }
 
     .btns{
@@ -72,29 +73,30 @@
       cursor: pointer;
       box-shadow: 0 6px 16px rgba(0,0,0,.06);
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
     }
     button:hover{ filter: brightness(.98); }
     button:active{ transform: translateY(1px); }
+    .danger{ color: #b91c1c; }
 
+    /* Cards (ONLY 4) */
     .cards{
       display:grid;
       grid-template-columns: 1.25fr 1fr 1fr 1.25fr;
       gap: 28px;
       align-items: stretch;
+      margin-bottom: 18px;
     }
 
     .card{
       min-height: 245px;
       overflow:hidden;
-      border-radius: 0px; /* igual a tu imagen */
+      border-radius: 0px; /* similar a tu imagen */
       box-shadow: none;
     }
 
     /* Tooltip */
-    [data-tip]{
-      position: relative;
-    }
+    [data-tip]{ position: relative; }
     [data-tip]:hover::after{
       content: attr(data-tip);
       position: absolute;
@@ -140,6 +142,7 @@
       font-size:58px;
       font-weight:500;
       padding: 26px 14px 30px;
+      font-variant-numeric: tabular-nums;
     }
 
     /* Conversiones MM */
@@ -161,6 +164,7 @@
       font-size:58px;
       font-weight:400;
       margin: 0 0 12px;
+      font-variant-numeric: tabular-nums;
     }
 
     /* Facturado */
@@ -180,6 +184,7 @@
       font-size:62px;
       font-weight:400;
       margin: 0 0 6px;
+      font-variant-numeric: tabular-nums;
     }
 
     /* Resultados Inbound */
@@ -222,6 +227,121 @@
     }
     .roi .lbl, .roi .val{ border-top:none; }
 
+    /* Table controls */
+    .table-controls{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 8px 0 10px;
+    }
+    input[type="search"]{
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      min-width: 260px;
+      outline: none;
+      background:#fff;
+      box-shadow: 0 6px 16px rgba(0,0,0,.06);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    label.toggle{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      cursor:pointer;
+      user-select:none;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background:#fff;
+      box-shadow: 0 6px 16px rgba(0,0,0,.06);
+      font-weight: 800;
+    }
+
+    /* Table card */
+    .table-card{
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      background:#fff;
+    }
+    .table-wrap{ overflow:auto; }
+    table{
+      width:100%;
+      border-collapse: collapse;
+      min-width: 980px;
+    }
+    thead th{
+      position: sticky;
+      top:0;
+      background: #f9fafb;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 14px;
+      text-align:left;
+      font-size: 12px;
+      color: #374151;
+      user-select:none;
+      white-space: nowrap;
+    }
+    thead th.sortable{ cursor:pointer; }
+    tbody td{
+      border-bottom: 1px solid var(--border);
+      padding: 12px 14px;
+      font-size: 13px;
+      vertical-align: top;
+    }
+    tbody tr:hover td{ background:#f9fafb; }
+    td.metric{ font-weight: 800; color:#111827; width: 44%; }
+    td.num{ text-align:right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    td.diff{ width: 22%; }
+
+    .diffline{
+      display:flex;
+      align-items:center;
+      justify-content: end;
+      gap: 10px;
+    }
+    .bar{
+      width: 120px;
+      height: 8px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      overflow:hidden;
+    }
+    .bar > span{
+      display:block;
+      height:100%;
+      width: 0%;
+      background: #111827;
+      opacity: .65;
+    }
+    .bar.pos > span{ background: var(--pos); opacity: .85; }
+    .bar.neg > span{ background: var(--neg); opacity: .85; }
+
+    .txt.pos{ color: var(--pos); font-weight: 900; }
+    .txt.neg{ color: var(--neg); font-weight: 900; }
+    .txt.zero{ color: #111827; font-weight: 900; opacity: .65; }
+
+    .footer{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--muted);
+      background:#fff;
+      border-top: 1px solid var(--border);
+      font-weight: 700;
+    }
+
     /* Modal */
     .backdrop{
       position: fixed;
@@ -234,7 +354,7 @@
       z-index: 50;
     }
     .modal{
-      width: min(900px, 100%);
+      width: min(980px, 100%);
       background:#fff;
       border-radius: 18px;
       box-shadow: 0 24px 60px rgba(0,0,0,.25);
@@ -273,21 +393,29 @@
     .field label{
       font-size: 12px;
       color: var(--muted);
-      font-weight: 800;
+      font-weight: 900;
     }
-    .field input{
+    .field input, .field textarea{
       padding: 10px 10px;
       border: 1px solid var(--border);
       border-radius: 12px;
       font-size: 14px;
       outline: none;
+      font-family: inherit;
+    }
+    .field textarea{
+      min-height: 140px;
+      resize: vertical;
+      font-size: 12px;
+      line-height: 1.35;
     }
     .note{
       grid-column: 1 / -1;
       font-size: 12px;
       color: var(--muted);
-      margin-top: -4px;
       line-height: 1.4;
+      margin-top: -4px;
+      font-weight: 700;
     }
     .modal footer{
       padding: 12px 16px;
@@ -297,25 +425,22 @@
       gap: 10px;
       flex-wrap: wrap;
     }
-    .danger{ color: #b91c1c; }
 
     /* Number update animation */
-    .pulse{
-      animation: pulse .55s ease-out;
-    }
+    .pulse{ animation: pulse .55s ease-out; }
     @keyframes pulse{
       0%{ transform: scale(1); }
       40%{ transform: scale(1.03); }
       100%{ transform: scale(1); }
     }
 
-    /* Responsive */
     @media (max-width: 1200px){
       .cards{ grid-template-columns: 1fr 1fr; }
       .modal .content{ grid-template-columns: 1fr; }
     }
     @media (max-width: 560px){
       .cards{ grid-template-columns: 1fr; }
+      input[type="search"]{ min-width: 180px; width: 100%; }
     }
   </style>
 </head>
@@ -324,7 +449,7 @@
   <div class="wrap">
     <div class="topbar">
       <div>
-        <p class="title">Tarjetas – Efectividad de Ventas</p>
+        <p class="title">Dashboard – Efectividad de Ventas</p>
         <div class="meta" id="meta"></div>
       </div>
       <div class="btns">
@@ -333,9 +458,8 @@
       </div>
     </div>
 
-    <!-- SOLO LAS 4 TARJETAS -->
+    <!-- 4 TARJETAS -->
     <section class="cards" aria-label="Tarjetas de resultados">
-      <!-- Campañas / Clientes -->
       <div class="card double">
         <div class="col" data-tip="Cantidad de campañas activas en el periodo">
           <div class="label">Campañas</div>
@@ -347,19 +471,16 @@
         </div>
       </div>
 
-      <!-- Conversiones MM -->
       <div class="card navy" data-tip="Conversiones atribuibles a MM">
         <div class="head">Conversiones MM</div>
         <div class="value" id="convMM">15</div>
       </div>
 
-      <!-- Facturado -->
       <div class="card orange" data-tip="Dinero nuevo facturado en el mes">
         <div class="head">Facturado Nuevo en el Mes</div>
         <div class="value" id="facturado">$49,050</div>
       </div>
 
-      <!-- Resultados Inbound -->
       <div class="card green">
         <div class="head">Resultados Inbound</div>
 
@@ -390,9 +511,38 @@
         </div>
       </div>
     </section>
+
+    <!-- TABLA -->
+    <div class="table-controls">
+      <input id="q" type="search" placeholder="Buscar en la tabla..." autocomplete="off" />
+      <label class="toggle">
+        <input id="hideZeros" type="checkbox" />
+        Ocultar diferencia = 0
+      </label>
+    </div>
+
+    <section class="table-card" aria-label="Tabla comparativa">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Métrica</th>
+              <th class="sortable" data-key="a">16/01/2026 <span id="h-a"></span></th>
+              <th class="sortable" data-key="b">19/01/2026 <span id="h-b"></span></th>
+              <th class="sortable" data-key="d">Diferencia <span id="h-d"></span></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="footer">
+        <div><strong id="count"></strong></div>
+        <div>Ordena con click • Busca • Oculta ceros • Barras en Diferencia</div>
+      </div>
+    </section>
   </div>
 
-  <!-- MODAL CONFIG -->
+  <!-- MODAL CONFIG (tarjetas + tabla) -->
   <div class="backdrop" id="backdrop" role="dialog" aria-modal="true" aria-label="Configurar valores">
     <div class="modal">
       <header>
@@ -401,6 +551,7 @@
       </header>
 
       <div class="content">
+        <!-- Cards -->
         <div class="field">
           <label>Campañas</label>
           <input id="fCampanias" type="number" min="0" step="1" />
@@ -437,11 +588,17 @@
         </div>
 
         <div class="note">
-          * “Perdida o Ganancia” y “ROI Vendido” se calculan automáticamente con:
-          <br>
-          Ganancia = Monto Vendido − Inversión
-          <br>
-          ROI = (Ganancia / Inversión) × 100
+          * “Perdida o Ganancia” y “ROI Vendido” se calculan automáticamente:
+          Ganancia = Monto Vendido − Inversión • ROI = (Ganancia / Inversión) × 100
+        </div>
+
+        <!-- Table editor (paste JSON) -->
+        <div class="field" style="grid-column:1/-1;">
+          <label>Editar tabla (JSON)</label>
+          <textarea id="fTableJson" spellcheck="false"></textarea>
+          <div class="note">
+            Puedes editar el JSON (lista de objetos con keys: metric, a, b, d) y Guardar.
+          </div>
         </div>
       </div>
 
@@ -453,9 +610,12 @@
 
   <script>
     // =========================
-    // Defaults (tu dashboard)
+    // DEFAULTS
     // =========================
-    const DEFAULTS = {
+    const DATE_A = "16/01/2026";
+    const DATE_B = "19/01/2026";
+
+    const DEFAULT_CARDS = {
       campanias: 17,
       clientes: 32,
       convMM: 15,
@@ -465,38 +625,61 @@
       leads: 800
     };
 
-    const STORAGE_KEY = "elite_dashboard_cards_v1";
+    const DEFAULT_TABLE = [
+      { metric: "Total de Llamadas (Dials)", a: "1,789", b: "2,044", d: "255" },
+      { metric: "Total de Contactos", a: "682", b: "529", d: "-153" },
+      { metric: "Tiempo Total de Llamada", a: "35:43:00", b: "29:28:29", d: "-6:14:31" },
+      { metric: "Éxitos en Five9", a: "12", b: "8", d: "-4" },
+      { metric: "Lead Inbound MM", a: "0", b: "0", d: "0" },
+      { metric: "Presentaciones de Producto", a: "5", b: "11", d: "6" },
+      { metric: "Cotizaciones", a: "2", b: "1", d: "-1" },
+      { metric: "Éxitos en HubSpot", a: "0", b: "12", d: "12" },
+      { metric: "Clientes Referidos", a: "0", b: "0", d: "0" },
+      { metric: "Clientes Outbound", a: "0", b: "0", d: "0" },
+      { metric: "Clientes Inbound Meses anteriores", a: "1", b: "1", d: "0" },
+      { metric: "Cliente Nuevo Lead MM", a: "2", b: "1", d: "-1" },
+      { metric: "Total Clientes", a: "3", b: "2", d: "-1" },
+      { metric: "Facturación Total ($) (Dinero Nuevo)", a: "$3,100.00", b: "$2,500.00", d: "-$600.00" },
+      { metric: "Campañas Nuevas", a: "1", b: "0", d: "-1" },
+      { metric: "Tiempo Hablado por Agente", a: "2:22:00", b: "1:57", d: "-0:25:00" },
+      { metric: "conversión de Clientes", a: "12.50%", b: "16.67%", d: "0" },
+      { metric: "conversion Inbound MM", a: "0.00%", b: "0.00%", d: "0" },
+      { metric: "(IPC)", a: "$45.19", b: "$312.50", d: "267" }
+    ];
+
+    const STORAGE_KEY = "elite_dashboard_cards_table_v1";
 
     // =========================
-    // Helpers (formatting)
+    // Helpers
     // =========================
-    const fmtMoney = (n) =>
+    const el = (id) => document.getElementById(id);
+
+    const fmtMoney0 = (n) =>
       new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })
         .format(Number(n || 0));
 
     const fmtInt = (n) =>
       new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Number(n || 0));
 
-    const fmtRoi = (n) => {
-      const v = Number(n || 0);
-      // 2 decimales como tu ejemplo
-      return v.toFixed(2);
-    };
+    const fmtRoi = (n) => Number(n || 0).toFixed(2);
 
-    function computeDerived(state){
-      const profit = Number(state.montoVendido) - Number(state.inversion);
-      const roi = state.inversion > 0 ? (profit / Number(state.inversion)) * 100 : 0;
+    function computeDerived(cards){
+      const profit = Number(cards.montoVendido) - Number(cards.inversion);
+      const roi = cards.inversion > 0 ? (profit / Number(cards.inversion)) * 100 : 0;
       return { profit, roi };
     }
 
     function loadState(){
       try{
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return { ...DEFAULTS };
+        if (!raw) return { cards: { ...DEFAULT_CARDS }, table: DEFAULT_TABLE.slice() };
         const parsed = JSON.parse(raw);
-        return { ...DEFAULTS, ...parsed };
+        return {
+          cards: { ...DEFAULT_CARDS, ...(parsed.cards || {}) },
+          table: Array.isArray(parsed.table) ? parsed.table : DEFAULT_TABLE.slice()
+        };
       }catch{
-        return { ...DEFAULTS };
+        return { cards: { ...DEFAULT_CARDS }, table: DEFAULT_TABLE.slice() };
       }
     }
 
@@ -504,12 +687,64 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    // =========================
-    // DOM refs
-    // =========================
-    const el = (id) => document.getElementById(id);
+    // Parsing for sort/bar magnitude
+    function parseComparable(v){
+      if (v == null) return { type: "text", value: "" };
+      const s = String(v).trim();
 
+      // Tiempo: -H:MM:SS / H:MM:SS / M:SS / H:MM
+      const timeMatch = s.match(/^(-)?(\d+):(\d{1,2})(?::(\d{1,2}))?$/);
+      if (timeMatch){
+        const neg = !!timeMatch[1];
+        const p1 = Number(timeMatch[2]);
+        const p2 = Number(timeMatch[3]);
+        const p3 = timeMatch[4] !== undefined ? Number(timeMatch[4]) : null;
+        let seconds = 0;
+        if (p3 !== null) seconds = p1 * 3600 + p2 * 60 + p3;
+        else seconds = p1 * 60 + p2;
+        return { type: "num", value: neg ? -seconds : seconds };
+      }
+
+      const cleaned = s.replace(/\$/g,"").replace(/%/g,"").replace(/,/g,"").trim();
+      const num = Number(cleaned);
+      if (!Number.isNaN(num) && cleaned !== ""){
+        return { type: "num", value: num };
+      }
+      return { type: "text", value: s.toLowerCase() };
+    }
+
+    function signClass(diffStr){
+      const c = parseComparable(diffStr);
+      if (c.type !== "num") return "zero";
+      if (c.value > 0) return "pos";
+      if (c.value < 0) return "neg";
+      return "zero";
+    }
+
+    function isZeroDiff(diffStr){
+      const c = parseComparable(diffStr);
+      return c.type === "num" && c.value === 0;
+    }
+
+    function diffMagnitude(rows){
+      let maxAbs = 0;
+      for (const r of rows){
+        const c = parseComparable(r.d);
+        if (c.type === "num"){
+          const abs = Math.abs(c.value);
+          if (abs > maxAbs) maxAbs = abs;
+        }
+      }
+      return maxAbs || 1;
+    }
+
+    // =========================
+    // UI refs
+    // =========================
     const ui = {
+      meta: el("meta"),
+
+      // cards
       campanias: el("campanias"),
       clientes: el("clientes"),
       convMM: el("convMM"),
@@ -519,111 +754,240 @@
       leads: el("leads"),
       profit: el("profit"),
       roi: el("roi"),
-      meta: el("meta"),
-      backdrop: el("backdrop"),
-    };
 
-    const form = {
-      campanias: el("fCampanias"),
-      clientes: el("fClientes"),
-      convMM: el("fConvMM"),
-      facturado: el("fFacturado"),
-      inversion: el("fInversion"),
-      montoVendido: el("fMontoVendido"),
-      leads: el("fLeads")
+      // table
+      tbody: el("tbody"),
+      count: el("count"),
+      q: el("q"),
+      hideZeros: el("hideZeros"),
+      ha: el("h-a"),
+      hb: el("h-b"),
+      hd: el("h-d"),
+
+      // modal
+      backdrop: el("backdrop"),
+      fCampanias: el("fCampanias"),
+      fClientes: el("fClientes"),
+      fConvMM: el("fConvMM"),
+      fFacturado: el("fFacturado"),
+      fInversion: el("fInversion"),
+      fMontoVendido: el("fMontoVendido"),
+      fLeads: el("fLeads"),
+      fTableJson: el("fTableJson")
     };
 
     // =========================
-    // Render
+    // State
+    // =========================
+    let state = loadState();
+    let query = "";
+    let hideZeros = false;
+    let sortKey = null; // a|b|d
+    let sortDir = "asc";
+
+    // =========================
+    // Render helpers
     // =========================
     function pulse(node){
       node.classList.remove("pulse");
-      // reflow
       void node.offsetWidth;
       node.classList.add("pulse");
     }
 
-    function render(state){
-      const { profit, roi } = computeDerived(state);
-
-      ui.campanias.textContent = fmtInt(state.campanias);
-      ui.clientes.textContent = fmtInt(state.clientes);
-      ui.convMM.textContent = fmtInt(state.convMM);
-
-      ui.facturado.textContent = fmtMoney(state.facturado);
-      ui.inversion.textContent = fmtMoney(state.inversion);
-      ui.montoVendido.textContent = fmtMoney(state.montoVendido);
-      ui.leads.textContent = fmtInt(state.leads);
-
-      ui.profit.textContent = (profit < 0 ? "-" : "") + fmtMoney(Math.abs(profit));
-      ui.roi.textContent = fmtRoi(roi);
-
-      // tooltips dinámicos (opcional)
-      ui.meta.textContent = `Actualizado: ${new Date().toLocaleString("es-ES")} • Guardado localmente`;
-
-      // Animación al actualizar
-      [ui.campanias, ui.clientes, ui.convMM, ui.facturado, ui.inversion, ui.montoVendido, ui.leads, ui.profit, ui.roi]
-        .forEach(pulse);
-
-      // Colorear profit/roi dependiendo del signo
-      ui.profit.style.color = profit < 0 ? "rgba(255,255,255,.92)" : "rgba(255,255,255,.92)";
-      ui.roi.style.color = roi < 0 ? "rgba(255,255,255,.92)" : "rgba(255,255,255,.92)";
+    function renderMeta(){
+      ui.meta.textContent =
+        `Comparativo ${DATE_A} vs ${DATE_B} • Actualizado: ${new Date().toLocaleString("es-ES")} • Guardado local`;
     }
 
-    function openModal(state){
-      form.campanias.value = Number(state.campanias);
-      form.clientes.value = Number(state.clientes);
-      form.convMM.value = Number(state.convMM);
-      form.facturado.value = Number(state.facturado);
-      form.inversion.value = Number(state.inversion);
-      form.montoVendido.value = Number(state.montoVendido);
-      form.leads.value = Number(state.leads);
+    function renderCards(){
+      const c = state.cards;
+      const { profit, roi } = computeDerived(c);
+
+      ui.campanias.textContent = fmtInt(c.campanias);
+      ui.clientes.textContent = fmtInt(c.clientes);
+      ui.convMM.textContent = fmtInt(c.convMM);
+
+      ui.facturado.textContent = fmtMoney0(c.facturado);
+      ui.inversion.textContent = fmtMoney0(c.inversion);
+      ui.montoVendido.textContent = fmtMoney0(c.montoVendido);
+      ui.leads.textContent = fmtInt(c.leads);
+
+      ui.profit.textContent = (profit < 0 ? "-" : "") + fmtMoney0(Math.abs(profit));
+      ui.roi.textContent = fmtRoi(roi);
+
+      [ui.campanias, ui.clientes, ui.convMM, ui.facturado, ui.inversion, ui.montoVendido, ui.leads, ui.profit, ui.roi]
+        .forEach(pulse);
+    }
+
+    function filteredRows(){
+      let rows = state.table.slice();
+
+      if (query){
+        const q = query.toLowerCase().trim();
+        rows = rows.filter(r => String(r.metric || "").toLowerCase().includes(q));
+      }
+      if (hideZeros){
+        rows = rows.filter(r => !isZeroDiff(r.d));
+      }
+      return rows;
+    }
+
+    function sortedRows(rows){
+      if (!sortKey) return rows;
+      const dir = sortDir === "asc" ? 1 : -1;
+      return rows.slice().sort((r1, r2) => {
+        const c1 = parseComparable(r1[sortKey]);
+        const c2 = parseComparable(r2[sortKey]);
+        if (c1.type === "num" && c2.type === "num"){
+          return (c1.value - c2.value) * dir;
+        }
+        return String(c1.value).localeCompare(String(c2.value)) * dir;
+      });
+    }
+
+    function setHints(){
+      ui.ha.textContent = "";
+      ui.hb.textContent = "";
+      ui.hd.textContent = "";
+      if (!sortKey) return;
+      const arrow = sortDir === "asc" ? " ▲" : " ▼";
+      if (sortKey === "a") ui.ha.textContent = arrow;
+      if (sortKey === "b") ui.hb.textContent = arrow;
+      if (sortKey === "d") ui.hd.textContent = arrow;
+    }
+
+    function renderTable(){
+      const rows = sortedRows(filteredRows());
+      const maxAbs = diffMagnitude(rows);
+
+      ui.tbody.innerHTML = rows.map(r => {
+        const cls = signClass(r.d);
+        const c = parseComparable(r.d);
+        const pct = (c.type === "num")
+          ? Math.min(100, Math.round((Math.abs(c.value) / maxAbs) * 100))
+          : 0;
+
+        return `
+          <tr>
+            <td class="metric">${r.metric ?? ""}</td>
+            <td class="num">${r.a ?? ""}</td>
+            <td class="num">${r.b ?? ""}</td>
+            <td class="num diff">
+              <div class="diffline">
+                <div class="bar ${cls}"><span style="width:${pct}%"></span></div>
+                <span class="txt ${cls}">${r.d ?? ""}</span>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      ui.count.textContent = `${rows.length} métricas mostradas`;
+      setHints();
+    }
+
+    function renderAll(){
+      renderMeta();
+      renderCards();
+      renderTable();
+    }
+
+    // =========================
+    // Modal
+    // =========================
+    function openModal(){
+      const c = state.cards;
+
+      ui.fCampanias.value = Number(c.campanias);
+      ui.fClientes.value = Number(c.clientes);
+      ui.fConvMM.value = Number(c.convMM);
+      ui.fFacturado.value = Number(c.facturado);
+      ui.fInversion.value = Number(c.inversion);
+      ui.fMontoVendido.value = Number(c.montoVendido);
+      ui.fLeads.value = Number(c.leads);
+
+      ui.fTableJson.value = JSON.stringify(state.table, null, 2);
 
       ui.backdrop.style.display = "flex";
     }
-
     function closeModal(){
       ui.backdrop.style.display = "none";
     }
 
     // =========================
-    // Init + events
+    // Events
     // =========================
-    let state = loadState();
-    render(state);
-
-    el("btnEdit").addEventListener("click", () => openModal(state));
+    el("btnEdit").addEventListener("click", openModal);
     el("btnClose").addEventListener("click", closeModal);
-
-    ui.backdrop.addEventListener("click", (e) => {
-      if (e.target === ui.backdrop) closeModal();
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeModal();
-    });
+    ui.backdrop.addEventListener("click", (e) => { if (e.target === ui.backdrop) closeModal(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
     el("btnSave").addEventListener("click", () => {
-      const next = {
-        campanias: Number(form.campanias.value || 0),
-        clientes: Number(form.clientes.value || 0),
-        convMM: Number(form.convMM.value || 0),
-        facturado: Number(form.facturado.value || 0),
-        inversion: Number(form.inversion.value || 0),
-        montoVendido: Number(form.montoVendido.value || 0),
-        leads: Number(form.leads.value || 0),
+      // cards
+      state.cards = {
+        campanias: Number(ui.fCampanias.value || 0),
+        clientes: Number(ui.fClientes.value || 0),
+        convMM: Number(ui.fConvMM.value || 0),
+        facturado: Number(ui.fFacturado.value || 0),
+        inversion: Number(ui.fInversion.value || 0),
+        montoVendido: Number(ui.fMontoVendido.value || 0),
+        leads: Number(ui.fLeads.value || 0),
       };
-      state = next;
+
+      // table (JSON)
+      try{
+        const parsed = JSON.parse(ui.fTableJson.value);
+        if (!Array.isArray(parsed)) throw new Error("JSON debe ser una lista");
+        // Normaliza keys mínimas
+        state.table = parsed.map(x => ({
+          metric: x.metric ?? "",
+          a: x.a ?? "",
+          b: x.b ?? "",
+          d: x.d ?? ""
+        }));
+      }catch(err){
+        alert("JSON inválido en la tabla. Revisa el formato.\n\nDetalle: " + err.message);
+        return;
+      }
+
       saveState(state);
-      render(state);
+      renderAll();
       closeModal();
     });
 
     el("btnReset").addEventListener("click", () => {
-      state = { ...DEFAULTS };
+      state = { cards: { ...DEFAULT_CARDS }, table: DEFAULT_TABLE.slice() };
       saveState(state);
-      render(state);
+      query = "";
+      hideZeros = false;
+      sortKey = null;
+      sortDir = "asc";
+      ui.q.value = "";
+      ui.hideZeros.checked = false;
+      renderAll();
     });
+
+    ui.q.addEventListener("input", (e) => {
+      query = e.target.value;
+      renderTable();
+    });
+
+    ui.hideZeros.addEventListener("change", (e) => {
+      hideZeros = e.target.checked;
+      renderTable();
+    });
+
+    document.querySelectorAll("thead th.sortable").forEach(th => {
+      th.addEventListener("click", () => {
+        const key = th.getAttribute("data-key");
+        if (sortKey === key) sortDir = (sortDir === "asc" ? "desc" : "asc");
+        else { sortKey = key; sortDir = "asc"; }
+        renderTable();
+      });
+    });
+
+    // Init
+    renderAll();
   </script>
 </body>
 </html>
