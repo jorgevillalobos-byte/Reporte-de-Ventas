@@ -3,162 +3,652 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Reporte Comercial – Five9 vs HubSpot</title>
-
+  <title>Reporte Comercial Interactivo – Five9 vs HubSpot</title>
   <style>
+    :root{
+      --bg:#0b1020; --card:#121a33; --card2:#0f1730;
+      --text:#e9ecf7; --muted:#a9b2d3; --line:#22305c;
+      --a:#6ea8ff; --b:#8bffcc; --good:#67e8a6; --bad:#ff7a7a; --warn:#ffcc66;
+    }
+    *{box-sizing:border-box}
     body{
-      margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      background:#0b1020;
-      color:#e9ecf7;
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;
+      background:radial-gradient(1200px 600px at 20% 0%, #162152 0%, var(--bg) 55%) fixed;
+      color:var(--text);
     }
-    header{
-      padding:20px;
-      background:#121a33;
-      border-bottom:1px solid #22305c;
+    .topbar{
+      position:sticky; top:0; z-index:50;
+      background:rgba(11,16,32,.75); backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(34,48,92,.6);
     }
-    h1{margin:0;font-size:20px}
-    h2{margin:20px 0 10px;font-size:18px}
-    .container{padding:20px;max-width:1200px;margin:auto}
-    .kpis{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-      gap:16px;
+    .topbar-inner{
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      padding:12px 16px; max-width:1200px; margin:0 auto;
     }
-    .kpi{
-      background:#121a33;
-      border:1px solid #22305c;
-      border-radius:12px;
-      padding:16px;
+    .brand{display:flex; flex-direction:column; gap:2px}
+    .brand h1{margin:0; font-size:16px; letter-spacing:.2px}
+    .brand .sub{color:var(--muted); font-size:12px}
+    .controls{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
+    .pill{
+      background:rgba(18,26,51,.9); border:1px solid rgba(34,48,92,.8);
+      padding:8px 10px; border-radius:999px; display:flex; gap:8px; align-items:center;
     }
-    .kpi span{color:#a9b2d3;font-size:12px}
-    .kpi strong{font-size:22px;display:block;margin-top:6px}
-    table{
-      width:100%;
-      border-collapse:collapse;
-      margin-top:20px;
+    select, input{
+      background:transparent; color:var(--text); border:none; outline:none; font-size:13px;
+      min-width:140px;
+    }
+    input::placeholder{color:rgba(169,178,211,.8)}
+    .btn{
+      border:1px solid rgba(34,48,92,.8); background:rgba(18,26,51,.9);
+      color:var(--text); padding:8px 10px; border-radius:10px; cursor:pointer;
       font-size:13px;
     }
-    th,td{
-      padding:10px;
-      border-bottom:1px solid #22305c;
-      text-align:right;
-      white-space:nowrap;
+    .btn:hover{border-color:rgba(110,168,255,.9)}
+    .wrap{max-width:1200px; margin:0 auto; padding:16px}
+    .grid{display:grid; gap:12px; grid-template-columns:repeat(12,1fr)}
+    .card{
+      border:1px solid rgba(34,48,92,.6);
+      background:rgba(11,16,32,.35);
+      border-radius:14px;
+      padding:14px;
+      box-shadow:0 10px 40px rgba(0,0,0,.25);
     }
-    th{
-      color:#a9b2d3;
-      font-weight:600;
+    .kpi .label{color:var(--muted); font-size:12px}
+    .kpi .value{font-size:22px; font-weight:800; letter-spacing:.2px; margin-top:6px}
+    .kpi .delta{font-size:12px; color:var(--muted); margin-top:4px}
+    .good{color:var(--good)} .bad{color:var(--bad)} .warn{color:var(--warn)}
+    .row{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+    .tag{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(34,48,92,.7);
+      background:rgba(18,26,51,.75);
+      color:var(--muted); font-size:12px;
     }
-    th:first-child,td:first-child,
-    th:nth-child(2),td:nth-child(2){
-      text-align:left;
+    .dot{width:10px; height:10px; border-radius:999px; display:inline-block; border:1px solid rgba(34,48,92,.7)}
+    .dotA{background:rgba(110,168,255,.75)}
+    .dotB{background:rgba(139,255,204,.55)}
+    .hr{height:1px; background:rgba(34,48,92,.6); margin:10px 0}
+    .two{display:grid; gap:12px; grid-template-columns:1fr 1fr}
+    @media (max-width: 980px){.two{grid-template-columns:1fr}}
+    .chart{
+      width:100%; height:240px; display:flex; align-items:flex-end; gap:10px;
+      padding:12px; border-radius:14px;
+      border:1px solid rgba(34,48,92,.6); background:rgba(11,16,32,.25);
+      overflow:auto;
     }
-    tbody tr:hover{background:#162152}
-    .pos{color:#67e8a6}
-    .neg{color:#ff7a7a}
-    footer{
-      padding:20px;
-      text-align:center;
-      color:#a9b2d3;
-      font-size:12px;
+    .slot{
+      display:flex; gap:6px; align-items:flex-end;
+      min-width:84px;
+      padding:0 2px 22px 2px;
     }
+    .bar{
+      width:26px;
+      border:1px solid rgba(34,48,92,.6);
+      border-radius:10px 10px 6px 6px;
+      position:relative;
+      flex:0 0 auto;
+    }
+    .barA{background:linear-gradient(180deg, rgba(110,168,255,.75), rgba(110,168,255,.18))}
+    .barB{background:linear-gradient(180deg, rgba(139,255,204,.65), rgba(139,255,204,.18))}
+    .bar .val{
+      position:absolute; left:50%; transform:translateX(-50%);
+      top:-18px; font-size:11px; white-space:nowrap;
+    }
+    .slot .lbl{
+      position:absolute;
+      bottom:0px; left:50%; transform:translateX(-50%);
+      font-size:11px; color:var(--muted); white-space:nowrap;
+    }
+    .tbl-wrap{overflow:auto; border-radius:14px; border:1px solid rgba(34,48,92,.6)}
+    table{width:100%; border-collapse:collapse; min-width:1200px; background:rgba(11,16,32,.25)}
+    thead th{
+      position:sticky; top:0; z-index:2;
+      background:rgba(18,26,51,.95);
+      color:var(--muted); font-weight:700; font-size:12px; text-align:left;
+      border-bottom:1px solid rgba(34,48,92,.6);
+      padding:10px 10px; white-space:nowrap;
+    }
+    tbody td{
+      padding:10px 10px; border-bottom:1px solid rgba(34,48,92,.35); font-size:13px; white-space:nowrap;
+    }
+    tbody tr:hover{background:rgba(110,168,255,.06)}
+    .num{text-align:right; font-variant-numeric:tabular-nums}
+    .badge{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:2px 8px; border-radius:999px; font-size:12px;
+      border:1px solid rgba(34,48,92,.7); background:rgba(18,26,51,.65);
+      color:var(--muted);
+    }
+    .foot{color:var(--muted); font-size:12px; margin-top:8px}
+    .small{font-size:12px; color:var(--muted)}
+    .right{justify-content:flex-end}
   </style>
 </head>
-
 <body>
-
-<header>
-  <h1>Reporte de Ventas – Five9 vs HubSpot</h1>
-</header>
-
-<div class="container">
-
-  <section class="kpis">
-    <div class="kpi">
-      <span>Facturado Periodo A</span>
-      <strong>$7,275.00</strong>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <h1>Reporte Comercial Interactivo</h1>
+        <div class="sub">Comparativo Periodo A vs Periodo B · Five9 / HubSpot · Tabla + KPIs + Gráficas</div>
+      </div>
+      <div class="controls">
+        <div class="pill" title="Filtrar por equipo">
+          <span class="small">Equipo:</span>
+          <select id="teamSelect"></select>
+        </div>
+        <div class="pill" title="Buscar por agente">
+          <span class="small">Agente:</span>
+          <input id="searchInput" placeholder="Ej: Nicole" />
+        </div>
+        <div class="pill" title="Ordenar tabla">
+          <span class="small">Orden:</span>
+          <select id="sortSelect">
+            <option value="factB">Facturado B ↓</option>
+            <option value="factA">Facturado A ↓</option>
+            <option value="deltaFact">Δ Fact (B-A) ↓</option>
+            <option value="succ5B">Success Five9 B ↓</option>
+            <option value="succ5A">Success Five9 A ↓</option>
+            <option value="contactsB">Contacts B ↓</option>
+            <option value="contactsA">Contacts A ↓</option>
+            <option value="dialsB">Dials B ↓</option>
+            <option value="dialsA">Dials A ↓</option>
+            <option value="crB">Contact Rate B ↓</option>
+            <option value="crA">Contact Rate A ↓</option>
+            <option value="name">Agente (A→Z)</option>
+          </select>
+        </div>
+        <button class="btn" id="exportBtn" title="Exporta el dataset filtrado a CSV">Export CSV</button>
+        <button class="btn" id="resetBtn">Reset</button>
+      </div>
     </div>
-    <div class="kpi">
-      <span>Facturado Periodo B</span>
-      <strong>$4,800.00</strong>
+  </div>
+
+  <div class="wrap">
+    <div class="grid">
+
+      <!-- KPIs -->
+      <div class="card kpi" style="grid-column: span 3;">
+        <div class="label">Facturado (A)</div>
+        <div class="value" id="kpiFactA">$0</div>
+        <div class="delta" id="kpiFactDelta"></div>
+      </div>
+      <div class="card kpi" style="grid-column: span 3;">
+        <div class="label">Facturado (B)</div>
+        <div class="value" id="kpiFactB">$0</div>
+        <div class="delta small">Comparación sobre A</div>
+      </div>
+      <div class="card kpi" style="grid-column: span 3;">
+        <div class="label">Dials (A / B)</div>
+        <div class="value" id="kpiDials">0 / 0</div>
+        <div class="delta small">Volumen de marcación</div>
+      </div>
+      <div class="card kpi" style="grid-column: span 3;">
+        <div class="label">Contacts (A / B)</div>
+        <div class="value" id="kpiContacts">0 / 0</div>
+        <div class="delta small">Contactabilidad</div>
+      </div>
+
+      <div class="card" style="grid-column: span 12;">
+        <div class="row">
+          <span class="tag"><span class="dot dotA"></span><b>Periodo A</b></span>
+          <span class="tag"><span class="dot dotB"></span><b>Periodo B</b></span>
+          <span class="tag"><b>Tip</b>: ordena por Δ Fact para ver mejoras rápidas.</span>
+        </div>
+        <div class="hr"></div>
+
+        <div class="two">
+          <div>
+            <div class="small" style="margin-bottom:6px;">Top 10 · Facturado por agente (A vs B)</div>
+            <div class="chart" id="chartFact"></div>
+            <div class="foot">Cada bloque muestra 2 barras: A (azul) y B (verde).</div>
+          </div>
+          <div>
+            <div class="small" style="margin-bottom:6px;">Top 10 · Success Five9 por agente (A vs B)</div>
+            <div class="chart" id="chartSucc5"></div>
+            <div class="foot">Útil para contrastar esfuerzo vs conversión (y revisar calidad de leads).</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="card" style="grid-column: span 12;">
+        <div class="row" style="justify-content:space-between;">
+          <div>
+            <b>Detalle por Agente</b>
+            <div class="small">Incluye métricas A/B + tasas + Δ Facturado.</div>
+          </div>
+          <div class="small" id="rowCount"></div>
+        </div>
+        <div class="hr"></div>
+
+        <div class="tbl-wrap">
+          <table id="dataTable">
+            <thead>
+              <tr>
+                <th>Equipo</th>
+                <th>Agente</th>
+
+                <th class="num">Dials A</th>
+                <th class="num">Contacts A</th>
+                <th class="num">CR A</th>
+                <th class="num">Success 5 A</th>
+                <th class="num">Talk A</th>
+                <th class="num">Lead Inbound A</th>
+                <th class="num">Prod Pres A</th>
+                <th class="num">Cotización A</th>
+                <th class="num">Success HS A</th>
+                <th class="num">Fact A</th>
+
+                <th class="num">Dials B</th>
+                <th class="num">Contacts B</th>
+                <th class="num">CR B</th>
+                <th class="num">Success 5 B</th>
+                <th class="num">Talk B</th>
+                <th class="num">Lead Inbound B</th>
+                <th class="num">Prod Pres B</th>
+                <th class="num">Cotización B</th>
+                <th class="num">Success HS B</th>
+                <th class="num">Fact B</th>
+
+                <th class="num">Δ Fact</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="foot">
+          * Campos vacíos se tratan como 0 para comparativos. “CR” = Contacts / Dials.
+        </div>
+      </div>
+
     </div>
-    <div class="kpi">
-      <span>Dials (A / B)</span>
-      <strong>1,981 / 2,110</strong>
-    </div>
-    <div class="kpi">
-      <span>Contacts (A / B)</span>
-      <strong>594 / 625</strong>
-    </div>
-  </section>
+  </div>
 
-  <h2>Detalle por Agente</h2>
+  <script>
+    // ========= DATA (toda la data que enviaste; Periodo A y Periodo B) =========
+    const rows = [
+      // Equipo de Ventas Anuar
+      {team:"Equipo de Ventas Anuar", agent:"Angeles Espinoza",
+        A:{dials:363, contacts:53, succ5:1, talk:"4:09:37", leadInbound:10, prodPres:1, cotizacion:0, succHS:1, fact:""},
+        B:{dials:248, contacts:34, succ5:4, talk:"4:18:56", leadInbound:0,  prodPres:4, cotizacion:1, succHS:5, fact:""}
+      },
+      {team:"Equipo de Ventas Anuar", agent:"Geraldine Murillo",
+        A:{dials:232, contacts:27, succ5:1, talk:"3:13:57", leadInbound:9, prodPres:1, cotizacion:0, succHS:1, fact:"$1,500.00"},
+        B:{dials:337, contacts:23, succ5:0, talk:"1:41:03", leadInbound:0, prodPres:0, cotizacion:0, succHS:0, fact:""}
+      },
+      {team:"Equipo de Ventas Anuar", agent:"Judith Mercado",
+        A:{dials:106, contacts:18, succ5:3, talk:"3:01:32", leadInbound:8, prodPres:2, cotizacion:1, succHS:3, fact:""},
+        B:{dials:227, contacts:26, succ5:2, talk:"2:16:03", leadInbound:0, prodPres:2, cotizacion:0, succHS:2, fact:""}
+      },
+      {team:"Equipo de Ventas Anuar", agent:"Rodrigo Guadamuz",
+        A:{dials:129, contacts:10, succ5:5, talk:"3:00:35", leadInbound:11, prodPres:3, cotizacion:1, succHS:4, fact:""},
+        B:{dials:151, contacts:15, succ5:0, talk:"2:04:36", leadInbound:0, prodPres:0, cotizacion:0, succHS:0, fact:"$500.00"}
+      },
+      {team:"Equipo de Ventas Anuar", agent:"Alexia Rodríguez",
+        A:{dials:166, contacts:16, succ5:0, talk:"2:43:24", leadInbound:10, prodPres:0, cotizacion:0, succHS:0, fact:"$550.00"},
+        B:{dials:153, contacts:9,  succ5:1, talk:"3:08:54", leadInbound:0, prodPres:1, cotizacion:0, succHS:1, fact:"$650.00"}
+      },
+      {team:"Equipo de Ventas Anuar", agent:"Mariett Castro",
+        A:{dials:77, contacts:11, succ5:0, talk:"3:50:01", leadInbound:9, prodPres:0, cotizacion:0, succHS:0, fact:"$775.00"},
+        B:{dials:64, contacts:13, succ5:3, talk:"4:17:06", leadInbound:0, prodPres:2, cotizacion:0, succHS:2, fact:"$1,150.00"}
+      },
 
-  <table>
-    <thead>
-      <tr>
-        <th>Equipo</th>
-        <th>Agente</th>
-        <th>Dials A</th>
-        <th>Contacts A</th>
-        <th>Success 5 A</th>
-        <th>Facturado A</th>
-        <th>Dials B</th>
-        <th>Contacts B</th>
-        <th>Success 5 B</th>
-        <th>Facturado B</th>
-        <th>Δ Fact</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Equipo de Ventas Anuar</td>
-        <td>Angeles Espinoza</td>
-        <td>363</td>
-        <td>53</td>
-        <td>1</td>
-        <td>$0</td>
-        <td>248</td>
-        <td>34</td>
-        <td>4</td>
-        <td>$0</td>
-        <td class="pos">$0</td>
-      </tr>
-      <tr>
-        <td>Equipo de Ventas Anuar</td>
-        <td>Geraldine Murillo</td>
-        <td>232</td>
-        <td>27</td>
-        <td>1</td>
-        <td>$1,500.00</td>
-        <td>337</td>
-        <td>23</td>
-        <td>0</td>
-        <td>$0</td>
-        <td class="neg">-$1,500.00</td>
-      </tr>
-      <tr>
-        <td>Post venta</td>
-        <td>Alejandra Rodriguez</td>
-        <td>71</td>
-        <td>37</td>
-        <td>1</td>
-        <td>$1,950.00</td>
-        <td>52</td>
-        <td>32</td>
-        <td>0</td>
-        <td>$1,150.00</td>
-        <td class="neg">-$800.00</td>
-      </tr>
-      <!-- Puedes seguir agregando filas si lo deseas -->
-    </tbody>
-  </table>
+      // Post venta
+      {team:"Post venta", agent:"Andrea Rivera",
+        A:{dials:172, contacts:143, succ5:3, talk:"3:42:34", leadInbound:10, prodPres:2, cotizacion:1, succHS:3, fact:""},
+        B:{dials:137, contacts:69,  succ5:6, talk:"4:23:41", leadInbound:0, prodPres:4, cotizacion:1, succHS:5, fact:""}
+      },
+      {team:"Post venta", agent:"Alejandra Rodriguez",
+        A:{dials:71, contacts:37, succ5:1, talk:"4:50:26", leadInbound:9, prodPres:1, cotizacion:0, succHS:1, fact:"$1,950.00"},
+        B:{dials:52, contacts:32, succ5:0, talk:"3:00:53", leadInbound:0, prodPres:0, cotizacion:0, succHS:0, fact:"$1,150.00"}
+      },
+      {team:"Post venta", agent:"Ariana Leiva",
+        A:{dials:130, contacts:52, succ5:1, talk:"2:10:55", leadInbound:9, prodPres:1, cotizacion:0, succHS:1, fact:"$400.00"},
+        B:{dials:109, contacts:60, succ5:0, talk:"2:07:03", leadInbound:0, prodPres:0, cotizacion:0, succHS:0, fact:"$350.00"}
+      },
+      {team:"Post venta", agent:"David Espinoza",
+        A:{dials:60, contacts:31, succ5:2, talk:"1:52:44", leadInbound:10, prodPres:2, cotizacion:0, succHS:2, fact:"$400.00"},
+        B:{dials:116, contacts:76, succ5:0, talk:"0:52:19", leadInbound:0, prodPres:0, cotizacion:0, succHS:0, fact:""}
+      },
+      {team:"Post venta", agent:"Jonathan Salinas",
+        A:{dials:65, contacts:22, succ5:3, talk:"3:42:11", leadInbound:10, prodPres:3, cotizacion:0, succHS:3, fact:""},
+        B:{dials:131, contacts:104, succ5:1, talk:"1:57:44", leadInbound:0, prodPres:1, cotizacion:0, succHS:1, fact:""}
+      },
+      {team:"Post venta", agent:"Mario Castano",
+        A:{dials:68, contacts:66, succ5:0, talk:"3:10:03", leadInbound:7, prodPres:0, cotizacion:0, succHS:0, fact:"$350.00"},
+        B:{dials:128, contacts:42, succ5:0, talk:"1:44:42", leadInbound:0, prodPres:0, cotizacion:0, succHS:0, fact:""}
+      },
+      {team:"Post venta", agent:"Nicole Garcia",
+        A:{dials:94, contacts:46, succ5:3, talk:"2:49:33", leadInbound:10, prodPres:1, cotizacion:2, succHS:3, fact:"$900.00"},
+        B:{dials:116, contacts:71, succ5:1, talk:"1:48:42", leadInbound:0, prodPres:1, cotizacion:0, succHS:1, fact:"$150.00"}
+      },
+      {team:"Post venta", agent:"Paola Paz",
+        A:{dials:116, contacts:12, succ5:2, talk:"1:22:31", leadInbound:3, prodPres:1, cotizacion:1, succHS:2, fact:""},
+        B:{dials:22, contacts:17, succ5:0, talk:"1:06:49", leadInbound:0, prodPres:0, cotizacion:0, succHS:0, fact:"$450.00"}
+      },
+      {team:"Post venta", agent:"Veronica Ramirez",
+        A:{dials:132, contacts:50, succ5:0, talk:"2:55:56", leadInbound:11, prodPres:0, cotizacion:0, succHS:0, fact:"$450.00"},
+        B:{dials:119, contacts:34, succ5:1, talk:"3:19:57", leadInbound:0, prodPres:1, cotizacion:0, succHS:1, fact:"$400.00"}
+      },
+    ];
 
-</div>
+    // Totales que venían en tu data (útiles cuando no hay filtros)
+    const totalsProvided = {
+      A:{dials:1981, contacts:594, succ5:25, talk:"46:35:59", leadInbound:136, prodPres:18, cotizacion:6, succHS:24, fact:"$7,275.00"},
+      B:{dials:2110, contacts:625, succ5:19, talk:"38:08:28", leadInbound:0,   prodPres:16, cotizacion:2, succHS:18, fact:"$4,800.00"}
+    };
 
-<footer>
-  Reporte generado para análisis ejecutivo · Five9 & HubSpot
-</footer>
+    // ========= HELPERS =========
+    const moneyToNumber = (s) => {
+      if(!s) return 0;
+      const n = Number(String(s).replace(/[^0-9.]/g,'') || 0);
+      return isFinite(n) ? n : 0;
+    };
+    const fmtMoney = (n) => n.toLocaleString('en-US',{style:'currency',currency:'USD'});
+    const safeNum = (v) => (v==null || v==="" ? 0 : Number(v));
+    const talkToSeconds = (t) => {
+      if(!t) return 0;
+      const parts = String(t).split(':').map(Number);
+      if(parts.length===3) return parts[0]*3600 + parts[1]*60 + parts[2];
+      if(parts.length===2) return parts[0]*60 + parts[1];
+      return 0;
+    };
+    const pct = (a,b) => {
+      if(a===0 && b===0) return 0;
+      if(a===0) return 100;
+      return ((b-a)/a)*100;
+    };
+    const rate = (num, den) => den>0 ? (num/den) : 0;
+    const fmtPct = (x) => (x*100).toFixed(1) + "%";
 
+    // ========= UI STATE =========
+    const state = { team:"Todos", search:"", sort:"factB" };
+
+    const teamSelect  = document.getElementById("teamSelect");
+    const searchInput = document.getElementById("searchInput");
+    const sortSelect  = document.getElementById("sortSelect");
+    const resetBtn    = document.getElementById("resetBtn");
+    const exportBtn   = document.getElementById("exportBtn");
+
+    // ========= INIT CONTROLS =========
+    function initControls(){
+      const teams = ["Todos", ...Array.from(new Set(rows.map(r=>r.team)))];
+      teamSelect.innerHTML = teams.map(t=>`<option value="${t}">${t}</option>`).join("");
+
+      teamSelect.addEventListener("change", e=>{ state.team=e.target.value; renderAll(); });
+      searchInput.addEventListener("input", e=>{ state.search=e.target.value.trim().toLowerCase(); renderAll(); });
+      sortSelect.addEventListener("change", e=>{ state.sort=e.target.value; renderAll(); });
+
+      resetBtn.addEventListener("click", ()=>{
+        state.team="Todos"; state.search=""; state.sort="factB";
+        teamSelect.value=state.team; searchInput.value=""; sortSelect.value=state.sort;
+        renderAll();
+      });
+
+      exportBtn.addEventListener("click", ()=>{
+        const data = getFiltered();
+        downloadCSV(data);
+      });
+    }
+
+    // ========= FILTER + ENRICH + SORT =========
+    function enrich(r){
+      const factA = moneyToNumber(r.A.fact);
+      const factB = moneyToNumber(r.B.fact);
+      const deltaFact = factB - factA;
+
+      const crA = rate(safeNum(r.A.contacts), safeNum(r.A.dials));
+      const crB = rate(safeNum(r.B.contacts), safeNum(r.B.dials));
+
+      return {
+        ...r,
+        _factA: factA, _factB: factB, _deltaFact: deltaFact,
+        _crA: crA, _crB: crB
+      };
+    }
+
+    function getFiltered(){
+      let data = rows.map(enrich);
+
+      if(state.team !== "Todos") data = data.filter(r=>r.team===state.team);
+      if(state.search) data = data.filter(r=>r.agent.toLowerCase().includes(state.search));
+
+      const sorters = {
+        name:(a,b)=>a.agent.localeCompare(b.agent),
+        factA:(a,b)=>b._factA-a._factA,
+        factB:(a,b)=>b._factB-a._factB,
+        deltaFact:(a,b)=>b._deltaFact-a._deltaFact,
+        succ5A:(a,b)=>safeNum(b.A.succ5)-safeNum(a.A.succ5),
+        succ5B:(a,b)=>safeNum(b.B.succ5)-safeNum(a.B.succ5),
+        contactsA:(a,b)=>safeNum(b.A.contacts)-safeNum(a.A.contacts),
+        contactsB:(a,b)=>safeNum(b.B.contacts)-safeNum(a.B.contacts),
+        dialsA:(a,b)=>safeNum(b.A.dials)-safeNum(a.A.dials),
+        dialsB:(a,b)=>safeNum(b.B.dials)-safeNum(a.B.dials),
+        crA:(a,b)=>b._crA-a._crA,
+        crB:(a,b)=>b._crB-a._crB,
+      };
+
+      data.sort(sorters[state.sort] || sorters.factB);
+      return data;
+    }
+
+    // ========= TOTALS =========
+    function computeTotals(data){
+      const tot = {
+        A:{dials:0,contacts:0,succ5:0,talkSec:0,leadInbound:0,prodPres:0,cotizacion:0,succHS:0,fact:0},
+        B:{dials:0,contacts:0,succ5:0,talkSec:0,leadInbound:0,prodPres:0,cotizacion:0,succHS:0,fact:0},
+      };
+      for(const r of data){
+        tot.A.dials += safeNum(r.A.dials);
+        tot.A.contacts += safeNum(r.A.contacts);
+        tot.A.succ5 += safeNum(r.A.succ5);
+        tot.A.talkSec += talkToSeconds(r.A.talk);
+        tot.A.leadInbound += safeNum(r.A.leadInbound);
+        tot.A.prodPres += safeNum(r.A.prodPres);
+        tot.A.cotizacion += safeNum(r.A.cotizacion);
+        tot.A.succHS += safeNum(r.A.succHS);
+        tot.A.fact += r._factA;
+
+        tot.B.dials += safeNum(r.B.dials);
+        tot.B.contacts += safeNum(r.B.contacts);
+        tot.B.succ5 += safeNum(r.B.succ5);
+        tot.B.talkSec += talkToSeconds(r.B.talk);
+        tot.B.leadInbound += safeNum(r.B.leadInbound);
+        tot.B.prodPres += safeNum(r.B.prodPres);
+        tot.B.cotizacion += safeNum(r.B.cotizacion);
+        tot.B.succHS += safeNum(r.B.succHS);
+        tot.B.fact += r._factB;
+      }
+      return tot;
+    }
+
+    // ========= RENDER KPI =========
+    function renderKpis(data){
+      const useProvided = (state.team==="Todos" && !state.search);
+      const tot = useProvided
+        ? {
+            A:{ dials:totalsProvided.A.dials, contacts:totalsProvided.A.contacts, succ5:totalsProvided.A.succ5, talkSec:talkToSeconds(totalsProvided.A.talk), fact:moneyToNumber(totalsProvided.A.fact) },
+            B:{ dials:totalsProvided.B.dials, contacts:totalsProvided.B.contacts, succ5:totalsProvided.B.succ5, talkSec:talkToSeconds(totalsProvided.B.talk), fact:moneyToNumber(totalsProvided.B.fact) }
+          }
+        : computeTotals(data);
+
+      const factA = tot.A.fact;
+      const factB = tot.B.fact;
+
+      document.getElementById("kpiFactA").textContent = fmtMoney(factA);
+      document.getElementById("kpiFactB").textContent = fmtMoney(factB);
+
+      const deltaAbs = factB - factA;
+      const deltaPct = pct(factA, factB);
+      const cls = deltaAbs >= 0 ? "good" : "bad";
+      const sign = deltaAbs >= 0 ? "+" : "";
+      document.getElementById("kpiFactDelta").innerHTML =
+        `<span class="${cls}">${sign}${fmtMoney(deltaAbs)} (${sign}${deltaPct.toFixed(1)}%)</span>`;
+
+      document.getElementById("kpiDials").textContent = `${tot.A.dials.toLocaleString()} / ${tot.B.dials.toLocaleString()}`;
+      document.getElementById("kpiContacts").textContent = `${tot.A.contacts.toLocaleString()} / ${tot.B.contacts.toLocaleString()}`;
+    }
+
+    // ========= RENDER TABLE =========
+    function renderTable(data){
+      const tbody = document.querySelector("#dataTable tbody");
+      tbody.innerHTML = "";
+
+      document.getElementById("rowCount").textContent =
+        `${data.length} agente(s) · Filtro: ${state.team}${state.search ? " · búsqueda activa" : ""}`;
+
+      for(const r of data){
+        const dFact = r._deltaFact;
+        const cls = dFact >= 0 ? "good" : "bad";
+        const sign = dFact >= 0 ? "+" : "";
+
+        const crA = r._crA, crB = r._crB;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${r.team}</td>
+          <td><b>${r.agent}</b></td>
+
+          <td class="num">${safeNum(r.A.dials).toLocaleString()}</td>
+          <td class="num">${safeNum(r.A.contacts).toLocaleString()}</td>
+          <td class="num">${fmtPct(crA)}</td>
+          <td class="num">${safeNum(r.A.succ5).toLocaleString()}</td>
+          <td class="num">${r.A.talk || "0:00:00"}</td>
+          <td class="num">${safeNum(r.A.leadInbound).toLocaleString()}</td>
+          <td class="num">${safeNum(r.A.prodPres).toLocaleString()}</td>
+          <td class="num">${safeNum(r.A.cotizacion).toLocaleString()}</td>
+          <td class="num">${safeNum(r.A.succHS).toLocaleString()}</td>
+          <td class="num">${r._factA ? fmtMoney(r._factA) : `<span class="small">$0.00</span>`}</td>
+
+          <td class="num">${safeNum(r.B.dials).toLocaleString()}</td>
+          <td class="num">${safeNum(r.B.contacts).toLocaleString()}</td>
+          <td class="num">${fmtPct(crB)}</td>
+          <td class="num">${safeNum(r.B.succ5).toLocaleString()}</td>
+          <td class="num">${r.B.talk || "0:00:00"}</td>
+          <td class="num">${safeNum(r.B.leadInbound).toLocaleString()}</td>
+          <td class="num">${safeNum(r.B.prodPres).toLocaleString()}</td>
+          <td class="num">${safeNum(r.B.cotizacion).toLocaleString()}</td>
+          <td class="num">${safeNum(r.B.succHS).toLocaleString()}</td>
+          <td class="num">${r._factB ? fmtMoney(r._factB) : `<span class="small">$0.00</span>`}</td>
+
+          <td class="num ${cls}">${sign}${fmtMoney(dFact)}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    // ========= MINI BAR CHARTS =========
+    function renderBars(el, items, getA, getB, formatter){
+      el.innerHTML = "";
+      const max = Math.max(1, ...items.map(x=>Math.max(getA(x), getB(x))));
+      items.forEach(x=>{
+        const a = getA(x), b = getB(x);
+
+        const slot = document.createElement("div");
+        slot.className = "slot";
+        slot.style.position = "relative";
+
+        const barA = document.createElement("div");
+        barA.className = "bar barA";
+        barA.style.height = `${(a/max)*100}%`;
+        barA.innerHTML = `<div class="val">${formatter(a)}</div>`;
+
+        const barB = document.createElement("div");
+        barB.className = "bar barB";
+        barB.style.height = `${(b/max)*100}%`;
+        barB.innerHTML = `<div class="val">${formatter(b)}</div>`;
+
+        const lbl = document.createElement("div");
+        lbl.className = "lbl";
+        lbl.textContent = x.agent.split(" ")[0];
+
+        slot.appendChild(barA);
+        slot.appendChild(barB);
+        slot.appendChild(lbl);
+        el.appendChild(slot);
+      });
+    }
+
+    function renderCharts(data){
+      const topFact = data
+        .slice()
+        .sort((a,b)=>b._factB-a._factB)
+        .slice(0,10);
+
+      renderBars(
+        document.getElementById("chartFact"),
+        topFact,
+        (r)=>Math.round(r._factA),
+        (r)=>Math.round(r._factB),
+        (v)=>v.toLocaleString()
+      );
+
+      const topSucc = data
+        .slice()
+        .sort((a,b)=>safeNum(b.B.succ5)-safeNum(a.B.succ5))
+        .slice(0,10);
+
+      renderBars(
+        document.getElementById("chartSucc5"),
+        topSucc,
+        (r)=>safeNum(r.A.succ5),
+        (r)=>safeNum(r.B.succ5),
+        (v)=>String(v)
+      );
+    }
+
+    // ========= EXPORT CSV =========
+    function downloadCSV(data){
+      const headers = [
+        "Team","Agent",
+        "Dials_A","Contacts_A","ContactRate_A","Success5_A","Talk_A","LeadInbound_A","ProductPresentation_A","Cotizacion_A","SuccessHubSpot_A","Facturado_A",
+        "Dials_B","Contacts_B","ContactRate_B","Success5_B","Talk_B","LeadInbound_B","ProductPresentation_B","Cotizacion_B","SuccessHubSpot_B","Facturado_B",
+        "Delta_Facturado"
+      ];
+
+      const lines = [headers.join(",")];
+
+      for(const r of data){
+        const line = [
+          q(r.team), q(r.agent),
+          r.A.dials, r.A.contacts, (r._crA).toFixed(4), r.A.succ5, q(r.A.talk||""), r.A.leadInbound, r.A.prodPres, r.A.cotizacion, r.A.succHS, r._factA.toFixed(2),
+          r.B.dials, r.B.contacts, (r._crB).toFixed(4), r.B.succ5, q(r.B.talk||""), r.B.leadInbound, r.B.prodPres, r.B.cotizacion, r.B.succHS, r._factB.toFixed(2),
+          r._deltaFact.toFixed(2)
+        ].join(",");
+        lines.push(line);
+      }
+
+      const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8;"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `reporte_ventas_${Date.now()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      function q(s){
+        const str = String(s ?? "");
+        if(str.includes(",") || str.includes('"') || str.includes("\n")){
+          return `"${str.replace(/"/g,'""')}"`;
+        }
+        return str;
+      }
+    }
+
+    // ========= MASTER RENDER =========
+    function renderAll(){
+      const data = getFiltered();
+      renderKpis(data);
+      renderCharts(data);
+      renderTable(data);
+    }
+
+    initControls();
+    renderAll();
+  </script>
 </body>
 </html>
