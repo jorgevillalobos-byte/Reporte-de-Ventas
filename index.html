@@ -109,6 +109,7 @@
     .metric-row .name{ font-weight:700; font-size: 13px; color: rgba(245,247,255,.9); }
     .metric-row .num{ font-weight:850; font-variant-numeric: tabular-nums; }
 
+    /* Tables */
     .table-wrap{ width:100%; overflow-x:auto; border-top: 1px solid var(--stroke); }
     table{ width:100%; min-width: 1200px; border-collapse: collapse; font-size: 13px; }
     thead th{
@@ -124,10 +125,15 @@
     .pos{ color: var(--pos); font-weight: 850; }
     .neg{ color: var(--neg); font-weight: 850; }
 
-    /* Date search UI (minimal, premium) */
-    .filters{
-      display:flex; gap:10px; align-items:center; flex-wrap: wrap;
+    /* Totals row */
+    tr.total-row td{
+      font-weight: 900;
+      background: rgba(255,255,255,.06);
+      border-top: 1px solid rgba(255,255,255,.16);
     }
+
+    /* Date search UI */
+    .filters{ display:flex; gap:10px; align-items:center; flex-wrap: wrap; }
     .input{
       appearance:none;
       border:1px solid var(--stroke);
@@ -149,6 +155,44 @@
       cursor: pointer;
     }
     .btn:hover{ background: rgba(255,255,255,.12); }
+
+    /* Compact Comparativa */
+    .cmp-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 12px 16px 14px;
+    }
+    @media (max-width: 980px){ .cmp-grid{ grid-template-columns: 1fr; } }
+
+    .cmp-card{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      border-radius: 16px;
+      padding: 10px 12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+    .cmp-card .m{ font-size: 12px; color: rgba(245,247,255,.9); font-weight: 800; }
+    .cmp-card .v{
+      text-align:right;
+      font-variant-numeric: tabular-nums;
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width: 140px;
+    }
+    .cmp-card .v small{ color: var(--muted); font-size: 11px; }
+    .cmp-card .v b{ font-size: 14px; }
+
+    .cmp-mini{
+      border-top: 1px solid var(--stroke);
+    }
+    .cmp-mini table{ min-width: 920px; font-size: 12px; }
+    .cmp-mini thead th{ padding: 10px 12px; font-size: 11px; }
+    .cmp-mini tbody td{ padding: 9px 12px; }
 
     .foot{ margin-top: 16px; color: var(--muted); font-size: 12px; text-align:center; }
   </style>
@@ -175,7 +219,7 @@
 
     <div class="grid">
 
-      <!-- LEFT: KPIs -->
+      <!-- LEFT: KPIs (ejemplo, puedes ajustar luego con tu data mensual real) -->
       <div class="panel">
         <div class="panel-head">
           <h2>Resumen</h2>
@@ -186,7 +230,7 @@
         </div>
       </div>
 
-      <!-- RIGHT: Inbound -->
+      <!-- RIGHT: Inbound (ejemplo, puedes ajustar luego con tu data real) -->
       <div class="panel">
         <div class="panel-head">
           <h2>Resultados Inbound</h2>
@@ -199,21 +243,25 @@
 
     </div>
 
-    <!-- Comparativa Operativa (dinámica) -->
+    <!-- Comparativa Operativa COMPLETA + compacta -->
     <div class="panel" style="margin-top:16px;">
       <div class="panel-head">
-        <h2>Comparativa Operativa</h2>
-        <span class="pill">Se recalcula con el filtro de fechas</span>
+        <h2>Comparativa Operativa (Completa)</h2>
+        <span class="pill">Compacto · Totales Oficiales</span>
       </div>
 
-      <div class="table-wrap">
-        <table style="min-width:920px">
+      <!-- Compact cards -->
+      <div class="cmp-grid" id="cmpCards"></div>
+
+      <!-- Mini table -->
+      <div class="cmp-mini table-wrap">
+        <table>
           <thead>
             <tr>
               <th>Métrica</th>
-              <th style="text-align:right;" id="cmpD1">—</th>
-              <th style="text-align:right;" id="cmpD2">—</th>
-              <th style="text-align:right;">Diferencia</th>
+              <th class="r" id="cmpD1">—</th>
+              <th class="r" id="cmpD2">—</th>
+              <th class="r">Diferencia</th>
             </tr>
           </thead>
           <tbody id="cmpBody"></tbody>
@@ -227,11 +275,9 @@
         <h2>Detalle por Agente</h2>
         <div class="filters">
           <span class="pill">Buscar por fecha</span>
-
           <select id="date1" class="input"></select>
           <span class="muted">vs</span>
           <select id="date2" class="input"></select>
-
           <button class="btn" id="applyBtn">Aplicar</button>
           <span class="pill">Filas: <b id="rowsCount">—</b></span>
         </div>
@@ -245,7 +291,7 @@
 
       <!-- Tabla Día 1 -->
       <div class="panel-body" style="padding-top:0;">
-        <div class="pill" style="margin-bottom:10px;">Tabla Día 1</div>
+        <div class="pill" style="margin-bottom:10px;">Tabla Día 1 (Totalizada)</div>
       </div>
       <div class="table-wrap">
         <table>
@@ -276,7 +322,7 @@
 
       <!-- Tabla Día 2 -->
       <div class="panel-body">
-        <div class="pill" style="margin-bottom:10px;">Tabla Día 2</div>
+        <div class="pill" style="margin-bottom:10px;">Tabla Día 2 (Totalizada)</div>
       </div>
       <div class="table-wrap">
         <table>
@@ -329,7 +375,7 @@
       tryNext();
     })();
 
-    // ========= Top data del reporte =========
+    // ========= Resumen (puedes reemplazar por tu data mensual real) =========
     const reportTop = {
       campañas: 17,
       clientes: 32,
@@ -346,90 +392,91 @@
 
     // ========= Data por agente (día 1 y día 2) =========
     const agentRows = [
-      {
-        team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Angeles Espinoza",
-        d1_dials:220, d1_contacts:23, d1_success5:2, d1_talk:"4:51:23", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:1, d1_new_mm:0, d1_total_cli:1, d1_fact:"",
-        d2:"17/01/2026", d2_dials:205, d2_contacts:16, d2_success5:0, d2_talk:"0:58:27", d2_lead:0, d2_pp:3, d2_cot:0, d2_hub:3, d2_out:0, d2_ref:0, d2_inb_prev:1, d2_new_mm:0, d2_total_cli:1, d2_fact:"$500.00"
-      },
-      {
-        team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Geraldine Murillo",
-        d1_dials:0, d1_contacts:0, d1_success5:0, d1_talk:"0:00:00", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:297, d2_contacts:16, d2_success5:0, d2_talk:"1:36:11", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
-      },
-      {
-        team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Judith Mercado",
-        d1_dials:148, d1_contacts:22, d1_success5:0, d1_talk:"2:48:24", d1_lead:0, d1_pp:0, d1_cot:1, d1_hub:1, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:126, d2_contacts:13, d2_success5:2, d2_talk:"1:42:06", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
-      },
-      {
-        team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Rodrigo Guadamuz",
-        d1_dials:129, d1_contacts:9, d1_success5:2, d1_talk:"2:01:04", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:159, d2_contacts:11, d2_success5:0, d2_talk:"1:30:59", d2_lead:0, d2_pp:2, d2_cot:0, d2_hub:2, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
-      },
-      {
-        team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Alexia Rodríguez",
-        d1_dials:132, d1_contacts:18, d1_success5:3, d1_talk:"2:50:10", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:156, d2_contacts:18, d2_success5:0, d2_talk:"2:01:05", d2_lead:0, d2_pp:2, d2_cot:0, d2_hub:2, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
-      },
-      {
-        team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Mariett Castro",
-        d1_dials:122, d1_contacts:8, d1_success5:0, d1_talk:"3:33:05", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:2, d1_total_cli:2, d1_fact:"$950.00",
-        d2:"17/01/2026", d2_dials:181, d2_contacts:14, d2_success5:0, d2_talk:"3:08:35", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
-      },
+      { team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Angeles Espinoza", d1_dials:220, d1_contacts:23, d1_success5:2, d1_talk:"4:51:23", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:1, d1_new_mm:0, d1_total_cli:1, d1_fact:"",
+        d2:"17/01/2026", d2_dials:205, d2_contacts:16, d2_success5:0, d2_talk:"0:58:27", d2_lead:0, d2_pp:3, d2_cot:0, d2_hub:3, d2_out:0, d2_ref:0, d2_inb_prev:1, d2_new_mm:0, d2_total_cli:1, d2_fact:"$500.00" },
+      { team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Geraldine Murillo", d1_dials:0, d1_contacts:0, d1_success5:0, d1_talk:"0:00:00", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:297, d2_contacts:16, d2_success5:0, d2_talk:"1:36:11", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
+      { team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Judith Mercado", d1_dials:148, d1_contacts:22, d1_success5:0, d1_talk:"2:48:24", d1_lead:0, d1_pp:0, d1_cot:1, d1_hub:1, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:126, d2_contacts:13, d2_success5:2, d2_talk:"1:42:06", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
+      { team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Rodrigo Guadamuz", d1_dials:129, d1_contacts:9, d1_success5:2, d1_talk:"2:01:04", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:159, d2_contacts:11, d2_success5:0, d2_talk:"1:30:59", d2_lead:0, d2_pp:2, d2_cot:0, d2_hub:2, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
+      { team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Alexia Rodríguez", d1_dials:132, d1_contacts:18, d1_success5:3, d1_talk:"2:50:10", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:156, d2_contacts:18, d2_success5:0, d2_talk:"2:01:05", d2_lead:0, d2_pp:2, d2_cot:0, d2_hub:2, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
+      { team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Mariett Castro", d1_dials:122, d1_contacts:8, d1_success5:0, d1_talk:"3:33:05", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:2, d1_total_cli:2, d1_fact:"$950.00",
+        d2:"17/01/2026", d2_dials:181, d2_contacts:14, d2_success5:0, d2_talk:"3:08:35", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
 
-      {
-        team:"Post venta", d1:"16/01/2026", agente:"Andrea Rivera",
-        d1_dials:171, d1_contacts:122, d1_success5:1, d1_talk:"2:57:49", d1_lead:0, d1_pp:0, d1_cot:1, d1_hub:1, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:197, d2_contacts:172, d2_success5:0, d2_talk:"3:25:38", d2_lead:0, d2_pp:1, d2_cot:0, d2_hub:1, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"$500.00"
-      },
-      {
-        team:"Post venta", d1:"16/01/2026", agente:"Alejandra Rodriguez",
-        d1_dials:63, d1_contacts:16, d1_success5:0, d1_talk:"2:40:50", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$450.00",
-        d2:"17/01/2026", d2_dials:65, d2_contacts:20, d2_success5:0, d2_talk:"1:18:55", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
-      },
-      {
-        team:"Post venta", d1:"16/01/2026", agente:"Ariana Leiva",
-        d1_dials:139, d1_contacts:62, d1_success5:0, d1_talk:"1:54:44", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$150.00",
-        d2:"17/01/2026", d2_dials:157, d2_contacts:73, d2_success5:1, d2_talk:"2:00:25", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"$500.00"
-      },
-      {
-        team:"Post venta", d1:"16/01/2026", agente:"David Espinoza",
-        d1_dials:78, d1_contacts:53, d1_success5:0, d1_talk:"0:57:46", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$650.00",
-        d2:"17/01/2026", d2_dials:75, d2_contacts:55, d2_success5:0, d2_talk:"2:40:03", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
-      },
-      {
-        team:"Post venta", d1:"16/01/2026", agente:"Jonathan Salinas",
-        d1_dials:156, d1_contacts:117, d1_success5:1, d1_talk:"3:05:59", d1_lead:0, d1_pp:3, d1_cot:0, d1_hub:3, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:83, d2_contacts:23, d2_success5:3, d2_talk:"3:47:33", d2_lead:0, d2_pp:1, d2_cot:0, d2_hub:1, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
-      },
-      {
-        team:"Post venta", d1:"16/01/2026", agente:"Mario Castano",
-        d1_dials:143, d1_contacts:131, d1_success5:0, d1_talk:"1:26:10", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$300.00",
-        d2:"17/01/2026", d2_dials:33, d2_contacts:25, d2_success5:0, d2_talk:"1:40:47", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
-      },
-      {
-        team:"Post venta", d1:"16/01/2026", agente:"Nicole Garcia",
-        d1_dials:103, d1_contacts:37, d1_success5:2, d1_talk:"2:46:18", d1_lead:0, d1_pp:2, d1_cot:0, d1_hub:2, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$600.00",
-        d2:"17/01/2026", d2_dials:164, d2_contacts:46, d2_success5:2, d2_talk:"1:50:24", d2_lead:0, d2_pp:1, d2_cot:1, d2_hub:2, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
-      },
-      {
-        team:"Post venta", d1:"16/01/2026", agente:"Paola Paz",
-        d1_dials:30, d1_contacts:25, d1_success5:1, d1_talk:"1:31:32", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:0, d2_contacts:0, d2_success5:0, d2_talk:"0:00:00", d2_lead:0, d2_pp:1, d2_cot:0, d2_hub:1, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
-      },
-      {
-        team:"Post venta", d1:"16/01/2026", agente:"Veronica Ramirez",
-        d1_dials:155, d1_contacts:39, d1_success5:0, d1_talk:"2:18:07", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:146, d2_contacts:27, d2_success5:0, d2_talk:"1:47:21", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:1, d2_new_mm:1, d2_total_cli:1, d2_fact:"$1,000.00"
-      }
+      { team:"Post venta", d1:"16/01/2026", agente:"Andrea Rivera", d1_dials:171, d1_contacts:122, d1_success5:1, d1_talk:"2:57:49", d1_lead:0, d1_pp:0, d1_cot:1, d1_hub:1, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:197, d2_contacts:172, d2_success5:0, d2_talk:"3:25:38", d2_lead:0, d2_pp:1, d2_cot:0, d2_hub:1, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"$500.00" },
+      { team:"Post venta", d1:"16/01/2026", agente:"Alejandra Rodriguez", d1_dials:63, d1_contacts:16, d1_success5:0, d1_talk:"2:40:50", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$450.00",
+        d2:"17/01/2026", d2_dials:65, d2_contacts:20, d2_success5:0, d2_talk:"1:18:55", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
+      { team:"Post venta", d1:"16/01/2026", agente:"Ariana Leiva", d1_dials:139, d1_contacts:62, d1_success5:0, d1_talk:"1:54:44", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$150.00",
+        d2:"17/01/2026", d2_dials:157, d2_contacts:73, d2_success5:1, d2_talk:"2:00:25", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"$500.00" },
+      { team:"Post venta", d1:"16/01/2026", agente:"David Espinoza", d1_dials:78, d1_contacts:53, d1_success5:0, d1_talk:"0:57:46", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$650.00",
+        d2:"17/01/2026", d2_dials:75, d2_contacts:55, d2_success5:0, d2_talk:"2:40:03", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
+      { team:"Post venta", d1:"16/01/2026", agente:"Jonathan Salinas", d1_dials:156, d1_contacts:117, d1_success5:1, d1_talk:"3:05:59", d1_lead:0, d1_pp:3, d1_cot:0, d1_hub:3, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:83, d2_contacts:23, d2_success5:3, d2_talk:"3:47:33", d2_lead:0, d2_pp:1, d2_cot:0, d2_hub:1, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
+      { team:"Post venta", d1:"16/01/2026", agente:"Mario Castano", d1_dials:143, d1_contacts:131, d1_success5:0, d1_talk:"1:26:10", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$300.00",
+        d2:"17/01/2026", d2_dials:33, d2_contacts:25, d2_success5:0, d2_talk:"1:40:47", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
+      { team:"Post venta", d1:"16/01/2026", agente:"Nicole Garcia", d1_dials:103, d1_contacts:37, d1_success5:2, d1_talk:"2:46:18", d1_lead:0, d1_pp:2, d1_cot:0, d1_hub:2, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$600.00",
+        d2:"17/01/2026", d2_dials:164, d2_contacts:46, d2_success5:2, d2_talk:"1:50:24", d2_lead:0, d2_pp:1, d2_cot:1, d2_hub:2, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
+      { team:"Post venta", d1:"16/01/2026", agente:"Paola Paz", d1_dials:30, d1_contacts:25, d1_success5:1, d1_talk:"1:31:32", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:0, d2_contacts:0, d2_success5:0, d2_talk:"0:00:00", d2_lead:0, d2_pp:1, d2_cot:0, d2_hub:1, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
+      { team:"Post venta", d1:"16/01/2026", agente:"Veronica Ramirez", d1_dials:155, d1_contacts:39, d1_success5:0, d1_talk:"2:18:07", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:146, d2_contacts:27, d2_success5:0, d2_talk:"1:47:21", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:1, d2_new_mm:1, d2_total_cli:1, d2_fact:"$1,000.00" }
     ];
 
+    // ========= Totales Oficiales (tal cual tu última fila) =========
+    const officialTotals = {
+      d1: {
+        fecha: "16/01/2026",
+        dials: 1789,
+        contacts: 682,
+        success5: 12,
+        talk: "35:43:21",
+        lead: 0,
+        pp: 5,
+        cot: 2,
+        hub: 7,                 // (de tu fila totales)
+        out: 0,
+        ref: 1,
+        inb_prev: 2,
+        new_mm: 3,
+        total_cli: 3,
+        fact: "$3,100.00"
+      },
+      d2: {
+        fecha: "17/01/2026",
+        dials: 2044,
+        contacts: 529,
+        success5: 8,
+        talk: "29:28:29",
+        lead: 0,
+        pp: 11,
+        cot: 1,
+        hub: 12,
+        out: 0,
+        ref: 1,
+        inb_prev: 1,
+        new_mm: 2,
+        total_cli: 2,
+        fact: "$2,500.00"
+      }
+    };
+
     // ========= Helpers =========
-    const fmtMoney = (n) => {
+    const fmtMoney0 = (n) => {
       if (n === "" || n === null || n === undefined) return "";
       const num = Number(String(n).replace(/[^0-9.-]/g,""));
       if (Number.isNaN(num)) return String(n);
       return new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', maximumFractionDigits:0 }).format(num);
+    };
+    const money2 = (n) => new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', maximumFractionDigits:2 }).format(n);
+    const toNumber = (val) => {
+      if (val === null || val === undefined) return 0;
+      const s = String(val).trim();
+      if (!s) return 0;
+      const n = Number(s.replace(/[^0-9.-]/g,""));
+      return Number.isFinite(n) ? n : 0;
     };
 
     function uniq(arr){ return [...new Set(arr)].sort((a,b)=>parseDMY(a)-parseDMY(b)); }
@@ -437,36 +484,45 @@
       const [dd,mm,yy] = d.split("/").map(x=>parseInt(x,10));
       return new Date(yy, mm-1, dd).getTime();
     }
-
-    function toNumber(val){
-      if (val === null || val === undefined) return 0;
-      const s = String(val).trim();
-      if (!s) return 0;
-      const n = Number(s.replace(/[^0-9.-]/g,""));
-      return Number.isFinite(n) ? n : 0;
-    }
-    function sumField(rows, field){
-      return rows.reduce((acc,r)=> acc + toNumber(r[field]), 0);
-    }
-    function money2(n){
-      return new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', maximumFractionDigits:2 }).format(n);
-    }
     function diffClass(n){
       if (!Number.isFinite(n) || n === 0) return "";
       return n > 0 ? "pos" : "neg";
     }
 
-    // ========= Render: KPIs + inbound =========
+    // Talk time parse/sum
+    function parseTimeToSeconds(t){
+      const s = String(t || "").trim();
+      if (!s) return 0;
+      const parts = s.split(":").map(x=>x.trim());
+      if (parts.length === 3){
+        const [h,m,sec] = parts.map(x=>parseInt(x,10) || 0);
+        return h*3600 + m*60 + sec;
+      }
+      if (parts.length === 2){
+        const [m,sec] = parts.map(x=>parseInt(x,10) || 0);
+        return m*60 + sec;
+      }
+      return 0;
+    }
+    function secondsToHHMMSS(total){
+      total = Math.max(0, Math.floor(total));
+      const h = Math.floor(total/3600);
+      const m = Math.floor((total%3600)/60);
+      const s = total%60;
+      const pad = (x)=>String(x).padStart(2,"0");
+      return `${h}:${pad(m)}:${pad(s)}`;
+    }
+
+    // ========= Render KPIs + inbound =========
     document.getElementById("updatedPill").textContent = `Actualizado: ${new Date().toLocaleString('es-ES')}`;
 
     const kpisEl = document.getElementById("kpis");
-    const kpiItems = [
+    [
       { label:"Campañas", value: reportTop.campañas },
       { label:"Clientes", value: reportTop.clientes },
       { label:"Conversiones MM", value: reportTop.conversionesMM },
-      { label:"Facturado Nuevo", value: fmtMoney(reportTop.facturadoNuevoMes) }
-    ];
-    kpiItems.forEach(k => {
+      { label:"Facturado Nuevo", value: fmtMoney0(reportTop.facturadoNuevoMes) }
+    ].forEach(k => {
       const div = document.createElement("div");
       div.className="kpi";
       div.innerHTML = `<div class="label">${k.label}</div><div class="value">${k.value}</div>`;
@@ -477,8 +533,8 @@
     const ib = reportTop.inbound;
     document.getElementById("roiVal").textContent = ib.roiVendido;
     [
-      { name:"Inversión", value: fmtMoney(ib.inversion) },
-      { name:"Monto Vendido", value: fmtMoney(ib.vendido) },
+      { name:"Inversión", value: fmtMoney0(ib.inversion) },
+      { name:"Monto Vendido", value: fmtMoney0(ib.vendido) },
       { name:"Leads Generados", value: (ib.leads ?? 0).toLocaleString('en-US') },
       { name:"Pérdida / Ganancia", value: (ib.perdidaGanancia < 0 ? "-" : "") + money2(Math.abs(ib.perdidaGanancia)) }
     ].forEach(r => {
@@ -488,11 +544,10 @@
       inboundEl.appendChild(row);
     });
 
-    // ========= UI: selects de fecha =========
+    // ========= UI fechas =========
     const allDates = uniq(agentRows.flatMap(r => [r.d1, r.d2]).filter(Boolean));
     const date1Sel = document.getElementById("date1");
     const date2Sel = document.getElementById("date2");
-
     function fillSelect(sel, dates){
       sel.innerHTML = "";
       dates.forEach(d=>{
@@ -504,68 +559,112 @@
     fillSelect(date1Sel, allDates);
     fillSelect(date2Sel, allDates);
 
-    date1Sel.value = allDates[0] || "";
-    date2Sel.value = allDates[1] || allDates[0] || "";
+    date1Sel.value = officialTotals.d1.fecha; // default oficial
+    date2Sel.value = officialTotals.d2.fecha; // default oficial
 
-    // ========= Render comparativa operativa =========
-    function renderComparativa(d1, d2, day1, day2){
+    // ========= Comparativa Operativa (usa Totales Oficiales si coinciden fechas) =========
+    function getOfficialForDate(dateStr){
+      if (officialTotals.d1.fecha === dateStr) return { ...officialTotals.d1, key:"d1" };
+      if (officialTotals.d2.fecha === dateStr) return { ...officialTotals.d2, key:"d2" };
+      return null;
+    }
+
+    function renderComparativa(d1, d2){
       document.getElementById("cmpD1").textContent = d1;
       document.getElementById("cmpD2").textContent = d2;
 
-      const t1 = {
-        dials: sumField(day1, "dials"),
-        contacts: sumField(day1, "contacts"),
-        success5: sumField(day1, "success5"),
-        pp: sumField(day1, "pp"),
-        cot: sumField(day1, "cot"),
-        hub: sumField(day1, "hub"),
-        total_cli: sumField(day1, "total_cli"),
-        fact: day1.reduce((acc,r)=> acc + toNumber(r.fact), 0),
-      };
+      const a = getOfficialForDate(d1);
+      const b = getOfficialForDate(d2);
 
-      const t2 = {
-        dials: sumField(day2, "dials"),
-        contacts: sumField(day2, "contacts"),
-        success5: sumField(day2, "success5"),
-        pp: sumField(day2, "pp"),
-        cot: sumField(day2, "cot"),
-        hub: sumField(day2, "hub"),
-        total_cli: sumField(day2, "total_cli"),
-        fact: day2.reduce((acc,r)=> acc + toNumber(r.fact), 0),
-      };
+      // Si no hay totales oficiales para esas fechas, cae a 0 (pero con tus fechas actuales sí hay).
+      const T1 = a || { dials:0, contacts:0, success5:0, talk:"0:00:00", lead:0, pp:0, cot:0, hub:0, out:0, ref:0, inb_prev:0, new_mm:0, total_cli:0, fact:"$0.00" };
+      const T2 = b || { dials:0, contacts:0, success5:0, talk:"0:00:00", lead:0, pp:0, cot:0, hub:0, out:0, ref:0, inb_prev:0, new_mm:0, total_cli:0, fact:"$0.00" };
 
+      const fact1 = toNumber(T1.fact);
+      const fact2 = toNumber(T2.fact);
+
+      const talk1s = parseTimeToSeconds(T1.talk);
+      const talk2s = parseTimeToSeconds(T2.talk);
+
+      const ipc1 = T1.total_cli > 0 ? (fact1 / T1.total_cli) : 0; // IPC (Facturado/Clientes)
+      const ipc2 = T2.total_cli > 0 ? (fact2 / T2.total_cli) : 0;
+
+      // Cards compactas
+      const cards = [
+        { name:"Dials", a:T1.dials, b:T2.dials, fmt:(x)=>x.toLocaleString('en-US') },
+        { name:"Contacts", a:T1.contacts, b:T2.contacts, fmt:(x)=>x.toLocaleString('en-US') },
+        { name:"Success Five9", a:T1.success5, b:T2.success5, fmt:(x)=>x.toLocaleString('en-US') },
+        { name:"Facturado", a:fact1, b:fact2, fmt:(x)=>money2(x) }
+      ];
+
+      const cmpCards = document.getElementById("cmpCards");
+      cmpCards.innerHTML = "";
+      cards.forEach(c=>{
+        const diff = c.b - c.a;
+        const cls = diffClass(diff);
+        const showDiff = (c.name === "Facturado") ? money2(diff) : diff.toLocaleString('en-US');
+        cmpCards.insertAdjacentHTML("beforeend", `
+          <div class="cmp-card">
+            <div class="m">${c.name}</div>
+            <div class="v">
+              <small>${d1}: ${c.fmt(c.a)}</small>
+              <small>${d2}: ${c.fmt(c.b)}</small>
+              <b class="${cls}">${diff>=0?"+":""}${showDiff}</b>
+            </div>
+          </div>
+        `);
+      });
+
+      // Tabla completa compacta
       const rows = [
-        { name:"Total de Llamadas (Dials)", a:t1.dials, b:t2.dials, fmt:(x)=>x.toLocaleString('en-US') },
-        { name:"Total de Contactos", a:t1.contacts, b:t2.contacts, fmt:(x)=>x.toLocaleString('en-US') },
-        { name:"Éxitos en Five9", a:t1.success5, b:t2.success5, fmt:(x)=>x.toLocaleString('en-US') },
-        { name:"Presentaciones de Producto", a:t1.pp, b:t2.pp, fmt:(x)=>x.toLocaleString('en-US') },
-        { name:"Cotizaciones", a:t1.cot, b:t2.cot, fmt:(x)=>x.toLocaleString('en-US') },
-        { name:"Éxitos en HubSpot", a:t1.hub, b:t2.hub, fmt:(x)=>x.toLocaleString('en-US') },
-        { name:"Total Clientes", a:t1.total_cli, b:t2.total_cli, fmt:(x)=>x.toLocaleString('en-US') },
-        { name:"Facturación Total ($)", a:t1.fact, b:t2.fact, fmt:(x)=>money2(x) },
+        ["Total de Llamadas (Dials)", T1.dials, T2.dials, false, (x)=>x.toLocaleString('en-US')],
+        ["Total de Contactos", T1.contacts, T2.contacts, false, (x)=>x.toLocaleString('en-US')],
+        ["Tiempo Total de Llamada", T1.talk, T2.talk, "time", (x)=>x],
+        ["Éxitos en Five9", T1.success5, T2.success5, false, (x)=>x.toLocaleString('en-US')],
+        ["Lead Inbound", T1.lead, T2.lead, false, (x)=>x.toLocaleString('en-US')],
+        ["Presentaciones de Producto", T1.pp, T2.pp, false, (x)=>x.toLocaleString('en-US')],
+        ["Cotizaciones", T1.cot, T2.cot, false, (x)=>x.toLocaleString('en-US')],
+        ["Éxitos en HubSpot", T1.hub, T2.hub, false, (x)=>x.toLocaleString('en-US')],
+        ["Cliente Outbound", T1.out, T2.out, false, (x)=>x.toLocaleString('en-US')],
+        ["Referido", T1.ref, T2.ref, false, (x)=>x.toLocaleString('en-US')],
+        ["Inbound Meses Anteriores", T1.inb_prev, T2.inb_prev, false, (x)=>x.toLocaleString('en-US')],
+        ["Clientes Nuevos Lead MM", T1.new_mm, T2.new_mm, false, (x)=>x.toLocaleString('en-US')],
+        ["Total de Clientes", T1.total_cli, T2.total_cli, false, (x)=>x.toLocaleString('en-US')],
+        ["Facturación Total ($)", fact1, fact2, "money", (x)=>money2(x)],
+        ["IPC (Facturado / Total Clientes)", ipc1, ipc2, "money", (x)=>money2(x)]
       ];
 
       const body = document.getElementById("cmpBody");
       body.innerHTML = "";
 
-      rows.forEach(r=>{
-        const diff = r.b - r.a;
-        const isMoney = r.name.includes("Facturación");
-        const diffTxt = isMoney ? money2(diff) : diff.toLocaleString('en-US');
+      rows.forEach(([name,a,b,type,fmt])=>{
+        let diff = 0;
+        let diffTxt = "0";
+        if (type === "time"){
+          diff = talk2s - talk1s;
+          diffTxt = diff === 0 ? "0" : (diff<0 ? "-" : "+") + secondsToHHMMSS(Math.abs(diff));
+        } else {
+          diff = (Number(b) || 0) - (Number(a) || 0);
+          diffTxt = (diff>=0?"+":"") + (type==="money" ? money2(diff) : diff.toLocaleString('en-US'));
+          if (diff === 0) diffTxt = "0";
+        }
+        const cls = diffClass(diff);
+
         body.insertAdjacentHTML("beforeend", `
           <tr>
-            <td>${r.name}</td>
-            <td class="r">${r.fmt(r.a)}</td>
-            <td class="r">${r.fmt(r.b)}</td>
-            <td class="r ${diffClass(diff)}">${diff >= 0 ? "+" : ""}${diffTxt}</td>
+            <td>${name}</td>
+            <td class="r">${fmt(a)}</td>
+            <td class="r">${fmt(b)}</td>
+            <td class="r ${cls}">${diffTxt}</td>
           </tr>
         `);
       });
     }
 
-    // ========= Render tablas día 1 y día 2 =========
+    // ========= Render tablas + Totales Oficiales =========
     function renderTables(d1, d2){
       document.getElementById("rangePill").textContent = `Comparativa: ${d1} vs ${d2}`;
+
       document.getElementById("d1Label").textContent = d1;
       document.getElementById("d2Label").textContent = d2;
 
@@ -586,7 +685,6 @@
             total_cli:r[`${match1}_total_cli`], fact:r[`${match1}_fact`]
           });
         }
-
         if (match2){
           day2.push({
             team:r.team, fecha:d2, agente:r.agente,
@@ -632,10 +730,58 @@
       day1.forEach(x => tbody1.insertAdjacentHTML("beforeend", rowTpl(x)));
       day2.forEach(x => tbody2.insertAdjacentHTML("beforeend", rowTpl(x)));
 
+      // Totales Oficiales (si la fecha coincide)
+      const off1 = getOfficialForDate(d1);
+      const off2 = getOfficialForDate(d2);
+
+      if (off1){
+        tbody1.insertAdjacentHTML("beforeend", `
+          <tr class="total-row">
+            <td colspan="3">TOTALES (OFICIALES)</td>
+            <td class="r">${off1.dials.toLocaleString('en-US')}</td>
+            <td class="r">${off1.contacts.toLocaleString('en-US')}</td>
+            <td class="r">${off1.success5.toLocaleString('en-US')}</td>
+            <td class="r">${off1.talk}</td>
+            <td class="r">${off1.lead.toLocaleString('en-US')}</td>
+            <td class="r">${off1.pp.toLocaleString('en-US')}</td>
+            <td class="r">${off1.cot.toLocaleString('en-US')}</td>
+            <td class="r">${off1.hub.toLocaleString('en-US')}</td>
+            <td class="r">${off1.out.toLocaleString('en-US')}</td>
+            <td class="r">${off1.ref.toLocaleString('en-US')}</td>
+            <td class="r">${off1.inb_prev.toLocaleString('en-US')}</td>
+            <td class="r">${off1.new_mm.toLocaleString('en-US')}</td>
+            <td class="r">${off1.total_cli.toLocaleString('en-US')}</td>
+            <td class="r">${money2(toNumber(off1.fact))}</td>
+          </tr>
+        `);
+      }
+
+      if (off2){
+        tbody2.insertAdjacentHTML("beforeend", `
+          <tr class="total-row">
+            <td colspan="3">TOTALES (OFICIALES)</td>
+            <td class="r">${off2.dials.toLocaleString('en-US')}</td>
+            <td class="r">${off2.contacts.toLocaleString('en-US')}</td>
+            <td class="r">${off2.success5.toLocaleString('en-US')}</td>
+            <td class="r">${off2.talk}</td>
+            <td class="r">${off2.lead.toLocaleString('en-US')}</td>
+            <td class="r">${off2.pp.toLocaleString('en-US')}</td>
+            <td class="r">${off2.cot.toLocaleString('en-US')}</td>
+            <td class="r">${off2.hub.toLocaleString('en-US')}</td>
+            <td class="r">${off2.out.toLocaleString('en-US')}</td>
+            <td class="r">${off2.ref.toLocaleString('en-US')}</td>
+            <td class="r">${off2.inb_prev.toLocaleString('en-US')}</td>
+            <td class="r">${off2.new_mm.toLocaleString('en-US')}</td>
+            <td class="r">${off2.total_cli.toLocaleString('en-US')}</td>
+            <td class="r">${money2(toNumber(off2.fact))}</td>
+          </tr>
+        `);
+      }
+
       document.getElementById("rowsCount").textContent = `${Math.max(day1.length, day2.length)}`;
 
-      // ✅ Comparativa operativa basada en totales (dinámica)
-      renderComparativa(d1, d2, day1, day2);
+      // Comparativa completa con totales oficiales
+      renderComparativa(d1, d2);
     }
 
     document.getElementById("applyBtn").addEventListener("click", () => {
