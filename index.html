@@ -4,37 +4,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Efectividad de Ventas — Enero 2026</title>
-
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
     :root{
-      --bg0:#0b1020;
-      --bg1:#0a1530;
+      --bg0:#0b1020; --bg1:#0a1530;
       --card: rgba(255,255,255,.08);
       --card2: rgba(255,255,255,.06);
       --stroke: rgba(255,255,255,.12);
-      --text:#f5f7ff;
-      --muted: rgba(245,247,255,.72);
+      --text:#f5f7ff; --muted: rgba(245,247,255,.72);
       --shadow: 0 12px 30px rgba(0,0,0,.35);
       --radius: 18px;
-
-      --y:#F7D75C;
-      --d:#2F3E50;
-      --o:#F7942B;
-      --g:#0B7A28;
-
-      --pos:#2ee59d;
-      --neg:#ff6b6b;
+      --pos:#2ee59d; --neg:#ff6b6b;
     }
-
-    *{ box-sizing: border-box; }
-    html,body{ height:100%; }
+    *{ box-sizing:border-box; }
     body{
-      margin:0;
-      color: var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", "Noto Sans", "Liberation Sans", sans-serif;
+      margin:0; color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background:
         radial-gradient(1200px 600px at 10% 10%, rgba(0,255,163,.18), transparent 60%),
         radial-gradient(900px 700px at 90% 20%, rgba(255,153,0,.16), transparent 55%),
@@ -42,93 +28,7 @@
         linear-gradient(180deg, var(--bg0), var(--bg1));
       overflow-x:hidden;
     }
-
-    .wrap{
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 26px 18px 40px;
-    }
-
-    /* Header */
-    .topbar{
-      position: relative;
-      display:flex;
-      gap:16px;
-      align-items:center;
-      padding: 18px 18px;
-      border: 1px solid var(--stroke);
-      background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      overflow:hidden;
-    }
-    .topbar:before{
-      content:"";
-      position:absolute; inset:-2px;
-      background: radial-gradient(700px 120px at 20% 0%, rgba(247,215,92,.22), transparent 55%),
-                  radial-gradient(700px 140px at 85% 40%, rgba(46,229,157,.16), transparent 60%);
-      pointer-events:none;
-    }
-
-    .brand{
-      display:flex; align-items:center; gap:12px;
-      min-width: 240px;
-      z-index:1;
-    }
-    .brand img{
-      height: 44px; width:auto; display:block;
-      filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
-    }
-    .brand .fallback{
-      display:none;
-      font-weight: 800;
-      letter-spacing:.4px;
-      color: var(--muted);
-    }
-
-    .title{
-      z-index:1;
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-      flex:1;
-      min-width: 0;
-    }
-    .title h1{
-      margin:0;
-      font-size: 20px;
-      letter-spacing: 2.2px;
-      text-transform: uppercase;
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-    }
-    .title .sub{
-      color: var(--muted);
-      font-size: 13px;
-      display:flex; gap:10px; flex-wrap:wrap;
-    }
-    .pill{
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.06);
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size:12px;
-      color: var(--muted);
-    }
-
-    /* Layout grids */
-    .grid{
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap: 16px;
-      margin-top: 16px;
-    }
-    @media (max-width: 980px){
-      .grid{ grid-template-columns: 1fr; }
-      .brand{ min-width: 0; }
-    }
+    .wrap{ max-width: 1200px; margin:0 auto; padding: 26px 18px 40px; }
 
     .panel{
       border: 1px solid var(--stroke);
@@ -138,195 +38,122 @@
       backdrop-filter: blur(10px);
       overflow:hidden;
     }
-
     .panel-head{
       padding: 14px 16px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
       border-bottom: 1px solid var(--stroke);
+      flex-wrap: wrap;
     }
     .panel-head h2{
-      margin:0;
-      font-size: 14px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
+      margin:0; font-size: 14px; letter-spacing: 1.4px; text-transform: uppercase;
       color: rgba(245,247,255,.9);
     }
     .panel-body{ padding: 14px 16px 16px; }
 
-    /* KPI cards */
-    .kpis{
+    .topbar{
+      display:flex; gap:16px; align-items:center;
+      padding: 18px 18px;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      margin-bottom: 16px;
+    }
+    .brand{ display:flex; align-items:center; gap:12px; min-width: 220px; }
+    .brand img{ height:44px; width:auto; display:block; filter: drop-shadow(0 6px 12px rgba(0,0,0,.35)); }
+    .brand .fallback{ display:none; font-weight: 800; color: var(--muted); }
+    .title{ flex:1; min-width: 0; display:flex; flex-direction:column; gap:4px; }
+    .title h1{
+      margin:0; font-size: 20px; letter-spacing: 2.2px; text-transform: uppercase;
+      white-space: nowrap; overflow:hidden; text-overflow: ellipsis;
+    }
+    .sub{ color: var(--muted); font-size: 13px; display:flex; gap:10px; flex-wrap:wrap; }
+
+    .pill{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size:12px;
+      color: var(--muted);
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .pill b{ color: rgba(245,247,255,.92); }
+
+    .grid{
       display:grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 16px;
+      margin-top: 16px;
     }
-    @media (max-width: 980px){
-      .kpis{ grid-template-columns: repeat(2, 1fr); }
-    }
+    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } .brand{ min-width:0; } }
+
+    .kpis{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    @media (max-width: 980px){ .kpis{ grid-template-columns: repeat(2, 1fr);} }
     .kpi{
       border: 1px solid var(--stroke);
       background: rgba(255,255,255,.06);
       border-radius: 16px;
-      padding: 12px 12px;
-      position:relative;
-      overflow:hidden;
+      padding: 12px;
     }
-    .kpi:after{
-      content:"";
-      position:absolute; inset:auto -40px -60px auto;
-      width: 140px; height: 140px;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.14), transparent 55%);
-      transform: rotate(20deg);
-      pointer-events:none;
-    }
-    .kpi .label{
-      color: var(--muted);
-      font-size: 12px;
-      letter-spacing:.4px;
-    }
-    .kpi .value{
-      margin-top: 8px;
-      font-size: 22px;
-      font-weight: 850;
-      letter-spacing:.4px;
-    }
-    .kpi .meta{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:8px;
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-    .chip{
-      display:inline-flex; align-items:center; gap:6px;
-      padding: 5px 9px;
-      border-radius: 999px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.06);
-      font-weight: 750;
-      color: rgba(245,247,255,.88);
-      white-space:nowrap;
-    }
-    .chip.pos{ color: var(--pos); }
-    .chip.neg{ color: var(--neg); }
-
-    .spark{
-      width: 82px;
-      height: 22px;
-      opacity: .95;
-    }
-
-    /* Inbound cards */
-    .inbound{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
+    .kpi .label{ color: var(--muted); font-size: 12px; }
+    .kpi .value{ margin-top: 8px; font-size: 22px; font-weight: 850; }
     .metric-row{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      padding: 12px 12px;
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
+      padding: 12px;
       border-radius: 14px;
       border:1px solid var(--stroke);
       background: rgba(255,255,255,.06);
     }
-    .metric-row .name{
-      color: rgba(245,247,255,.9);
-      font-weight: 700;
-      font-size: 13px;
-    }
-    .metric-row .num{
-      font-variant-numeric: tabular-nums;
-      font-weight: 850;
-      letter-spacing:.2px;
-    }
+    .metric-row .name{ font-weight:700; font-size: 13px; color: rgba(245,247,255,.9); }
+    .metric-row .num{ font-weight:850; font-variant-numeric: tabular-nums; }
 
-    /* Charts area */
-    .charts{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+    .table-wrap{ width:100%; overflow-x:auto; border-top: 1px solid var(--stroke); }
+    table{ width:100%; min-width: 1200px; border-collapse: collapse; font-size: 13px; }
+    thead th{
+      text-align:left; color: rgba(245,247,255,.82);
+      font-size: 12px; letter-spacing: .8px; text-transform: uppercase;
+      padding: 12px 14px; border-bottom: 1px solid var(--stroke);
+      background: rgba(0,0,0,.10); white-space: nowrap;
     }
-    @media (max-width: 980px){
-      .charts{ grid-template-columns: 1fr; }
+    tbody td{ padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,.08); }
+    tbody tr:hover td{ background: rgba(255,255,255,.05); }
+    td.r{ text-align:right; white-space:nowrap; font-variant-numeric: tabular-nums; }
+    .muted{ color: var(--muted); }
+    .pos{ color: var(--pos); font-weight: 850; }
+    .neg{ color: var(--neg); font-weight: 850; }
+
+    /* Date search UI (minimal, premium) */
+    .filters{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap: wrap;
     }
-    .chart-card{
+    .input{
+      appearance:none;
       border:1px solid var(--stroke);
       background: rgba(255,255,255,.06);
-      border-radius: 16px;
-      padding: 12px;
-    }
-    .chart-card .ctitle{
+      color: rgba(245,247,255,.92);
+      padding: 8px 10px;
+      border-radius: 12px;
       font-size: 12px;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin: 0 0 8px 0;
+      outline: none;
     }
-    canvas{ max-width:100%; }
-
-    /* Table */
-    .table-wrap{
-      width:100%;
-      overflow-x:auto;
-      border-top: 1px solid var(--stroke);
-    }
-    table{
-      width:100%;
-      min-width: 920px;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-    thead th{
-      text-align:left;
-      color: rgba(245,247,255,.82);
+    .btn{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.08);
+      color: rgba(245,247,255,.92);
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-weight: 800;
       font-size: 12px;
-      letter-spacing: .8px;
-      text-transform: uppercase;
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--stroke);
-      background: rgba(0,0,0,.10);
-      white-space: nowrap;
+      cursor: pointer;
     }
-    tbody td{
-      padding: 11px 14px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      color: rgba(245,247,255,.9);
-    }
-    tbody tr:hover td{
-      background: rgba(255,255,255,.05);
-    }
-    td.metric{ font-weight: 700; width: 44%; }
-    td.value{
-      text-align:right;
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-      width: 18.6%;
-    }
-    .posv{ color: var(--pos); font-weight: 850; }
-    .negv{ color: var(--neg); font-weight: 850; }
+    .btn:hover{ background: rgba(255,255,255,.12); }
 
-    /* Footer */
-    .foot{
-      margin-top: 16px;
-      color: var(--muted);
-      font-size: 12px;
-      text-align:center;
-    }
-
-    /* Subtle entrance */
-    .fade-in{
-      animation: in .55s ease both;
-    }
-    @keyframes in{
-      from{ opacity:0; transform: translateY(8px); }
-      to{ opacity:1; transform: translateY(0); }
-    }
+    .foot{ margin-top: 16px; color: var(--muted); font-size: 12px; text-align:center; }
   </style>
 </head>
 
@@ -334,7 +161,7 @@
   <div class="wrap">
 
     <!-- HEADER -->
-    <div class="topbar fade-in">
+    <div class="topbar">
       <div class="brand">
         <img id="logo" alt="Elite Online Media">
         <div class="fallback" id="logoFallback">Elite Online Media</div>
@@ -343,7 +170,7 @@
         <h1>EFECTIVIDAD DE VENTAS — ENERO 2026</h1>
         <div class="sub">
           <span class="pill">Reporte ejecutivo</span>
-          <span class="pill">Comparativa: 16/01/2026 vs 19/01/2026</span>
+          <span class="pill" id="rangePill">—</span>
           <span class="pill">Elite Online Media</span>
         </div>
       </div>
@@ -351,61 +178,111 @@
 
     <div class="grid">
 
-      <!-- LEFT: KPIs + charts -->
-      <div class="panel fade-in" style="animation-delay:.05s">
+      <!-- LEFT: KPIs -->
+      <div class="panel">
         <div class="panel-head">
           <h2>Resumen</h2>
           <span class="pill" id="updatedPill">Actualizado: —</span>
         </div>
-
         <div class="panel-body">
           <div class="kpis" id="kpis"></div>
-
-          <div style="height:12px"></div>
-
-          <div class="charts">
-            <div class="chart-card">
-              <p class="ctitle">Inbound — inversión vs vendido</p>
-              <canvas id="donutInbound" height="170"></canvas>
-            </div>
-            <div class="chart-card">
-              <p class="ctitle">Operación — cambios clave</p>
-              <canvas id="barOps" height="170"></canvas>
-            </div>
-          </div>
         </div>
       </div>
 
       <!-- RIGHT: Inbound -->
-      <div class="panel fade-in" style="animation-delay:.10s">
+      <div class="panel">
         <div class="panel-head">
           <h2>Resultados Inbound</h2>
           <span class="pill">ROI: <b id="roiVal">—</b></span>
         </div>
         <div class="panel-body">
-          <div class="inbound" id="inbound"></div>
+          <div id="inbound"></div>
         </div>
       </div>
+
     </div>
 
-    <!-- TABLE -->
-    <div class="panel fade-in" style="animation-delay:.15s; margin-top:16px;">
+    <!-- NEW: Agentes - Buscador por fecha -->
+    <div class="panel" style="margin-top:16px;">
       <div class="panel-head">
-        <h2>Comparativa Operativa</h2>
-        <span class="pill">Valores alineados + tabla completa</span>
+        <h2>Detalle por Agente</h2>
+        <div class="filters">
+          <span class="pill">Buscar por fecha</span>
+
+          <select id="date1" class="input"></select>
+          <span class="muted">vs</span>
+          <select id="date2" class="input"></select>
+
+          <button class="btn" id="applyBtn">Aplicar</button>
+          <span class="pill">Filas: <b id="rowsCount">—</b></span>
+        </div>
       </div>
 
+      <div class="panel-body" style="padding-bottom:0;">
+        <div class="pill" style="margin-bottom:12px;">
+          Día 1: <b id="d1Label">—</b> · Día 2: <b id="d2Label">—</b>
+        </div>
+      </div>
+
+      <!-- Tabla Día 1 -->
+      <div class="panel-body" style="padding-top:0;">
+        <div class="pill" style="margin-bottom:10px;">Tabla Día 1</div>
+      </div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Métrica</th>
-              <th style="text-align:right;" id="d1">—</th>
-              <th style="text-align:right;" id="d2">—</th>
-              <th style="text-align:right;">Diferencia</th>
+              <th>Team</th>
+              <th>Fecha</th>
+              <th>Agente</th>
+              <th class="r">Dials</th>
+              <th class="r">Contacts</th>
+              <th class="r">Success Five9</th>
+              <th class="r">Talk Time</th>
+              <th class="r">Lead Inbound</th>
+              <th class="r">Product Presentation</th>
+              <th class="r">Cotización</th>
+              <th class="r">Success HubSpot</th>
+              <th class="r">Cliente Outbound</th>
+              <th class="r">Referido</th>
+              <th class="r">Inbound Meses Anteriores</th>
+              <th class="r">Nuevos Lead MM</th>
+              <th class="r">Total de Clientes</th>
+              <th class="r">Facturado</th>
             </tr>
           </thead>
-          <tbody id="opsTbody"></tbody>
+          <tbody id="tbodyDay1"></tbody>
+        </table>
+      </div>
+
+      <!-- Tabla Día 2 -->
+      <div class="panel-body">
+        <div class="pill" style="margin-bottom:10px;">Tabla Día 2</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Team</th>
+              <th>Fecha</th>
+              <th>Agente</th>
+              <th class="r">Dials</th>
+              <th class="r">Contacts</th>
+              <th class="r">Success Five9</th>
+              <th class="r">Talk Time</th>
+              <th class="r">Lead Inbound</th>
+              <th class="r">Product Presentation</th>
+              <th class="r">Cotización</th>
+              <th class="r">Success HubSpot</th>
+              <th class="r">Cliente Outbound</th>
+              <th class="r">Referido</th>
+              <th class="r">Inbound Meses Anteriores</th>
+              <th class="r">Nuevos Lead MM</th>
+              <th class="r">Total de Clientes</th>
+              <th class="r">Facturado</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyDay2"></tbody>
         </table>
       </div>
     </div>
@@ -414,285 +291,267 @@
   </div>
 
   <script>
-    // =========================
-    // CONFIG: Logo candidates
-    // =========================
-    const LOGO_CANDIDATES = [
-      "./logo.png",
-      "./logo%20EOM.png",
-      "./Logo.png",
-      "./assets/logo.png",
-      "./assets/logo%20EOM.png"
-    ];
-
+    // ========= Logo robusto =========
+    const LOGO_CANDIDATES = ["./logo.png","./Logo.png","./logo%20EOM.png","./assets/logo.png"];
     (function loadLogo(){
       const img = document.getElementById("logo");
       const fallback = document.getElementById("logoFallback");
-      let i = 0;
+      let i=0;
       const tryNext = () => {
-        if (i >= LOGO_CANDIDATES.length){
-          img.style.display = "none";
-          fallback.style.display = "block";
+        if(i>=LOGO_CANDIDATES.length){
+          img.style.display="none";
+          fallback.style.display="block";
           return;
         }
         img.src = LOGO_CANDIDATES[i++];
         img.onerror = tryNext;
-        img.onload = () => {
-          fallback.style.display = "none";
-          img.style.display = "block";
-        };
+        img.onload = () => { fallback.style.display="none"; img.style.display="block"; };
       };
       tryNext();
     })();
 
-    // =========================
-    // DATA (edit here anytime)
-    // =========================
-    const report = {
-      month: "Enero 2026",
-      dates: { d1: "16/01/2026", d2: "19/01/2026" },
+    // ========= Data base del reporte (ajusta si quieres) =========
+    const reportTop = {
+      campañas: 17,
+      clientes: 32,
+      conversionesMM: 15,
+      facturadoNuevoMes: 49050,
+      inbound: {
+        inversion: 23007,
+        vendido: 20550,
+        leads: 800,
+        perdidaGanancia: -2457,
+        roiVendido: -10.67
+      }
+    };
 
-      top: {
-        campañas: 17,
-        clientes: 32,
-        conversionesMM: 15,
-        facturadoNuevoMes: 49050,
-        inbound: {
-          inversion: 23007,
-          vendido: 20550,
-          leads: 800,
-          perdidaGanancia: -2457,
-          roiVendido: -10.67
-        }
+    // ========= NUEVA DATA por agente (Día 1 y Día 2) =========
+    // Cada fila tiene métricas del día1 y del día2 + sus fechas.
+    const agentRows = [
+      {
+        team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Angeles Espinoza",
+        d1_dials:220, d1_contacts:23, d1_success5:2, d1_talk:"4:51:23", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:1, d1_new_mm:0, d1_total_cli:1, d1_fact:"",
+        d2:"17/01/2026", d2_dials:205, d2_contacts:16, d2_success5:0, d2_talk:"0:58:27", d2_lead:0, d2_pp:3, d2_cot:0, d2_hub:3, d2_out:0, d2_ref:0, d2_inb_prev:1, d2_new_mm:0, d2_total_cli:1, d2_fact:"$500.00"
+      },
+      {
+        team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Geraldine Murillo",
+        d1_dials:0, d1_contacts:0, d1_success5:0, d1_talk:"0:00:00", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:297, d2_contacts:16, d2_success5:0, d2_talk:"1:36:11", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
+      },
+      {
+        team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Judith Mercado",
+        d1_dials:148, d1_contacts:22, d1_success5:0, d1_talk:"2:48:24", d1_lead:0, d1_pp:0, d1_cot:1, d1_hub:1, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:126, d2_contacts:13, d2_success5:2, d2_talk:"1:42:06", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
+      },
+      {
+        team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Rodrigo Guadamuz",
+        d1_dials:129, d1_contacts:9, d1_success5:2, d1_talk:"2:01:04", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:159, d2_contacts:11, d2_success5:0, d2_talk:"1:30:59", d2_lead:0, d2_pp:2, d2_cot:0, d2_hub:2, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
+      },
+      {
+        team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Alexia Rodríguez",
+        d1_dials:132, d1_contacts:18, d1_success5:3, d1_talk:"2:50:10", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:156, d2_contacts:18, d2_success5:0, d2_talk:"2:01:05", d2_lead:0, d2_pp:2, d2_cot:0, d2_hub:2, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
+      },
+      {
+        team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Mariett Castro",
+        d1_dials:122, d1_contacts:8, d1_success5:0, d1_talk:"3:33:05", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:2, d1_total_cli:2, d1_fact:"$950.00",
+        d2:"17/01/2026", d2_dials:181, d2_contacts:14, d2_success5:0, d2_talk:"3:08:35", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
       },
 
-      ops: [
-        { metric: "Total de Llamadas (Dials)", v1: "1,789", v2: "2,044", diff: 255 },
-        { metric: "Total de Contactos", v1: "682", v2: "529", diff: -153 },
-        { metric: "Tiempo Total de Llamada", v1: "35:43:00", v2: "29:28:29", diff: "-6:14:31" },
-        { metric: "Éxitos en Five9", v1: "12", v2: "8", diff: -4 },
-        { metric: "Lead Inbound MM", v1: "0", v2: "0", diff: 0 },
-        { metric: "Presentaciones de Producto", v1: "5", v2: "11", diff: 6 },
-        { metric: "Cotizaciones", v1: "2", v2: "1", diff: -1 },
-        { metric: "Éxitos en HubSpot", v1: "0", v2: "12", diff: 12 },
-        { metric: "Clientes Referidos", v1: "0", v2: "0", diff: 0 },
-        { metric: "Clientes Outbound", v1: "0", v2: "0", diff: 0 },
-        { metric: "Clientes Inbound (Meses anteriores)", v1: "1", v2: "1", diff: 0 },
-        { metric: "Cliente Nuevo Lead MM", v1: "2", v2: "1", diff: -1 },
-        { metric: "Total Clientes", v1: "3", v2: "2", diff: -1 },
-        { metric: "Facturación Total ($) (Dinero Nuevo)", v1: "$3,100.00", v2: "$2,500.00", diff: -600 },
-        { metric: "Campañas Nuevas", v1: "1", v2: "0", diff: -1 },
-        { metric: "Tiempo Hablado por Agente", v1: "2:22:00", v2: "1:57", diff: "-0:25:00" },
-        { metric: "Conversión de Clientes", v1: "12.50%", v2: "16.67%", diff: 0 },
-        { metric: "Conversion Inbound MM", v1: "0.00%", v2: "0.00%", diff: 0 },
-        { metric: "(IPC)", v1: "$45.19", v2: "$312.50", diff: 267 }
-      ]
-    };
-
-    // =========================
-    // Helpers
-    // =========================
-    const fmtMoney = (n) => {
-      try { return new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', maximumFractionDigits:0 }).format(n); }
-      catch { return "$" + String(n); }
-    };
-
-    const chipFromDiff = (diff) => {
-      if (diff === 0 || diff === "0") return { cls:"", txt:"=" };
-      if (typeof diff === "number"){
-        return diff > 0 ? { cls:"pos", txt:`↑ ${diff}` } : { cls:"neg", txt:`↓ ${Math.abs(diff)}` };
+      {
+        team:"Post venta", d1:"16/01/2026", agente:"Andrea Rivera",
+        d1_dials:171, d1_contacts:122, d1_success5:1, d1_talk:"2:57:49", d1_lead:0, d1_pp:0, d1_cot:1, d1_hub:1, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:197, d2_contacts:172, d2_success5:0, d2_talk:"3:25:38", d2_lead:0, d2_pp:1, d2_cot:0, d2_hub:1, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"$500.00"
+      },
+      {
+        team:"Post venta", d1:"16/01/2026", agente:"Alejandra Rodriguez",
+        d1_dials:63, d1_contacts:16, d1_success5:0, d1_talk:"2:40:50", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$450.00",
+        d2:"17/01/2026", d2_dials:65, d2_contacts:20, d2_success5:0, d2_talk:"1:18:55", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
+      },
+      {
+        team:"Post venta", d1:"16/01/2026", agente:"Ariana Leiva",
+        d1_dials:139, d1_contacts:62, d1_success5:0, d1_talk:"1:54:44", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$150.00",
+        d2:"17/01/2026", d2_dials:157, d2_contacts:73, d2_success5:1, d2_talk:"2:00:25", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"$500.00"
+      },
+      {
+        team:"Post venta", d1:"16/01/2026", agente:"David Espinoza",
+        d1_dials:78, d1_contacts:53, d1_success5:0, d1_talk:"0:57:46", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$650.00",
+        d2:"17/01/2026", d2_dials:75, d2_contacts:55, d2_success5:0, d2_talk:"2:40:03", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
+      },
+      {
+        team:"Post venta", d1:"16/01/2026", agente:"Jonathan Salinas",
+        d1_dials:156, d1_contacts:117, d1_success5:1, d1_talk:"3:05:59", d1_lead:0, d1_pp:3, d1_cot:0, d1_hub:3, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:83, d2_contacts:23, d2_success5:3, d2_talk:"3:47:33", d2_lead:0, d2_pp:1, d2_cot:0, d2_hub:1, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
+      },
+      {
+        team:"Post venta", d1:"16/01/2026", agente:"Mario Castano",
+        d1_dials:143, d1_contacts:131, d1_success5:0, d1_talk:"1:26:10", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$300.00",
+        d2:"17/01/2026", d2_dials:33, d2_contacts:25, d2_success5:0, d2_talk:"1:40:47", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
+      },
+      {
+        team:"Post venta", d1:"16/01/2026", agente:"Nicole Garcia",
+        d1_dials:103, d1_contacts:37, d1_success5:2, d1_talk:"2:46:18", d1_lead:0, d1_pp:2, d1_cot:0, d1_hub:2, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$600.00",
+        d2:"17/01/2026", d2_dials:164, d2_contacts:46, d2_success5:2, d2_talk:"1:50:24", d2_lead:0, d2_pp:1, d2_cot:1, d2_hub:2, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
+      },
+      {
+        team:"Post venta", d1:"16/01/2026", agente:"Paola Paz",
+        d1_dials:30, d1_contacts:25, d1_success5:1, d1_talk:"1:31:32", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:0, d2_contacts:0, d2_success5:0, d2_talk:"0:00:00", d2_lead:0, d2_pp:1, d2_cot:0, d2_hub:1, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:""
+      },
+      {
+        team:"Post venta", d1:"16/01/2026", agente:"Veronica Ramirez",
+        d1_dials:155, d1_contacts:39, d1_success5:0, d1_talk:"2:18:07", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
+        d2:"17/01/2026", d2_dials:146, d2_contacts:27, d2_success5:0, d2_talk:"1:47:21", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:1, d2_new_mm:1, d2_total_cli:1, d2_fact:"$1,000.00"
       }
-      // for time strings, show as-is without arrow logic
-      return { cls:"", txt:String(diff) };
-    };
-
-    const diffClass = (diff) => {
-      if (typeof diff !== "number") return "";
-      return diff > 0 ? "posv" : (diff < 0 ? "negv" : "");
-    };
-
-    const sparkCanvas = (id, points) => {
-      const c = document.getElementById(id);
-      const ctx = c.getContext("2d");
-      const w = c.width = 82;
-      const h = c.height = 22;
-
-      // normalize
-      const min = Math.min(...points);
-      const max = Math.max(...points);
-      const rng = (max - min) || 1;
-
-      ctx.clearRect(0,0,w,h);
-      ctx.globalAlpha = .95;
-
-      // baseline glow
-      ctx.beginPath();
-      ctx.strokeStyle = "rgba(255,255,255,.25)";
-      ctx.lineWidth = 1;
-      ctx.moveTo(0, h-3);
-      ctx.lineTo(w, h-3);
-      ctx.stroke();
-
-      // line
-      ctx.beginPath();
-      ctx.lineWidth = 2;
-
-      // gradient stroke
-      const grad = ctx.createLinearGradient(0,0,w,0);
-      grad.addColorStop(0,"rgba(46,229,157,.95)");
-      grad.addColorStop(.55,"rgba(247,215,92,.92)");
-      grad.addColorStop(1,"rgba(85,120,255,.92)");
-      ctx.strokeStyle = grad;
-
-      points.forEach((p, i) => {
-        const x = (i/(points.length-1)) * (w-4) + 2;
-        const y = h - 4 - ((p - min)/rng) * (h-8);
-        if (i === 0) ctx.moveTo(x,y);
-        else ctx.lineTo(x,y);
-      });
-      ctx.stroke();
-    };
-
-    // =========================
-    // Render header dates
-    // =========================
-    document.getElementById("d1").textContent = report.dates.d1;
-    document.getElementById("d2").textContent = report.dates.d2;
-    document.getElementById("updatedPill").textContent = `Actualizado: ${new Date().toLocaleString('es-ES')}`;
-    document.getElementById("roiVal").textContent = report.top.inbound.roiVendido;
-
-    // =========================
-    // Render KPIs (more visual)
-    // =========================
-    const kpisEl = document.getElementById("kpis");
-
-    const kpiItems = [
-      { key:"campañas", label:"Campañas", value: report.top.campañas, spark:[13,15,14,16,17,16,17] },
-      { key:"clientes", label:"Clientes", value: report.top.clientes, spark:[26,28,30,29,31,32,32] },
-      { key:"conversionesMM", label:"Conversiones MM", value: report.top.conversionesMM, spark:[8,10,9,12,13,15,15] },
-      { key:"facturadoNuevoMes", label:"Facturado Nuevo", value: fmtMoney(report.top.facturadoNuevoMes), spark:[31000,36000,41000,46000,49050,47000,49050] }
     ];
 
-    kpiItems.forEach((k, idx) => {
-      const id = `spark_${idx}`;
+    // ========= UI: KPIs + inbound =========
+    const fmtMoney = (n) => {
+      if (n === "" || n === null || n === undefined) return "";
+      const num = Number(String(n).replace(/[^0-9.-]/g,""));
+      if (Number.isNaN(num)) return String(n);
+      return new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', maximumFractionDigits:0 }).format(num);
+    };
+
+    document.getElementById("updatedPill").textContent = `Actualizado: ${new Date().toLocaleString('es-ES')}`;
+
+    const kpisEl = document.getElementById("kpis");
+    const kpiItems = [
+      { label:"Campañas", value: reportTop.campañas },
+      { label:"Clientes", value: reportTop.clientes },
+      { label:"Conversiones MM", value: reportTop.conversionesMM },
+      { label:"Facturado Nuevo", value: fmtMoney(reportTop.facturadoNuevoMes) }
+    ];
+    kpiItems.forEach(k => {
       const div = document.createElement("div");
-      div.className = "kpi";
-      div.innerHTML = `
-        <div class="label">${k.label}</div>
-        <div class="value">${k.value}</div>
-        <div class="meta">
-          <span class="chip">Mes: ${report.month}</span>
-          <canvas class="spark" id="${id}"></canvas>
-        </div>
-      `;
+      div.className="kpi";
+      div.innerHTML = `<div class="label">${k.label}</div><div class="value">${k.value}</div>`;
       kpisEl.appendChild(div);
-      sparkCanvas(id, k.spark);
     });
 
-    // =========================
-    // Render Inbound block
-    // =========================
     const inboundEl = document.getElementById("inbound");
-    const inbound = report.top.inbound;
-
-    const inboundRows = [
-      { name:"Inversión", value: fmtMoney(inbound.inversion) },
-      { name:"Monto Vendido", value: fmtMoney(inbound.vendido) },
-      { name:"Leads Generados", value: inbound.leads.toLocaleString('en-US') },
-      { name:"Pérdida / Ganancia", value: (inbound.perdidaGanancia < 0 ? "-" : "") + fmtMoney(Math.abs(inbound.perdidaGanancia)) }
-    ];
-
-    inboundRows.forEach(r => {
+    const ib = reportTop.inbound;
+    document.getElementById("roiVal").textContent = ib.roiVendido;
+    [
+      { name:"Inversión", value: fmtMoney(ib.inversion) },
+      { name:"Monto Vendido", value: fmtMoney(ib.vendido) },
+      { name:"Leads Generados", value: (ib.leads ?? 0).toLocaleString('en-US') },
+      { name:"Pérdida / Ganancia", value: (ib.perdidaGanancia < 0 ? "-" : "") + fmtMoney(Math.abs(ib.perdidaGanancia)) }
+    ].forEach(r => {
       const row = document.createElement("div");
-      row.className = "metric-row";
+      row.className="metric-row";
       row.innerHTML = `<div class="name">${r.name}</div><div class="num">${r.value}</div>`;
       inboundEl.appendChild(row);
     });
 
-    // =========================
-    // Render Ops table
-    // =========================
-    const tbody = document.getElementById("opsTbody");
-    report.ops.forEach(item => {
-      const tr = document.createElement("tr");
-      const diff = item.diff;
+    // ========= Buscador por fecha (2 selects) =========
+    function uniq(arr){ return [...new Set(arr)].sort((a,b)=>parseDMY(a)-parseDMY(b)); }
+    function parseDMY(d){
+      const [dd,mm,yy] = d.split("/").map(x=>parseInt(x,10));
+      return new Date(yy, mm-1, dd).getTime();
+    }
 
-      const diffTxt = (typeof diff === "number")
-        ? (diff > 0 ? `+${diff}` : `${diff}`)
-        : String(diff);
+    // Fechas disponibles
+    const allDates = uniq(agentRows.flatMap(r => [r.d1, r.d2]).filter(Boolean));
+    const date1Sel = document.getElementById("date1");
+    const date2Sel = document.getElementById("date2");
 
-      tr.innerHTML = `
-        <td class="metric">${item.metric}</td>
-        <td class="value">${item.v1}</td>
-        <td class="value">${item.v2}</td>
-        <td class="value ${diffClass(diff)}">${diffTxt}</td>
-      `;
-      tbody.appendChild(tr);
-    });
+    function fillSelect(sel, dates){
+      sel.innerHTML = "";
+      dates.forEach(d=>{
+        const opt = document.createElement("option");
+        opt.value = d; opt.textContent = d;
+        sel.appendChild(opt);
+      });
+    }
+    fillSelect(date1Sel, allDates);
+    fillSelect(date2Sel, allDates);
 
-    // =========================
-    // Charts (visual + clean)
-    // =========================
-    // Donut: inbound invest vs sold
-    const donutCtx = document.getElementById("donutInbound");
-    new Chart(donutCtx, {
-      type: "doughnut",
-      data: {
-        labels: ["Inversión", "Monto Vendido"],
-        datasets: [{
-          data: [inbound.inversion, inbound.vendido],
-          borderWidth: 0,
-          hoverOffset: 8
-        }]
-      },
-      options: {
-        plugins: {
-          legend: { labels: { color: "rgba(245,247,255,.78)" } },
-          tooltip: { enabled: true }
-        },
-        cutout: "70%"
-      }
-    });
+    // Default: earliest vs next
+    date1Sel.value = allDates[0] || "";
+    date2Sel.value = allDates[1] || allDates[0] || "";
 
-    // Bar: selected ops diffs
-    const keyOps = [
-      { label:"Llamadas", diff: 255 },
-      { label:"Contactos", diff: -153 },
-      { label:"Presentaciones", diff: 6 },
-      { label:"Five9 Éxitos", diff: -4 },
-      { label:"HubSpot Éxitos", diff: 12 },
-      { label:"IPC", diff: 267 }
-    ];
+    function renderTables(d1, d2){
+      document.getElementById("rangePill").textContent = `Comparativa: ${d1} vs ${d2}`;
+      document.getElementById("d1Label").textContent = d1;
+      document.getElementById("d2Label").textContent = d2;
 
-    const barCtx = document.getElementById("barOps");
-    new Chart(barCtx, {
-      type: "bar",
-      data: {
-        labels: keyOps.map(x => x.label),
-        datasets: [{
-          label: "Diferencia",
-          data: keyOps.map(x => x.diff),
-          borderWidth: 0,
-          borderRadius: 10
-        }]
-      },
-      options: {
-        plugins: {
-          legend: { display:false },
-          tooltip: { enabled:true }
-        },
-        scales: {
-          x: {
-            ticks: { color: "rgba(245,247,255,.72)" },
-            grid: { color: "rgba(255,255,255,.08)" }
-          },
-          y: {
-            ticks: { color: "rgba(245,247,255,.72)" },
-            grid: { color: "rgba(255,255,255,.08)" }
-          }
+      const day1 = [];
+      const day2 = [];
+
+      agentRows.forEach(r=>{
+        // Si el r.d1 coincide con d1, usar métricas d1; si el r.d2 coincide, usar métricas d2.
+        // Si seleccionan al revés, también soporta (toma el lado que coincida).
+        const match1 = (r.d1 === d1) ? "d1" : (r.d2 === d1 ? "d2" : null);
+        const match2 = (r.d2 === d2) ? "d2" : (r.d1 === d2 ? "d1" : null);
+
+        if (match1){
+          day1.push({
+            team:r.team, fecha:d1, agente:r.agente,
+            dials: r[`${match1}_dials`], contacts:r[`${match1}_contacts`], success5:r[`${match1}_success5`],
+            talk:r[`${match1}_talk`], lead:r[`${match1}_lead`], pp:r[`${match1}_pp`],
+            cot:r[`${match1}_cot`], hub:r[`${match1}_hub`], out:r[`${match1}_out`],
+            ref:r[`${match1}_ref`], inb_prev:r[`${match1}_inb_prev`], new_mm:r[`${match1}_new_mm`],
+            total_cli:r[`${match1}_total_cli`], fact:r[`${match1}_fact`]
+          });
         }
-      }
+
+        if (match2){
+          day2.push({
+            team:r.team, fecha:d2, agente:r.agente,
+            dials: r[`${match2}_dials`], contacts:r[`${match2}_contacts`], success5:r[`${match2}_success5`],
+            talk:r[`${match2}_talk`], lead:r[`${match2}_lead`], pp:r[`${match2}_pp`],
+            cot:r[`${match2}_cot`], hub:r[`${match2}_hub`], out:r[`${match2}_out`],
+            ref:r[`${match2}_ref`], inb_prev:r[`${match2}_inb_prev`], new_mm:r[`${match2}_new_mm`],
+            total_cli:r[`${match2}_total_cli`], fact:r[`${match2}_fact`]
+          });
+        }
+      });
+
+      // Orden: Team, Agente, y al final Totales si existiera (aquí no lo incluimos por agente)
+      const sortFn = (a,b) => (a.team+a.agente).localeCompare(b.team+b.agente, "es");
+      day1.sort(sortFn); day2.sort(sortFn);
+
+      const tbody1 = document.getElementById("tbodyDay1");
+      const tbody2 = document.getElementById("tbodyDay2");
+      tbody1.innerHTML = "";
+      tbody2.innerHTML = "";
+
+      const rowTpl = (x) => `
+        <tr>
+          <td>${x.team}</td>
+          <td>${x.fecha}</td>
+          <td>${x.agente}</td>
+          <td class="r">${x.dials ?? ""}</td>
+          <td class="r">${x.contacts ?? ""}</td>
+          <td class="r">${x.success5 ?? ""}</td>
+          <td class="r">${x.talk ?? ""}</td>
+          <td class="r">${x.lead ?? ""}</td>
+          <td class="r">${x.pp ?? ""}</td>
+          <td class="r">${x.cot ?? ""}</td>
+          <td class="r">${x.hub ?? ""}</td>
+          <td class="r">${x.out ?? ""}</td>
+          <td class="r">${x.ref ?? ""}</td>
+          <td class="r">${x.inb_prev ?? ""}</td>
+          <td class="r">${x.new_mm ?? ""}</td>
+          <td class="r">${x.total_cli ?? ""}</td>
+          <td class="r">${x.fact ?? ""}</td>
+        </tr>
+      `;
+
+      day1.forEach(x => tbody1.insertAdjacentHTML("beforeend", rowTpl(x)));
+      day2.forEach(x => tbody2.insertAdjacentHTML("beforeend", rowTpl(x)));
+
+      document.getElementById("rowsCount").textContent = `${Math.max(day1.length, day2.length)}`;
+    }
+
+    document.getElementById("applyBtn").addEventListener("click", () => {
+      renderTables(date1Sel.value, date2Sel.value);
     });
+
+    // Render inicial
+    renderTables(date1Sel.value, date2Sel.value);
   </script>
 </body>
 </html>
