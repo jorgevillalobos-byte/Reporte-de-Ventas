@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reporte Comercial – Five9 vs HubSpot</title>
+
+  <style>
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:#0b1020;
+      color:#e9ecf7;
+    }
+    header{
+      padding:20px;
+      background:#121a33;
+      border-bottom:1px solid #22305c;
+    }
+    h1{margin:0;font-size:20px}
+    h2{margin:20px 0 10px;font-size:18px}
+    .container{padding:20px;max-width:1200px;margin:auto}
+    .kpis{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:16px;
+    }
+    .kpi{
+      background:#121a33;
+      border:1px solid #22305c;
+      border-radius:12px;
+      padding:16px;
+    }
+    .kpi span{color:#a9b2d3;font-size:12px}
+    .kpi strong{font-size:22px;display:block;margin-top:6px}
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:20px;
+      font-size:13px;
+    }
+    th,td{
+      padding:10px;
+      border-bottom:1px solid #22305c;
+      text-align:right;
+      white-space:nowrap;
+    }
+    th{
+      color:#a9b2d3;
+      font-weight:600;
+    }
+    th:first-child,td:first-child,
+    th:nth-child(2),td:nth-child(2){
+      text-align:left;
+    }
+    tbody tr:hover{background:#162152}
+    .pos{color:#67e8a6}
+    .neg{color:#ff7a7a}
+    footer{
+      padding:20px;
+      text-align:center;
+      color:#a9b2d3;
+      font-size:12px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Reporte de Ventas – Five9 vs HubSpot</h1>
+</header>
+
+<div class="container">
+
+  <section class="kpis">
+    <div class="kpi">
+      <span>Facturado Periodo A</span>
+      <strong>$7,275.00</strong>
+    </div>
+    <div class="kpi">
+      <span>Facturado Periodo B</span>
+      <strong>$4,800.00</strong>
+    </div>
+    <div class="kpi">
+      <span>Dials (A / B)</span>
+      <strong>1,981 / 2,110</strong>
+    </div>
+    <div class="kpi">
+      <span>Contacts (A / B)</span>
+      <strong>594 / 625</strong>
+    </div>
+  </section>
+
+  <h2>Detalle por Agente</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Equipo</th>
+        <th>Agente</th>
+        <th>Dials A</th>
+        <th>Contacts A</th>
+        <th>Success 5 A</th>
+        <th>Facturado A</th>
+        <th>Dials B</th>
+        <th>Contacts B</th>
+        <th>Success 5 B</th>
+        <th>Facturado B</th>
+        <th>Δ Fact</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Equipo de Ventas Anuar</td>
+        <td>Angeles Espinoza</td>
+        <td>363</td>
+        <td>53</td>
+        <td>1</td>
+        <td>$0</td>
+        <td>248</td>
+        <td>34</td>
+        <td>4</td>
+        <td>$0</td>
+        <td class="pos">$0</td>
+      </tr>
+      <tr>
+        <td>Equipo de Ventas Anuar</td>
+        <td>Geraldine Murillo</td>
+        <td>232</td>
+        <td>27</td>
+        <td>1</td>
+        <td>$1,500.00</td>
+        <td>337</td>
+        <td>23</td>
+        <td>0</td>
+        <td>$0</td>
+        <td class="neg">-$1,500.00</td>
+      </tr>
+      <tr>
+        <td>Post venta</td>
+        <td>Alejandra Rodriguez</td>
+        <td>71</td>
+        <td>37</td>
+        <td>1</td>
+        <td>$1,950.00</td>
+        <td>52</td>
+        <td>32</td>
+        <td>0</td>
+        <td>$1,150.00</td>
+        <td class="neg">-$800.00</td>
+      </tr>
+      <!-- Puedes seguir agregando filas si lo deseas -->
+    </tbody>
+  </table>
+
+</div>
+
+<footer>
+  Reporte generado para análisis ejecutivo · Five9 & HubSpot
+</footer>
+
+</body>
+</html>
