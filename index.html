@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tarjetas – Efectividad de Ventas</title>
+  <title>Dashboard – Efectividad de Ventas</title>
 
   <style>
     :root{
@@ -11,14 +11,24 @@
       --navy:#2f3f51;
       --orange:#f39a2b;
       --green:#0b7a1d;
+
+      --bg:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --shadow: 0 10px 28px rgba(0,0,0,.10);
+      --radius: 16px;
+
+      --pos:#0b7a1d;
+      --neg:#b91c1c;
     }
 
     *{ box-sizing:border-box; }
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background:#fff;
-      color:#111;
+      background: var(--bg);
+      color: var(--text);
     }
 
     .wrap{
@@ -27,15 +37,78 @@
       padding: 24px;
     }
 
+    /* Top bar (minimal) */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .title{
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: .4px;
+      margin: 0;
+    }
+    .meta{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .btns{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+    button{
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0,0,0,.06);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    button:hover{ filter: brightness(.98); }
+    button:active{ transform: translateY(1px); }
+
     .cards{
       display:grid;
       grid-template-columns: 1.25fr 1fr 1fr 1.25fr;
       gap: 28px;
+      align-items: stretch;
     }
 
     .card{
       min-height: 245px;
       overflow:hidden;
+      border-radius: 0px; /* igual a tu imagen */
+      box-shadow: none;
+    }
+
+    /* Tooltip */
+    [data-tip]{
+      position: relative;
+    }
+    [data-tip]:hover::after{
+      content: attr(data-tip);
+      position: absolute;
+      left: 10px;
+      bottom: calc(100% + 10px);
+      background: #111827;
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      line-height: 1.25;
+      white-space: nowrap;
+      box-shadow: 0 10px 24px rgba(0,0,0,.22);
+      z-index: 30;
     }
 
     /* Campañas / Clientes */
@@ -66,6 +139,7 @@
       justify-content:center;
       font-size:58px;
       font-weight:500;
+      padding: 26px 14px 30px;
     }
 
     /* Conversiones MM */
@@ -86,7 +160,7 @@
       text-align:center;
       font-size:58px;
       font-weight:400;
-      margin-bottom:12px;
+      margin: 0 0 12px;
     }
 
     /* Facturado */
@@ -105,6 +179,7 @@
     .orange .value{
       font-size:62px;
       font-weight:400;
+      margin: 0 0 6px;
     }
 
     /* Resultados Inbound */
@@ -119,7 +194,7 @@
       text-align:center;
       font-size:24px;
       font-weight:900;
-      margin-bottom:8px;
+      margin: 4px 0 10px;
     }
     .rows{
       display:grid;
@@ -139,20 +214,107 @@
       text-align:right;
       border-top:1px solid #ffffff30;
       white-space:nowrap;
+      font-variant-numeric: tabular-nums;
     }
     .roi{
       background: rgba(0,0,0,.18);
       margin-top:0;
     }
-    .roi .lbl, .roi .val{
-      border-top:none;
+    .roi .lbl, .roi .val{ border-top:none; }
+
+    /* Modal */
+    .backdrop{
+      position: fixed;
+      inset: 0;
+      background: rgba(17,24,39,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      z-index: 50;
+    }
+    .modal{
+      width: min(900px, 100%);
+      background:#fff;
+      border-radius: 18px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.25);
+      overflow:hidden;
+      border: 1px solid var(--border);
+    }
+    .modal header{
+      padding: 14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal h2{
+      margin:0;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: .3px;
+    }
+    .modal .content{
+      padding: 14px 16px 16px;
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .field{
+      display:flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background:#fff;
+    }
+    .field label{
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    .field input{
+      padding: 10px 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    .note{
+      grid-column: 1 / -1;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: -4px;
+      line-height: 1.4;
+    }
+    .modal footer{
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display:flex;
+      justify-content:flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .danger{ color: #b91c1c; }
+
+    /* Number update animation */
+    .pulse{
+      animation: pulse .55s ease-out;
+    }
+    @keyframes pulse{
+      0%{ transform: scale(1); }
+      40%{ transform: scale(1.03); }
+      100%{ transform: scale(1); }
     }
 
     /* Responsive */
-    @media (max-width:1200px){
+    @media (max-width: 1200px){
       .cards{ grid-template-columns: 1fr 1fr; }
+      .modal .content{ grid-template-columns: 1fr; }
     }
-    @media (max-width:560px){
+    @media (max-width: 560px){
       .cards{ grid-template-columns: 1fr; }
     }
   </style>
@@ -160,30 +322,41 @@
 
 <body>
   <div class="wrap">
-    <section class="cards">
+    <div class="topbar">
+      <div>
+        <p class="title">Tarjetas – Efectividad de Ventas</p>
+        <div class="meta" id="meta"></div>
+      </div>
+      <div class="btns">
+        <button id="btnEdit">Configurar</button>
+        <button id="btnReset" class="danger">Reset</button>
+      </div>
+    </div>
 
+    <!-- SOLO LAS 4 TARJETAS -->
+    <section class="cards" aria-label="Tarjetas de resultados">
       <!-- Campañas / Clientes -->
       <div class="card double">
-        <div class="col">
+        <div class="col" data-tip="Cantidad de campañas activas en el periodo">
           <div class="label">Campañas</div>
-          <div class="num">17</div>
+          <div class="num" id="campanias">17</div>
         </div>
-        <div class="col">
+        <div class="col" data-tip="Cantidad de clientes del periodo">
           <div class="label">Clientes</div>
-          <div class="num">32</div>
+          <div class="num" id="clientes">32</div>
         </div>
       </div>
 
       <!-- Conversiones MM -->
-      <div class="card navy">
+      <div class="card navy" data-tip="Conversiones atribuibles a MM">
         <div class="head">Conversiones MM</div>
-        <div class="value">15</div>
+        <div class="value" id="convMM">15</div>
       </div>
 
       <!-- Facturado -->
-      <div class="card orange">
+      <div class="card orange" data-tip="Dinero nuevo facturado en el mes">
         <div class="head">Facturado Nuevo en el Mes</div>
-        <div class="value">$49,050</div>
+        <div class="value" id="facturado">$49,050</div>
       </div>
 
       <!-- Resultados Inbound -->
@@ -193,31 +366,264 @@
         <div class="rows">
           <div class="row">
             <div class="lbl">Inversión</div>
-            <div class="val">$23,007</div>
+            <div class="val" id="inversion">$23,007</div>
           </div>
           <div class="row">
             <div class="lbl">Monto Vendido</div>
-            <div class="val">$20,550</div>
+            <div class="val" id="montoVendido">$20,550</div>
           </div>
           <div class="row">
             <div class="lbl">Lead Generados</div>
-            <div class="val">800</div>
+            <div class="val" id="leads">800</div>
           </div>
           <div class="row">
             <div class="lbl">Perdida o Ganancia</div>
-            <div class="val">-$2,457</div>
+            <div class="val" id="profit">-$2,457</div>
           </div>
         </div>
 
         <div class="rows roi">
           <div class="row">
             <div class="lbl">ROI Vendido</div>
-            <div class="val">-10.67</div>
+            <div class="val" id="roi">-10.67</div>
           </div>
         </div>
       </div>
-
     </section>
   </div>
+
+  <!-- MODAL CONFIG -->
+  <div class="backdrop" id="backdrop" role="dialog" aria-modal="true" aria-label="Configurar valores">
+    <div class="modal">
+      <header>
+        <h2>Configurar valores</h2>
+        <button id="btnClose">Cerrar</button>
+      </header>
+
+      <div class="content">
+        <div class="field">
+          <label>Campañas</label>
+          <input id="fCampanias" type="number" min="0" step="1" />
+        </div>
+
+        <div class="field">
+          <label>Clientes</label>
+          <input id="fClientes" type="number" min="0" step="1" />
+        </div>
+
+        <div class="field">
+          <label>Conversiones MM</label>
+          <input id="fConvMM" type="number" min="0" step="1" />
+        </div>
+
+        <div class="field">
+          <label>Facturado nuevo (USD)</label>
+          <input id="fFacturado" type="number" min="0" step="0.01" />
+        </div>
+
+        <div class="field">
+          <label>Inversión (USD)</label>
+          <input id="fInversion" type="number" min="0" step="0.01" />
+        </div>
+
+        <div class="field">
+          <label>Monto vendido (USD)</label>
+          <input id="fMontoVendido" type="number" min="0" step="0.01" />
+        </div>
+
+        <div class="field">
+          <label>Leads generados</label>
+          <input id="fLeads" type="number" min="0" step="1" />
+        </div>
+
+        <div class="note">
+          * “Perdida o Ganancia” y “ROI Vendido” se calculan automáticamente con:
+          <br>
+          Ganancia = Monto Vendido − Inversión
+          <br>
+          ROI = (Ganancia / Inversión) × 100
+        </div>
+      </div>
+
+      <footer>
+        <button id="btnSave">Guardar</button>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // Defaults (tu dashboard)
+    // =========================
+    const DEFAULTS = {
+      campanias: 17,
+      clientes: 32,
+      convMM: 15,
+      facturado: 49050,
+      inversion: 23007,
+      montoVendido: 20550,
+      leads: 800
+    };
+
+    const STORAGE_KEY = "elite_dashboard_cards_v1";
+
+    // =========================
+    // Helpers (formatting)
+    // =========================
+    const fmtMoney = (n) =>
+      new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })
+        .format(Number(n || 0));
+
+    const fmtInt = (n) =>
+      new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Number(n || 0));
+
+    const fmtRoi = (n) => {
+      const v = Number(n || 0);
+      // 2 decimales como tu ejemplo
+      return v.toFixed(2);
+    };
+
+    function computeDerived(state){
+      const profit = Number(state.montoVendido) - Number(state.inversion);
+      const roi = state.inversion > 0 ? (profit / Number(state.inversion)) * 100 : 0;
+      return { profit, roi };
+    }
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return { ...DEFAULTS };
+        const parsed = JSON.parse(raw);
+        return { ...DEFAULTS, ...parsed };
+      }catch{
+        return { ...DEFAULTS };
+      }
+    }
+
+    function saveState(state){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    // =========================
+    // DOM refs
+    // =========================
+    const el = (id) => document.getElementById(id);
+
+    const ui = {
+      campanias: el("campanias"),
+      clientes: el("clientes"),
+      convMM: el("convMM"),
+      facturado: el("facturado"),
+      inversion: el("inversion"),
+      montoVendido: el("montoVendido"),
+      leads: el("leads"),
+      profit: el("profit"),
+      roi: el("roi"),
+      meta: el("meta"),
+      backdrop: el("backdrop"),
+    };
+
+    const form = {
+      campanias: el("fCampanias"),
+      clientes: el("fClientes"),
+      convMM: el("fConvMM"),
+      facturado: el("fFacturado"),
+      inversion: el("fInversion"),
+      montoVendido: el("fMontoVendido"),
+      leads: el("fLeads")
+    };
+
+    // =========================
+    // Render
+    // =========================
+    function pulse(node){
+      node.classList.remove("pulse");
+      // reflow
+      void node.offsetWidth;
+      node.classList.add("pulse");
+    }
+
+    function render(state){
+      const { profit, roi } = computeDerived(state);
+
+      ui.campanias.textContent = fmtInt(state.campanias);
+      ui.clientes.textContent = fmtInt(state.clientes);
+      ui.convMM.textContent = fmtInt(state.convMM);
+
+      ui.facturado.textContent = fmtMoney(state.facturado);
+      ui.inversion.textContent = fmtMoney(state.inversion);
+      ui.montoVendido.textContent = fmtMoney(state.montoVendido);
+      ui.leads.textContent = fmtInt(state.leads);
+
+      ui.profit.textContent = (profit < 0 ? "-" : "") + fmtMoney(Math.abs(profit));
+      ui.roi.textContent = fmtRoi(roi);
+
+      // tooltips dinámicos (opcional)
+      ui.meta.textContent = `Actualizado: ${new Date().toLocaleString("es-ES")} • Guardado localmente`;
+
+      // Animación al actualizar
+      [ui.campanias, ui.clientes, ui.convMM, ui.facturado, ui.inversion, ui.montoVendido, ui.leads, ui.profit, ui.roi]
+        .forEach(pulse);
+
+      // Colorear profit/roi dependiendo del signo
+      ui.profit.style.color = profit < 0 ? "rgba(255,255,255,.92)" : "rgba(255,255,255,.92)";
+      ui.roi.style.color = roi < 0 ? "rgba(255,255,255,.92)" : "rgba(255,255,255,.92)";
+    }
+
+    function openModal(state){
+      form.campanias.value = Number(state.campanias);
+      form.clientes.value = Number(state.clientes);
+      form.convMM.value = Number(state.convMM);
+      form.facturado.value = Number(state.facturado);
+      form.inversion.value = Number(state.inversion);
+      form.montoVendido.value = Number(state.montoVendido);
+      form.leads.value = Number(state.leads);
+
+      ui.backdrop.style.display = "flex";
+    }
+
+    function closeModal(){
+      ui.backdrop.style.display = "none";
+    }
+
+    // =========================
+    // Init + events
+    // =========================
+    let state = loadState();
+    render(state);
+
+    el("btnEdit").addEventListener("click", () => openModal(state));
+    el("btnClose").addEventListener("click", closeModal);
+
+    ui.backdrop.addEventListener("click", (e) => {
+      if (e.target === ui.backdrop) closeModal();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
+
+    el("btnSave").addEventListener("click", () => {
+      const next = {
+        campanias: Number(form.campanias.value || 0),
+        clientes: Number(form.clientes.value || 0),
+        convMM: Number(form.convMM.value || 0),
+        facturado: Number(form.facturado.value || 0),
+        inversion: Number(form.inversion.value || 0),
+        montoVendido: Number(form.montoVendido.value || 0),
+        leads: Number(form.leads.value || 0),
+      };
+      state = next;
+      saveState(state);
+      render(state);
+      closeModal();
+    });
+
+    el("btnReset").addEventListener("click", () => {
+      state = { ...DEFAULTS };
+      saveState(state);
+      render(state);
+    });
+  </script>
 </body>
 </html>
