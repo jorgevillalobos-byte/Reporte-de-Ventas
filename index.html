@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Efectividad de Ventas — Enero 2026</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
     :root{
@@ -99,6 +98,7 @@
     }
     .kpi .label{ color: var(--muted); font-size: 12px; }
     .kpi .value{ margin-top: 8px; font-size: 22px; font-weight: 850; }
+
     .metric-row{
       display:flex; justify-content:space-between; align-items:center; gap:12px;
       padding: 12px;
@@ -126,10 +126,7 @@
 
     /* Date search UI (minimal, premium) */
     .filters{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap: wrap;
+      display:flex; gap:10px; align-items:center; flex-wrap: wrap;
     }
     .input{
       appearance:none;
@@ -170,7 +167,7 @@
         <h1>EFECTIVIDAD DE VENTAS — ENERO 2026</h1>
         <div class="sub">
           <span class="pill">Reporte ejecutivo</span>
-          <span class="pill" id="rangePill">—</span>
+          <span class="pill" id="rangePill">Comparativa: —</span>
           <span class="pill">Elite Online Media</span>
         </div>
       </div>
@@ -202,7 +199,29 @@
 
     </div>
 
-    <!-- NEW: Agentes - Buscador por fecha -->
+    <!-- Comparativa Operativa (dinámica) -->
+    <div class="panel" style="margin-top:16px;">
+      <div class="panel-head">
+        <h2>Comparativa Operativa</h2>
+        <span class="pill">Se recalcula con el filtro de fechas</span>
+      </div>
+
+      <div class="table-wrap">
+        <table style="min-width:920px">
+          <thead>
+            <tr>
+              <th>Métrica</th>
+              <th style="text-align:right;" id="cmpD1">—</th>
+              <th style="text-align:right;" id="cmpD2">—</th>
+              <th style="text-align:right;">Diferencia</th>
+            </tr>
+          </thead>
+          <tbody id="cmpBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Detalle por Agente - Buscador por fecha -->
     <div class="panel" style="margin-top:16px;">
       <div class="panel-head">
         <h2>Detalle por Agente</h2>
@@ -292,7 +311,7 @@
 
   <script>
     // ========= Logo robusto =========
-    const LOGO_CANDIDATES = ["./logo.png","./Logo.png","./logo%20EOM.png","./assets/logo.png"];
+    const LOGO_CANDIDATES = ["./logo.png","./Logo.png","./logo%20EOM.png","./logo.png.png","./assets/logo.png"];
     (function loadLogo(){
       const img = document.getElementById("logo");
       const fallback = document.getElementById("logoFallback");
@@ -310,7 +329,7 @@
       tryNext();
     })();
 
-    // ========= Data base del reporte (ajusta si quieres) =========
+    // ========= Top data del reporte =========
     const reportTop = {
       campañas: 17,
       clientes: 32,
@@ -325,8 +344,7 @@
       }
     };
 
-    // ========= NUEVA DATA por agente (Día 1 y Día 2) =========
-    // Cada fila tiene métricas del día1 y del día2 + sus fechas.
+    // ========= Data por agente (día 1 y día 2) =========
     const agentRows = [
       {
         team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Angeles Espinoza",
@@ -406,7 +424,7 @@
       }
     ];
 
-    // ========= UI: KPIs + inbound =========
+    // ========= Helpers =========
     const fmtMoney = (n) => {
       if (n === "" || n === null || n === undefined) return "";
       const num = Number(String(n).replace(/[^0-9.-]/g,""));
@@ -414,6 +432,31 @@
       return new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', maximumFractionDigits:0 }).format(num);
     };
 
+    function uniq(arr){ return [...new Set(arr)].sort((a,b)=>parseDMY(a)-parseDMY(b)); }
+    function parseDMY(d){
+      const [dd,mm,yy] = d.split("/").map(x=>parseInt(x,10));
+      return new Date(yy, mm-1, dd).getTime();
+    }
+
+    function toNumber(val){
+      if (val === null || val === undefined) return 0;
+      const s = String(val).trim();
+      if (!s) return 0;
+      const n = Number(s.replace(/[^0-9.-]/g,""));
+      return Number.isFinite(n) ? n : 0;
+    }
+    function sumField(rows, field){
+      return rows.reduce((acc,r)=> acc + toNumber(r[field]), 0);
+    }
+    function money2(n){
+      return new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', maximumFractionDigits:2 }).format(n);
+    }
+    function diffClass(n){
+      if (!Number.isFinite(n) || n === 0) return "";
+      return n > 0 ? "pos" : "neg";
+    }
+
+    // ========= Render: KPIs + inbound =========
     document.getElementById("updatedPill").textContent = `Actualizado: ${new Date().toLocaleString('es-ES')}`;
 
     const kpisEl = document.getElementById("kpis");
@@ -437,7 +480,7 @@
       { name:"Inversión", value: fmtMoney(ib.inversion) },
       { name:"Monto Vendido", value: fmtMoney(ib.vendido) },
       { name:"Leads Generados", value: (ib.leads ?? 0).toLocaleString('en-US') },
-      { name:"Pérdida / Ganancia", value: (ib.perdidaGanancia < 0 ? "-" : "") + fmtMoney(Math.abs(ib.perdidaGanancia)) }
+      { name:"Pérdida / Ganancia", value: (ib.perdidaGanancia < 0 ? "-" : "") + money2(Math.abs(ib.perdidaGanancia)) }
     ].forEach(r => {
       const row = document.createElement("div");
       row.className="metric-row";
@@ -445,14 +488,7 @@
       inboundEl.appendChild(row);
     });
 
-    // ========= Buscador por fecha (2 selects) =========
-    function uniq(arr){ return [...new Set(arr)].sort((a,b)=>parseDMY(a)-parseDMY(b)); }
-    function parseDMY(d){
-      const [dd,mm,yy] = d.split("/").map(x=>parseInt(x,10));
-      return new Date(yy, mm-1, dd).getTime();
-    }
-
-    // Fechas disponibles
+    // ========= UI: selects de fecha =========
     const allDates = uniq(agentRows.flatMap(r => [r.d1, r.d2]).filter(Boolean));
     const date1Sel = document.getElementById("date1");
     const date2Sel = document.getElementById("date2");
@@ -468,10 +504,66 @@
     fillSelect(date1Sel, allDates);
     fillSelect(date2Sel, allDates);
 
-    // Default: earliest vs next
     date1Sel.value = allDates[0] || "";
     date2Sel.value = allDates[1] || allDates[0] || "";
 
+    // ========= Render comparativa operativa =========
+    function renderComparativa(d1, d2, day1, day2){
+      document.getElementById("cmpD1").textContent = d1;
+      document.getElementById("cmpD2").textContent = d2;
+
+      const t1 = {
+        dials: sumField(day1, "dials"),
+        contacts: sumField(day1, "contacts"),
+        success5: sumField(day1, "success5"),
+        pp: sumField(day1, "pp"),
+        cot: sumField(day1, "cot"),
+        hub: sumField(day1, "hub"),
+        total_cli: sumField(day1, "total_cli"),
+        fact: day1.reduce((acc,r)=> acc + toNumber(r.fact), 0),
+      };
+
+      const t2 = {
+        dials: sumField(day2, "dials"),
+        contacts: sumField(day2, "contacts"),
+        success5: sumField(day2, "success5"),
+        pp: sumField(day2, "pp"),
+        cot: sumField(day2, "cot"),
+        hub: sumField(day2, "hub"),
+        total_cli: sumField(day2, "total_cli"),
+        fact: day2.reduce((acc,r)=> acc + toNumber(r.fact), 0),
+      };
+
+      const rows = [
+        { name:"Total de Llamadas (Dials)", a:t1.dials, b:t2.dials, fmt:(x)=>x.toLocaleString('en-US') },
+        { name:"Total de Contactos", a:t1.contacts, b:t2.contacts, fmt:(x)=>x.toLocaleString('en-US') },
+        { name:"Éxitos en Five9", a:t1.success5, b:t2.success5, fmt:(x)=>x.toLocaleString('en-US') },
+        { name:"Presentaciones de Producto", a:t1.pp, b:t2.pp, fmt:(x)=>x.toLocaleString('en-US') },
+        { name:"Cotizaciones", a:t1.cot, b:t2.cot, fmt:(x)=>x.toLocaleString('en-US') },
+        { name:"Éxitos en HubSpot", a:t1.hub, b:t2.hub, fmt:(x)=>x.toLocaleString('en-US') },
+        { name:"Total Clientes", a:t1.total_cli, b:t2.total_cli, fmt:(x)=>x.toLocaleString('en-US') },
+        { name:"Facturación Total ($)", a:t1.fact, b:t2.fact, fmt:(x)=>money2(x) },
+      ];
+
+      const body = document.getElementById("cmpBody");
+      body.innerHTML = "";
+
+      rows.forEach(r=>{
+        const diff = r.b - r.a;
+        const isMoney = r.name.includes("Facturación");
+        const diffTxt = isMoney ? money2(diff) : diff.toLocaleString('en-US');
+        body.insertAdjacentHTML("beforeend", `
+          <tr>
+            <td>${r.name}</td>
+            <td class="r">${r.fmt(r.a)}</td>
+            <td class="r">${r.fmt(r.b)}</td>
+            <td class="r ${diffClass(diff)}">${diff >= 0 ? "+" : ""}${diffTxt}</td>
+          </tr>
+        `);
+      });
+    }
+
+    // ========= Render tablas día 1 y día 2 =========
     function renderTables(d1, d2){
       document.getElementById("rangePill").textContent = `Comparativa: ${d1} vs ${d2}`;
       document.getElementById("d1Label").textContent = d1;
@@ -481,8 +573,6 @@
       const day2 = [];
 
       agentRows.forEach(r=>{
-        // Si el r.d1 coincide con d1, usar métricas d1; si el r.d2 coincide, usar métricas d2.
-        // Si seleccionan al revés, también soporta (toma el lado que coincida).
         const match1 = (r.d1 === d1) ? "d1" : (r.d2 === d1 ? "d2" : null);
         const match2 = (r.d2 === d2) ? "d2" : (r.d1 === d2 ? "d1" : null);
 
@@ -490,7 +580,7 @@
           day1.push({
             team:r.team, fecha:d1, agente:r.agente,
             dials: r[`${match1}_dials`], contacts:r[`${match1}_contacts`], success5:r[`${match1}_success5`],
-            talk:r[`${match1}_talk`], lead:r[`${match1}_lead`], pp:r[`${match1}_pp`],
+            talk: r[`${match1}_talk`], lead:r[`${match1}_lead`], pp:r[`${match1}_pp`],
             cot:r[`${match1}_cot`], hub:r[`${match1}_hub`], out:r[`${match1}_out`],
             ref:r[`${match1}_ref`], inb_prev:r[`${match1}_inb_prev`], new_mm:r[`${match1}_new_mm`],
             total_cli:r[`${match1}_total_cli`], fact:r[`${match1}_fact`]
@@ -501,7 +591,7 @@
           day2.push({
             team:r.team, fecha:d2, agente:r.agente,
             dials: r[`${match2}_dials`], contacts:r[`${match2}_contacts`], success5:r[`${match2}_success5`],
-            talk:r[`${match2}_talk`], lead:r[`${match2}_lead`], pp:r[`${match2}_pp`],
+            talk: r[`${match2}_talk`], lead:r[`${match2}_lead`], pp:r[`${match2}_pp`],
             cot:r[`${match2}_cot`], hub:r[`${match2}_hub`], out:r[`${match2}_out`],
             ref:r[`${match2}_ref`], inb_prev:r[`${match2}_inb_prev`], new_mm:r[`${match2}_new_mm`],
             total_cli:r[`${match2}_total_cli`], fact:r[`${match2}_fact`]
@@ -509,7 +599,6 @@
         }
       });
 
-      // Orden: Team, Agente, y al final Totales si existiera (aquí no lo incluimos por agente)
       const sortFn = (a,b) => (a.team+a.agente).localeCompare(b.team+b.agente, "es");
       day1.sort(sortFn); day2.sort(sortFn);
 
@@ -544,6 +633,9 @@
       day2.forEach(x => tbody2.insertAdjacentHTML("beforeend", rowTpl(x)));
 
       document.getElementById("rowsCount").textContent = `${Math.max(day1.length, day2.length)}`;
+
+      // ✅ Comparativa operativa basada en totales (dinámica)
+      renderComparativa(d1, d2, day1, day2);
     }
 
     document.getElementById("applyBtn").addEventListener("click", () => {
