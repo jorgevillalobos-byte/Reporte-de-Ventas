@@ -1,993 +1,883 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dashboard – Efectividad de Ventas</title>
+  <meta charset="UTF-8" />
+  <title>Efectividad de Ventas | Dashboard Dinámico</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <style>
     :root{
-      --yellow:#f2d56a;
-      --navy:#2f3f51;
-      --orange:#f39a2b;
-      --green:#0b7a1d;
-
-      --bg:#ffffff;
-      --text:#111827;
-      --muted:#6b7280;
-      --border:#e5e7eb;
-      --shadow: 0 10px 28px rgba(0,0,0,.10);
-      --radius: 16px;
-
-      --pos:#0b7a1d;
-      --neg:#b91c1c;
+      --bg:#f5f6f8; --card:#ffffff; --text:#1f2328; --muted:#6b7280; --border:#e5e7eb;
+      --yellow:#f7d75c; --dark:#2f3e50; --orange:#f7942b; --green:#0b7a28;
+      --shadow: 0 10px 25px rgba(0,0,0,.06);
+      --radius: 12px;
     }
-
     *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+    body{ margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; background:var(--bg); color:var(--text); }
+    header{
+      display:flex; align-items:center; gap:16px;
+      padding:18px 24px; background:var(--card); border-bottom:1px solid var(--border);
+      position:sticky; top:0; z-index:10;
     }
+    header img{ height:44px; width:auto; }
+    header .title-wrap{ display:flex; flex-direction:column; gap:2px; }
+    header h1{ margin:0; font-size:20px; letter-spacing:.8px; }
+    header .subtitle{ color:var(--muted); font-size:12px; }
 
-    .wrap{
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 24px;
-    }
+    .container{ padding:24px; max-width:1300px; margin:0 auto; }
 
-    /* Top bar */
-    .topbar{
-      display:flex;
-      align-items:flex-end;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
+    .toolbar{
+      display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between;
+      background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+      padding:14px; box-shadow:var(--shadow);
     }
-    .title{
-      font-size: 16px;
-      font-weight: 900;
-      letter-spacing: .4px;
-      margin: 0;
+    .toolbar .left, .toolbar .right{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .btn{
+      border:1px solid var(--border); background:#fff; padding:10px 12px; border-radius:10px;
+      cursor:pointer; font-weight:600; font-size:13px;
     }
-    .meta{
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 4px;
-      line-height: 1.35;
+    .btn:hover{ filter:brightness(.98); }
+    .btn.primary{ background:#111827; color:#fff; border-color:#111827; }
+    .btn.danger{ background:#ef4444; color:#fff; border-color:#ef4444; }
+    .file{
+      border:1px dashed var(--border); background:#fff; padding:10px 12px; border-radius:10px;
+      display:flex; gap:8px; align-items:center;
     }
-
-    .btns{
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
+    .pill{
+      padding:6px 10px; border-radius:999px; background:#f3f4f6; font-size:12px; color:#111827;
+      border:1px solid var(--border);
     }
-    button{
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #fff;
-      cursor: pointer;
-      box-shadow: 0 6px 16px rgba(0,0,0,.06);
-      font-size: 12px;
-      font-weight: 800;
-    }
-    button:hover{ filter: brightness(.98); }
-    button:active{ transform: translateY(1px); }
-    .danger{ color: #b91c1c; }
-
-    /* Cards (ONLY 4) */
-    .cards{
-      display:grid;
-      grid-template-columns: 1.25fr 1fr 1fr 1.25fr;
-      gap: 28px;
-      align-items: stretch;
-      margin-bottom: 18px;
-    }
-
-    .card{
-      min-height: 245px;
-      overflow:hidden;
-      border-radius: 0px; /* similar a tu imagen */
-      box-shadow: none;
-    }
-
-    /* Tooltip */
-    [data-tip]{ position: relative; }
-    [data-tip]:hover::after{
-      content: attr(data-tip);
-      position: absolute;
-      left: 10px;
-      bottom: calc(100% + 10px);
-      background: #111827;
-      color: #fff;
-      padding: 8px 10px;
-      border-radius: 10px;
-      font-size: 12px;
-      line-height: 1.25;
-      white-space: nowrap;
-      box-shadow: 0 10px 24px rgba(0,0,0,.22);
-      z-index: 30;
-    }
-
-    /* Campañas / Clientes */
-    .double{
-      background: var(--yellow);
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      border: 1px solid #00000020;
-    }
-    .double .col{
-      display:flex;
-      flex-direction:column;
-    }
-    .double .col + .col{
-      border-left: 1px solid #00000066;
-    }
-    .double .label{
-      background:#000;
-      color:#fff;
-      font-size:22px;
-      font-weight:900;
-      padding:10px 14px;
-    }
-    .double .num{
-      flex:1;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:58px;
-      font-weight:500;
-      padding: 26px 14px 30px;
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* Conversiones MM */
-    .navy{
-      background: var(--navy);
-      color:#fff;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      padding:16px;
-    }
-    .navy .head{
-      text-align:center;
-      font-size:18px;
-      font-weight:700;
-    }
-    .navy .value{
-      text-align:center;
-      font-size:58px;
-      font-weight:400;
-      margin: 0 0 12px;
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* Facturado */
-    .orange{
-      background: var(--orange);
-      color:#fff;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      padding:16px;
-    }
-    .orange .head{
-      font-size:18px;
-      font-weight:700;
-    }
-    .orange .value{
-      font-size:62px;
-      font-weight:400;
-      margin: 0 0 6px;
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* Resultados Inbound */
-    .green{
-      background: var(--green);
-      color:#fff;
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-    }
-    .green .head{
-      text-align:center;
-      font-size:24px;
-      font-weight:900;
-      margin: 4px 0 10px;
-    }
-    .rows{
-      display:grid;
-      grid-template-columns: 1fr auto;
-    }
-    .row{ display:contents; }
-    .lbl{
-      font-size:13px;
-      font-weight:700;
-      padding:10px 6px;
-      border-top:1px solid #ffffff30;
-    }
-    .val{
-      font-size:28px;
-      font-weight:500;
-      padding:4px 6px;
-      text-align:right;
-      border-top:1px solid #ffffff30;
-      white-space:nowrap;
-      font-variant-numeric: tabular-nums;
-    }
-    .roi{
-      background: rgba(0,0,0,.18);
-      margin-top:0;
-    }
-    .roi .lbl, .roi .val{ border-top:none; }
-
-    /* Table controls */
-    .table-controls{
-      display:flex;
-      justify-content: space-between;
-      align-items:center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin: 8px 0 10px;
-    }
-    input[type="search"]{
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      min-width: 260px;
-      outline: none;
-      background:#fff;
-      box-shadow: 0 6px 16px rgba(0,0,0,.06);
-      font-size: 12px;
-      font-weight: 700;
-    }
-    label.toggle{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      cursor:pointer;
-      user-select:none;
-      font-size: 12px;
-      color: var(--muted);
-      padding: 8px 10px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background:#fff;
-      box-shadow: 0 6px 16px rgba(0,0,0,.06);
-      font-weight: 800;
-    }
-
-    /* Table card */
-    .table-card{
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
+    select, input[type="text"]{
+      border:1px solid var(--border); padding:10px 12px; border-radius:10px; font-size:13px;
       background:#fff;
     }
-    .table-wrap{ overflow:auto; }
-    table{
-      width:100%;
-      border-collapse: collapse;
-      min-width: 980px;
-    }
-    thead th{
-      position: sticky;
-      top:0;
-      background: #f9fafb;
-      border-bottom: 1px solid var(--border);
-      padding: 12px 14px;
-      text-align:left;
-      font-size: 12px;
-      color: #374151;
-      user-select:none;
-      white-space: nowrap;
-    }
-    thead th.sortable{ cursor:pointer; }
-    tbody td{
-      border-bottom: 1px solid var(--border);
-      padding: 12px 14px;
-      font-size: 13px;
-      vertical-align: top;
-    }
-    tbody tr:hover td{ background:#f9fafb; }
-    td.metric{ font-weight: 800; color:#111827; width: 44%; }
-    td.num{ text-align:right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-    td.diff{ width: 22%; }
 
-    .diffline{
-      display:flex;
-      align-items:center;
-      justify-content: end;
-      gap: 10px;
+    .grid-kpis{
+      margin-top:18px;
+      display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:14px;
     }
-    .bar{
-      width: 120px;
-      height: 8px;
-      border-radius: 999px;
-      background: #e5e7eb;
-      overflow:hidden;
+    .kpi{
+      border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; color:#fff; min-height:92px;
+      display:flex; flex-direction:column; justify-content:space-between;
     }
-    .bar > span{
-      display:block;
-      height:100%;
-      width: 0%;
-      background: #111827;
-      opacity: .65;
-    }
-    .bar.pos > span{ background: var(--pos); opacity: .85; }
-    .bar.neg > span{ background: var(--neg); opacity: .85; }
+    .kpi .label{ font-size:12px; opacity:.95; letter-spacing:.3px; }
+    .kpi .value{ font-size:34px; line-height:1.1; font-weight:800; margin-top:6px; }
+    .kpi .note{ font-size:12px; opacity:.9; margin-top:10px; }
+    .kpi.yellow{ background:var(--yellow); color:#111; }
+    .kpi.dark{ background:var(--dark); }
+    .kpi.orange{ background:var(--orange); }
+    .kpi.green{ background:var(--green); }
 
-    .txt.pos{ color: var(--pos); font-weight: 900; }
-    .txt.neg{ color: var(--neg); font-weight: 900; }
-    .txt.zero{ color: #111827; font-weight: 900; opacity: .65; }
+    .section{
+      margin-top:18px;
+      background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+    .section h2{ margin:0 0 10px 0; font-size:16px; }
+    .section .hint{ margin:0 0 12px 0; color:var(--muted); font-size:12px; }
 
-    .footer{
-      display:flex;
-      justify-content: space-between;
-      align-items:center;
-      gap: 10px;
-      flex-wrap: wrap;
-      padding: 12px 14px;
-      font-size: 12px;
-      color: var(--muted);
-      background:#fff;
-      border-top: 1px solid var(--border);
-      font-weight: 700;
+    .cards-row{
+      display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:14px;
     }
 
-    /* Modal */
-    .backdrop{
-      position: fixed;
-      inset: 0;
-      background: rgba(17,24,39,.55);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding: 18px;
-      z-index: 50;
-    }
-    .modal{
-      width: min(980px, 100%);
-      background:#fff;
-      border-radius: 18px;
-      box-shadow: 0 24px 60px rgba(0,0,0,.25);
-      overflow:hidden;
-      border: 1px solid var(--border);
-    }
-    .modal header{
-      padding: 14px 16px;
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-      border-bottom: 1px solid var(--border);
-    }
-    .modal h2{
-      margin:0;
-      font-size: 14px;
-      font-weight: 900;
-      letter-spacing: .3px;
-    }
-    .modal .content{
-      padding: 14px 16px 16px;
-      display:grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-    .field{
-      display:flex;
-      flex-direction: column;
-      gap: 6px;
-      padding: 10px 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background:#fff;
-    }
-    .field label{
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 900;
-    }
-    .field input, .field textarea{
-      padding: 10px 10px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      font-size: 14px;
-      outline: none;
-      font-family: inherit;
-    }
-    .field textarea{
-      min-height: 140px;
-      resize: vertical;
-      font-size: 12px;
-      line-height: 1.35;
-    }
-    .note{
-      grid-column: 1 / -1;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.4;
-      margin-top: -4px;
-      font-weight: 700;
-    }
-    .modal footer{
-      padding: 12px 16px;
-      border-top: 1px solid var(--border);
-      display:flex;
-      justify-content:flex-end;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+    table{ width:100%; border-collapse:collapse; font-size:13px; overflow:hidden; border-radius:12px; }
+    th, td{ border-bottom:1px solid var(--border); padding:10px 10px; }
+    th{ background:#f9fafb; text-align:right; font-weight:800; }
+    th:first-child, td:first-child{ text-align:left; }
+    tr:hover td{ background:#fcfcfd; }
 
-    /* Number update animation */
-    .pulse{ animation: pulse .55s ease-out; }
-    @keyframes pulse{
-      0%{ transform: scale(1); }
-      40%{ transform: scale(1.03); }
-      100%{ transform: scale(1); }
+    .table-top{
+      display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+      margin-bottom:10px;
     }
+    .small{ font-size:12px; color:var(--muted); }
 
-    @media (max-width: 1200px){
-      .cards{ grid-template-columns: 1fr 1fr; }
-      .modal .content{ grid-template-columns: 1fr; }
+    .charts{
+      display:grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap:14px;
     }
-    @media (max-width: 560px){
-      .cards{ grid-template-columns: 1fr; }
-      input[type="search"]{ min-width: 180px; width: 100%; }
+    canvas{ background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px; }
+
+    footer{ text-align:center; padding:18px; color:var(--muted); font-size:12px; }
+
+    .toast{
+      position:fixed; right:18px; bottom:18px; background:#111827; color:#fff; padding:10px 12px;
+      border-radius:12px; box-shadow:var(--shadow); font-size:13px; display:none;
     }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
   </style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="topbar">
+
+<header>
+  <img src="logo.png" alt="Elite Online Media" onerror="this.style.display='none'">
+  <div class="title-wrap">
+    <h1 id="title">EFECTIVIDAD DE VENTAS — DASHBOARD DINÁMICO</h1>
+    <div class="subtitle" id="subtitle">Carga datos (CSV/JSON) para actualizar todo automáticamente.</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="toolbar">
+    <div class="left">
+      <div class="file">
+        <strong>Datos:</strong>
+        <input id="fileInput" type="file" accept=".csv,.json" />
+      </div>
+      <button class="btn" id="loadSampleBtn">Cargar ejemplo</button>
+      <button class="btn danger" id="resetBtn">Reset</button>
+      <span class="pill" id="statusPill">Sin datos</span>
+    </div>
+    <div class="right">
+      <label class="small">Modo:</label>
+      <select id="modeSelect">
+        <option value="auto" selected>Auto-detectar</option>
+        <option value="wide">Wide (métrica + 2 fechas + diferencia)</option>
+        <option value="long">Long (fecha, métrica, valor)</option>
+      </select>
+
+      <label class="small">Buscar:</label>
+      <input id="searchInput" type="text" placeholder="Ej: llamadas, facturación, IPC..." />
+
+      <button class="btn primary" id="exportBtn">Exportar tabla (CSV)</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid-kpis" id="kpiGrid"></div>
+
+  <div class="cards-row">
+    <!-- Resultados Inbound -->
+    <div class="section">
+      <h2>Resultados Inbound</h2>
+      <p class="hint">Se arma desde el bloque <span class="mono">inbound</span> (JSON) o desde métricas con nombre similar.</p>
+      <div id="inboundBox"></div>
+    </div>
+
+    <!-- Resumen -->
+    <div class="section">
+      <h2>Resumen</h2>
+      <p class="hint">Diagnóstico automático basado en variaciones.</p>
+      <div id="insightsBox"></div>
+    </div>
+  </div>
+
+  <!-- Tabla comparativa -->
+  <div class="section">
+    <div class="table-top">
       <div>
-        <p class="title">Dashboard – Efectividad de Ventas</p>
-        <div class="meta" id="meta"></div>
-      </div>
-      <div class="btns">
-        <button id="btnEdit">Configurar</button>
-        <button id="btnReset" class="danger">Reset</button>
+        <h2 style="margin:0;">Comparativa Operativa</h2>
+        <div class="small" id="tableMeta">—</div>
       </div>
     </div>
-
-    <!-- 4 TARJETAS -->
-    <section class="cards" aria-label="Tarjetas de resultados">
-      <div class="card double">
-        <div class="col" data-tip="Cantidad de campañas activas en el periodo">
-          <div class="label">Campañas</div>
-          <div class="num" id="campanias">17</div>
-        </div>
-        <div class="col" data-tip="Cantidad de clientes del periodo">
-          <div class="label">Clientes</div>
-          <div class="num" id="clientes">32</div>
-        </div>
-      </div>
-
-      <div class="card navy" data-tip="Conversiones atribuibles a MM">
-        <div class="head">Conversiones MM</div>
-        <div class="value" id="convMM">15</div>
-      </div>
-
-      <div class="card orange" data-tip="Dinero nuevo facturado en el mes">
-        <div class="head">Facturado Nuevo en el Mes</div>
-        <div class="value" id="facturado">$49,050</div>
-      </div>
-
-      <div class="card green">
-        <div class="head">Resultados Inbound</div>
-
-        <div class="rows">
-          <div class="row">
-            <div class="lbl">Inversión</div>
-            <div class="val" id="inversion">$23,007</div>
-          </div>
-          <div class="row">
-            <div class="lbl">Monto Vendido</div>
-            <div class="val" id="montoVendido">$20,550</div>
-          </div>
-          <div class="row">
-            <div class="lbl">Lead Generados</div>
-            <div class="val" id="leads">800</div>
-          </div>
-          <div class="row">
-            <div class="lbl">Perdida o Ganancia</div>
-            <div class="val" id="profit">-$2,457</div>
-          </div>
-        </div>
-
-        <div class="rows roi">
-          <div class="row">
-            <div class="lbl">ROI Vendido</div>
-            <div class="val" id="roi">-10.67</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TABLA -->
-    <div class="table-controls">
-      <input id="q" type="search" placeholder="Buscar en la tabla..." autocomplete="off" />
-      <label class="toggle">
-        <input id="hideZeros" type="checkbox" />
-        Ocultar diferencia = 0
-      </label>
-    </div>
-
-    <section class="table-card" aria-label="Tabla comparativa">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Métrica</th>
-              <th class="sortable" data-key="a">16/01/2026 <span id="h-a"></span></th>
-              <th class="sortable" data-key="b">19/01/2026 <span id="h-b"></span></th>
-              <th class="sortable" data-key="d">Diferencia <span id="h-d"></span></th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
-      <div class="footer">
-        <div><strong id="count"></strong></div>
-        <div>Ordena con click • Busca • Oculta ceros • Barras en Diferencia</div>
-      </div>
-    </section>
-  </div>
-
-  <!-- MODAL CONFIG (tarjetas + tabla) -->
-  <div class="backdrop" id="backdrop" role="dialog" aria-modal="true" aria-label="Configurar valores">
-    <div class="modal">
-      <header>
-        <h2>Configurar valores</h2>
-        <button id="btnClose">Cerrar</button>
-      </header>
-
-      <div class="content">
-        <!-- Cards -->
-        <div class="field">
-          <label>Campañas</label>
-          <input id="fCampanias" type="number" min="0" step="1" />
-        </div>
-
-        <div class="field">
-          <label>Clientes</label>
-          <input id="fClientes" type="number" min="0" step="1" />
-        </div>
-
-        <div class="field">
-          <label>Conversiones MM</label>
-          <input id="fConvMM" type="number" min="0" step="1" />
-        </div>
-
-        <div class="field">
-          <label>Facturado nuevo (USD)</label>
-          <input id="fFacturado" type="number" min="0" step="0.01" />
-        </div>
-
-        <div class="field">
-          <label>Inversión (USD)</label>
-          <input id="fInversion" type="number" min="0" step="0.01" />
-        </div>
-
-        <div class="field">
-          <label>Monto vendido (USD)</label>
-          <input id="fMontoVendido" type="number" min="0" step="0.01" />
-        </div>
-
-        <div class="field">
-          <label>Leads generados</label>
-          <input id="fLeads" type="number" min="0" step="1" />
-        </div>
-
-        <div class="note">
-          * “Perdida o Ganancia” y “ROI Vendido” se calculan automáticamente:
-          Ganancia = Monto Vendido − Inversión • ROI = (Ganancia / Inversión) × 100
-        </div>
-
-        <!-- Table editor (paste JSON) -->
-        <div class="field" style="grid-column:1/-1;">
-          <label>Editar tabla (JSON)</label>
-          <textarea id="fTableJson" spellcheck="false"></textarea>
-          <div class="note">
-            Puedes editar el JSON (lista de objetos con keys: metric, a, b, d) y Guardar.
-          </div>
-        </div>
-      </div>
-
-      <footer>
-        <button id="btnSave">Guardar</button>
-      </footer>
+    <div style="overflow:auto;">
+      <table id="dataTable"></table>
     </div>
   </div>
 
-  <script>
-    // =========================
-    // DEFAULTS
-    // =========================
-    const DATE_A = "16/01/2026";
-    const DATE_B = "19/01/2026";
+  <!-- Charts -->
+  <div class="section">
+    <h2>Análisis Visual</h2>
+    <p class="hint">Gráficas generadas automáticamente desde la tabla.</p>
+    <div class="charts">
+      <canvas id="chartActivity" height="180"></canvas>
+      <canvas id="chartRevenue" height="180"></canvas>
+    </div>
+  </div>
 
-    const DEFAULT_CARDS = {
-      campanias: 17,
-      clientes: 32,
-      convMM: 15,
-      facturado: 49050,
-      inversion: 23007,
-      montoVendido: 20550,
-      leads: 800
-    };
+</div>
 
-    const DEFAULT_TABLE = [
-      { metric: "Total de Llamadas (Dials)", a: "1,789", b: "2,044", d: "255" },
-      { metric: "Total de Contactos", a: "682", b: "529", d: "-153" },
-      { metric: "Tiempo Total de Llamada", a: "35:43:00", b: "29:28:29", d: "-6:14:31" },
-      { metric: "Éxitos en Five9", a: "12", b: "8", d: "-4" },
-      { metric: "Lead Inbound MM", a: "0", b: "0", d: "0" },
-      { metric: "Presentaciones de Producto", a: "5", b: "11", d: "6" },
-      { metric: "Cotizaciones", a: "2", b: "1", d: "-1" },
-      { metric: "Éxitos en HubSpot", a: "0", b: "12", d: "12" },
-      { metric: "Clientes Referidos", a: "0", b: "0", d: "0" },
-      { metric: "Clientes Outbound", a: "0", b: "0", d: "0" },
-      { metric: "Clientes Inbound Meses anteriores", a: "1", b: "1", d: "0" },
-      { metric: "Cliente Nuevo Lead MM", a: "2", b: "1", d: "-1" },
-      { metric: "Total Clientes", a: "3", b: "2", d: "-1" },
-      { metric: "Facturación Total ($) (Dinero Nuevo)", a: "$3,100.00", b: "$2,500.00", d: "-$600.00" },
-      { metric: "Campañas Nuevas", a: "1", b: "0", d: "-1" },
-      { metric: "Tiempo Hablado por Agente", a: "2:22:00", b: "1:57", d: "-0:25:00" },
-      { metric: "conversión de Clientes", a: "12.50%", b: "16.67%", d: "0" },
-      { metric: "conversion Inbound MM", a: "0.00%", b: "0.00%", d: "0" },
-      { metric: "(IPC)", a: "$45.19", b: "$312.50", d: "267" }
-    ];
+<footer>
+  Elite Online Media · Business Intelligence Dashboard (dinámico)
+</footer>
 
-    const STORAGE_KEY = "elite_dashboard_cards_table_v1";
+<div class="toast" id="toast"></div>
 
-    // =========================
-    // Helpers
-    // =========================
-    const el = (id) => document.getElementById(id);
-
-    const fmtMoney0 = (n) =>
-      new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })
-        .format(Number(n || 0));
-
-    const fmtInt = (n) =>
-      new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Number(n || 0));
-
-    const fmtRoi = (n) => Number(n || 0).toFixed(2);
-
-    function computeDerived(cards){
-      const profit = Number(cards.montoVendido) - Number(cards.inversion);
-      const roi = cards.inversion > 0 ? (profit / Number(cards.inversion)) * 100 : 0;
-      return { profit, roi };
-    }
-
-    function loadState(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return { cards: { ...DEFAULT_CARDS }, table: DEFAULT_TABLE.slice() };
-        const parsed = JSON.parse(raw);
-        return {
-          cards: { ...DEFAULT_CARDS, ...(parsed.cards || {}) },
-          table: Array.isArray(parsed.table) ? parsed.table : DEFAULT_TABLE.slice()
-        };
-      }catch{
-        return { cards: { ...DEFAULT_CARDS }, table: DEFAULT_TABLE.slice() };
-      }
-    }
-
-    function saveState(state){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
-
-    // Parsing for sort/bar magnitude
-    function parseComparable(v){
-      if (v == null) return { type: "text", value: "" };
-      const s = String(v).trim();
-
-      // Tiempo: -H:MM:SS / H:MM:SS / M:SS / H:MM
-      const timeMatch = s.match(/^(-)?(\d+):(\d{1,2})(?::(\d{1,2}))?$/);
-      if (timeMatch){
-        const neg = !!timeMatch[1];
-        const p1 = Number(timeMatch[2]);
-        const p2 = Number(timeMatch[3]);
-        const p3 = timeMatch[4] !== undefined ? Number(timeMatch[4]) : null;
-        let seconds = 0;
-        if (p3 !== null) seconds = p1 * 3600 + p2 * 60 + p3;
-        else seconds = p1 * 60 + p2;
-        return { type: "num", value: neg ? -seconds : seconds };
-      }
-
-      const cleaned = s.replace(/\$/g,"").replace(/%/g,"").replace(/,/g,"").trim();
-      const num = Number(cleaned);
-      if (!Number.isNaN(num) && cleaned !== ""){
-        return { type: "num", value: num };
-      }
-      return { type: "text", value: s.toLowerCase() };
-    }
-
-    function signClass(diffStr){
-      const c = parseComparable(diffStr);
-      if (c.type !== "num") return "zero";
-      if (c.value > 0) return "pos";
-      if (c.value < 0) return "neg";
-      return "zero";
-    }
-
-    function isZeroDiff(diffStr){
-      const c = parseComparable(diffStr);
-      return c.type === "num" && c.value === 0;
-    }
-
-    function diffMagnitude(rows){
-      let maxAbs = 0;
-      for (const r of rows){
-        const c = parseComparable(r.d);
-        if (c.type === "num"){
-          const abs = Math.abs(c.value);
-          if (abs > maxAbs) maxAbs = abs;
+<script>
+/* ---------------------------
+   1) DATA MODEL (dinámico)
+   Soporta:
+   A) JSON recomendado:
+      {
+        "meta": {"title":"...", "period":"Enero 2026"},
+        "kpis":[{"label":"Campañas","value":17,"style":"yellow"}, ...],
+        "inbound":{"Inversión":23007,"Monto Vendido":20550,"Leads Generados":800,"Pérdida o Ganancia":-2457,"ROI Vendido":-10.67},
+        "comparative":{
+          "columns":["Métrica","16/01/2026","19/01/2026","Diferencia"],
+          "rows":[["Total de Llamadas (Dials)",1789,2044,255], ...]
         }
       }
-      return maxAbs || 1;
+
+   B) CSV "wide" (como tu tabla):
+      Métrica,16/01/2026,19/01/2026,Diferencia
+      Total de Llamadas (Dials),1789,2044,255
+      ...
+
+   C) CSV "long":
+      fecha,metrica,valor
+      2026-01-16,Total de Llamadas (Dials),1789
+      2026-01-19,Total de Llamadas (Dials),2044
+      ...
+---------------------------- */
+
+let appState = {
+  meta: { title: "EFECTIVIDAD DE VENTAS", period: "—" },
+  kpis: [],
+  inbound: {},
+  comparative: { columns: [], rows: [] }
+};
+
+let charts = { activity: null, revenue: null };
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => t.style.display = 'none', 2200);
+}
+
+function setStatus(text){
+  document.getElementById('statusPill').textContent = text;
+}
+
+function formatNumber(v){
+  if (v === null || v === undefined || v === "") return "—";
+  const n = (typeof v === "number") ? v : parseNumber(v);
+  if (Number.isNaN(n)) return String(v);
+  return new Intl.NumberFormat('en-US').format(n);
+}
+
+function formatCurrency(v){
+  if (v === null || v === undefined || v === "") return "—";
+  const n = (typeof v === "number") ? v : parseNumber(v);
+  if (Number.isNaN(n)) return String(v);
+  return new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', maximumFractionDigits:0 }).format(n);
+}
+
+function parseNumber(x){
+  if (typeof x === "number") return x;
+  if (x === null || x === undefined) return NaN;
+  let s = String(x).trim();
+  if (!s) return NaN;
+
+  // time values like 35:43:00 -> keep as string (NaN)
+  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(s) || /^\d{1,2}:\d{2}:\d{2}$/.test(s)) return NaN;
+
+  // percents
+  s = s.replace('%','');
+
+  // currency and separators
+  const neg = s.includes('(') && s.includes(')') ? -1 : 1;
+  s = s.replace(/[()\$,]/g,'').replace(/\s+/g,'');
+  // handle leading + or -
+  let sign = 1;
+  if (s.startsWith('+')) { sign = 1; s = s.slice(1); }
+  if (s.startsWith('-')) { sign = -1; s = s.slice(1); }
+
+  const n = Number(s);
+  return n * sign * neg;
+}
+
+function isLikelyCurrency(label){
+  const l = label.toLowerCase();
+  return l.includes('factur') || l.includes('monto') || l.includes('invers') || l.includes('ipc') || l.includes('$') || l.includes('dinero');
+}
+
+function isLikelyPercent(label){
+  const l = label.toLowerCase();
+  return l.includes('roi') || l.includes('convers') || l.includes('%');
+}
+
+function formatValue(label, v){
+  if (v === null || v === undefined || v === "") return "—";
+  // keep time strings as-is
+  if (typeof v === "string" && /^\d{1,2}:\d{2}(:\d{2})?$/.test(v.trim())) return v;
+  if (typeof v === "string" && /^\d{1,2}:\d{2}:\d{2}$/.test(v.trim())) return v;
+
+  if (isLikelyCurrency(label)) return formatCurrency(v);
+  if (isLikelyPercent(label)){
+    const n = (typeof v === "number") ? v : parseNumber(v);
+    if (Number.isNaN(n)) return String(v);
+    // if already in [0..1] assume ratio; else assume percent number
+    const pct = (Math.abs(n) <= 1) ? (n * 100) : n;
+    return `${pct.toFixed(2)}%`;
+  }
+  return formatNumber(v);
+}
+
+/* ---------------------------
+   2) RENDERERS
+---------------------------- */
+function renderHeader(){
+  const title = document.getElementById('title');
+  const subtitle = document.getElementById('subtitle');
+
+  title.textContent = `${appState.meta.title}${appState.meta.period && appState.meta.period !== "—" ? " — " + appState.meta.period : ""}`;
+  subtitle.textContent = `Última carga: ${new Date().toLocaleString()}`;
+}
+
+function renderKpis(){
+  const grid = document.getElementById('kpiGrid');
+  grid.innerHTML = "";
+
+  const kpis = (appState.kpis && appState.kpis.length) ? appState.kpis : deriveKpisFromData();
+
+  kpis.forEach(k => {
+    const div = document.createElement('div');
+    div.className = `kpi ${k.style || 'dark'}`;
+    div.innerHTML = `
+      <div class="label">${k.label || "KPI"}</div>
+      <div class="value">${k.displayValue ?? formatValue(k.label || "", k.value)}</div>
+      <div class="note">${k.note || ""}</div>
+    `;
+    grid.appendChild(div);
+  });
+
+  if (!kpis.length){
+    grid.innerHTML = `<div class="small">No hay KPIs definidos. (Puedes agregarlos en JSON con "kpis").</div>`;
+  }
+}
+
+function renderInbound(){
+  const box = document.getElementById('inboundBox');
+  const inbound = appState.inbound || {};
+
+  // If inbound empty, try detect from comparative metrics
+  const merged = Object.keys(inbound).length ? inbound : deriveInboundFromComparative();
+
+  if (!Object.keys(merged).length){
+    box.innerHTML = `<div class="small">No se detectó bloque Inbound. (Agrega "inbound" en JSON o métricas equivalentes en la tabla).</div>`;
+    return;
+  }
+
+  const rows = Object.entries(merged).map(([k,v]) => `
+    <tr><td>${k}</td><td style="text-align:right;font-weight:800;">${formatValue(k, v)}</td></tr>
+  `).join("");
+
+  box.innerHTML = `
+    <div style="overflow:auto;">
+      <table>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderInsights(){
+  const box = document.getElementById('insightsBox');
+  const { columns, rows } = appState.comparative;
+
+  if (!columns?.length || !rows?.length){
+    box.innerHTML = `<div class="small">Sin datos comparativos para generar insights.</div>`;
+    return;
+  }
+
+  const metricCol = 0;
+  const dateCols = columns.length >= 3 ? [1,2] : [];
+  const diffCol = columns.findIndex(c => String(c).toLowerCase().includes("difer"));
+
+  // basic insights: largest positive/negative diffs (numeric)
+  let diffs = [];
+  if (diffCol > -1){
+    rows.forEach(r => {
+      const label = r[metricCol];
+      const raw = r[diffCol];
+      const n = parseNumber(raw);
+      if (!Number.isNaN(n)) diffs.push({ label, diff: n });
+    });
+  }
+
+  diffs.sort((a,b) => b.diff - a.diff);
+  const topUp = diffs.find(d => d.diff > 0);
+  const topDown = [...diffs].reverse().find(d => d.diff < 0);
+
+  const bullets = [];
+  if (topUp) bullets.push(`Mayor incremento: <b>${topUp.label}</b> (${formatNumber(topUp.diff)})`);
+  if (topDown) bullets.push(`Mayor caída: <b>${topDown.label}</b> (${formatNumber(topDown.diff)})`);
+
+  // revenue / billing hint
+  const billingRow = rows.find(r => String(r[0]).toLowerCase().includes("factur"));
+  if (billingRow && dateCols.length){
+    const a = parseNumber(billingRow[dateCols[0]]);
+    const b = parseNumber(billingRow[dateCols[1]]);
+    if (!Number.isNaN(a) && !Number.isNaN(b)){
+      const delta = b - a;
+      bullets.push(`Facturación: ${formatCurrency(a)} → ${formatCurrency(b)} (Δ ${formatCurrency(delta)})`);
     }
+  }
 
-    // =========================
-    // UI refs
-    // =========================
-    const ui = {
-      meta: el("meta"),
-
-      // cards
-      campanias: el("campanias"),
-      clientes: el("clientes"),
-      convMM: el("convMM"),
-      facturado: el("facturado"),
-      inversion: el("inversion"),
-      montoVendido: el("montoVendido"),
-      leads: el("leads"),
-      profit: el("profit"),
-      roi: el("roi"),
-
-      // table
-      tbody: el("tbody"),
-      count: el("count"),
-      q: el("q"),
-      hideZeros: el("hideZeros"),
-      ha: el("h-a"),
-      hb: el("h-b"),
-      hd: el("h-d"),
-
-      // modal
-      backdrop: el("backdrop"),
-      fCampanias: el("fCampanias"),
-      fClientes: el("fClientes"),
-      fConvMM: el("fConvMM"),
-      fFacturado: el("fFacturado"),
-      fInversion: el("fInversion"),
-      fMontoVendido: el("fMontoVendido"),
-      fLeads: el("fLeads"),
-      fTableJson: el("fTableJson")
-    };
-
-    // =========================
-    // State
-    // =========================
-    let state = loadState();
-    let query = "";
-    let hideZeros = false;
-    let sortKey = null; // a|b|d
-    let sortDir = "asc";
-
-    // =========================
-    // Render helpers
-    // =========================
-    function pulse(node){
-      node.classList.remove("pulse");
-      void node.offsetWidth;
-      node.classList.add("pulse");
+  // contacts hint
+  const contactsRow = rows.find(r => String(r[0]).toLowerCase().includes("contact"));
+  if (contactsRow && dateCols.length){
+    const a = parseNumber(contactsRow[dateCols[0]]);
+    const b = parseNumber(contactsRow[dateCols[1]]);
+    if (!Number.isNaN(a) && !Number.isNaN(b)){
+      bullets.push(`Contactos: ${formatNumber(a)} → ${formatNumber(b)} (Δ ${formatNumber(b-a)})`);
     }
+  }
 
-    function renderMeta(){
-      ui.meta.textContent =
-        `Comparativo ${DATE_A} vs ${DATE_B} • Actualizado: ${new Date().toLocaleString("es-ES")} • Guardado local`;
-    }
+  if (!bullets.length){
+    box.innerHTML = `<div class="small">No se detectaron suficientes métricas numéricas para insights.</div>`;
+    return;
+  }
 
-    function renderCards(){
-      const c = state.cards;
-      const { profit, roi } = computeDerived(c);
+  box.innerHTML = `<ul style="margin:0; padding-left:18px;">${bullets.map(b => `<li style="margin:8px 0;">${b}</li>`).join("")}</ul>`;
+}
 
-      ui.campanias.textContent = fmtInt(c.campanias);
-      ui.clientes.textContent = fmtInt(c.clientes);
-      ui.convMM.textContent = fmtInt(c.convMM);
+function renderTable(){
+  const table = document.getElementById('dataTable');
+  const meta = document.getElementById('tableMeta');
+  const { columns, rows } = appState.comparative;
 
-      ui.facturado.textContent = fmtMoney0(c.facturado);
-      ui.inversion.textContent = fmtMoney0(c.inversion);
-      ui.montoVendido.textContent = fmtMoney0(c.montoVendido);
-      ui.leads.textContent = fmtInt(c.leads);
+  if (!columns?.length || !rows?.length){
+    table.innerHTML = `<tr><td class="small">Sin datos para mostrar.</td></tr>`;
+    meta.textContent = "—";
+    return;
+  }
 
-      ui.profit.textContent = (profit < 0 ? "-" : "") + fmtMoney0(Math.abs(profit));
-      ui.roi.textContent = fmtRoi(roi);
+  meta.textContent = `${rows.length} métricas · ${columns.length-1} columnas de valores`;
 
-      [ui.campanias, ui.clientes, ui.convMM, ui.facturado, ui.inversion, ui.montoVendido, ui.leads, ui.profit, ui.roi]
-        .forEach(pulse);
-    }
+  const thead = `
+    <thead>
+      <tr>${columns.map((c,i) => `<th>${c}</th>`).join("")}</tr>
+    </thead>
+  `;
 
-    function filteredRows(){
-      let rows = state.table.slice();
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
 
-      if (query){
-        const q = query.toLowerCase().trim();
-        rows = rows.filter(r => String(r.metric || "").toLowerCase().includes(q));
+  const filtered = !q ? rows : rows.filter(r => String(r[0]).toLowerCase().includes(q));
+
+  const tbody = `
+    <tbody>
+      ${filtered.map(r => `
+        <tr>
+          ${r.map((cell, idx) => {
+            if (idx === 0) return `<td>${cell ?? "—"}</td>`;
+            const label = r[0] ?? "";
+            return `<td>${formatValue(label, cell)}</td>`;
+          }).join("")}
+        </tr>
+      `).join("")}
+    </tbody>
+  `;
+
+  table.innerHTML = thead + tbody;
+}
+
+function renderCharts(){
+  const { columns, rows } = appState.comparative;
+  const activityCanvas = document.getElementById('chartActivity');
+  const revenueCanvas = document.getElementById('chartRevenue');
+
+  if (!columns?.length || columns.length < 3 || !rows?.length){
+    destroyCharts();
+    return;
+  }
+
+  const dateA = columns[1];
+  const dateB = columns[2];
+
+  // Build activity chart with common metrics if present, else pick top numeric rows
+  const preferred = [
+    'total de llamadas', 'dials', 'total de contactos', 'contactos', 'presentaciones', 'presentaciones de producto',
+    'éxitos', 'cotizaciones'
+  ];
+
+  const pickRows = () => {
+    let candidates = [];
+    rows.forEach(r => {
+      const label = String(r[0] ?? "");
+      const la = label.toLowerCase();
+      const a = parseNumber(r[1]);
+      const b = parseNumber(r[2]);
+      if (!Number.isNaN(a) && !Number.isNaN(b)){
+        candidates.push({ label, la, a, b });
       }
-      if (hideZeros){
-        rows = rows.filter(r => !isZeroDiff(r.d));
-      }
-      return rows;
+    });
+
+    const pref = candidates.filter(c => preferred.some(p => c.la.includes(p)));
+    if (pref.length >= 3) return pref.slice(0, 8);
+
+    // fallback: biggest absolute values
+    candidates.sort((x,y) => (Math.abs(y.a)+Math.abs(y.b)) - (Math.abs(x.a)+Math.abs(x.b)));
+    return candidates.slice(0, 8);
+  };
+
+  const act = pickRows();
+
+  // Revenue chart: try find Facturación row; else build from any currency-like labels
+  const revenueCandidates = rows
+    .map(r => ({ label:String(r[0]||""), a:parseNumber(r[1]), b:parseNumber(r[2]) }))
+    .filter(x => !Number.isNaN(x.a) && !Number.isNaN(x.b) && isLikelyCurrency(x.label));
+
+  // If facturación exists, use that single series, else use top up to 3 series
+  const fact = revenueCandidates.find(x => x.label.toLowerCase().includes("factur"));
+  const series = fact ? [fact] : revenueCandidates.slice(0, 3);
+
+  destroyCharts();
+
+  charts.activity = new Chart(activityCanvas, {
+    type: 'bar',
+    data: {
+      labels: act.map(x => x.label),
+      datasets: [
+        { label: dateA, data: act.map(x => x.a) },
+        { label: dateB, data: act.map(x => x.b) }
+      ]
+    },
+    options: {
+      responsive:true,
+      plugins:{ legend:{ position:'top' } },
+      scales:{ x:{ ticks:{ maxRotation:60, minRotation:0 } } }
     }
+  });
 
-    function sortedRows(rows){
-      if (!sortKey) return rows;
-      const dir = sortDir === "asc" ? 1 : -1;
-      return rows.slice().sort((r1, r2) => {
-        const c1 = parseComparable(r1[sortKey]);
-        const c2 = parseComparable(r2[sortKey]);
-        if (c1.type === "num" && c2.type === "num"){
-          return (c1.value - c2.value) * dir;
-        }
-        return String(c1.value).localeCompare(String(c2.value)) * dir;
-      });
-    }
+  charts.revenue = new Chart(revenueCanvas, {
+    type: series.length > 1 ? 'bar' : 'line',
+    data: {
+      labels: [dateA, dateB],
+      datasets: series.map(s => ({
+        label: s.label,
+        data: [s.a, s.b],
+        tension: 0.3
+      }))
+    },
+    options: { responsive:true, plugins:{ legend:{ position:'top' } } }
+  });
+}
 
-    function setHints(){
-      ui.ha.textContent = "";
-      ui.hb.textContent = "";
-      ui.hd.textContent = "";
-      if (!sortKey) return;
-      const arrow = sortDir === "asc" ? " ▲" : " ▼";
-      if (sortKey === "a") ui.ha.textContent = arrow;
-      if (sortKey === "b") ui.hb.textContent = arrow;
-      if (sortKey === "d") ui.hd.textContent = arrow;
-    }
+function destroyCharts(){
+  if (charts.activity) charts.activity.destroy();
+  if (charts.revenue) charts.revenue.destroy();
+  charts.activity = null; charts.revenue = null;
+}
 
-    function renderTable(){
-      const rows = sortedRows(filteredRows());
-      const maxAbs = diffMagnitude(rows);
+/* ---------------------------
+   3) DERIVATIONS (si no hay JSON)
+---------------------------- */
+function deriveKpisFromData(){
+  // Try to build some KPIs from known metrics
+  const { rows } = appState.comparative;
+  if (!rows?.length) return [];
 
-      ui.tbody.innerHTML = rows.map(r => {
-        const cls = signClass(r.d);
-        const c = parseComparable(r.d);
-        const pct = (c.type === "num")
-          ? Math.min(100, Math.round((Math.abs(c.value) / maxAbs) * 100))
-          : 0;
+  const findMetric = (needle) => rows.find(r => String(r[0]).toLowerCase().includes(needle));
+  const colA = appState.comparative.columns?.[1];
+  const colB = appState.comparative.columns?.[2];
 
-        return `
-          <tr>
-            <td class="metric">${r.metric ?? ""}</td>
-            <td class="num">${r.a ?? ""}</td>
-            <td class="num">${r.b ?? ""}</td>
-            <td class="num diff">
-              <div class="diffline">
-                <div class="bar ${cls}"><span style="width:${pct}%"></span></div>
-                <span class="txt ${cls}">${r.d ?? ""}</span>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join("");
+  const calls = findMetric('llamad') || findMetric('dials');
+  const contacts = findMetric('contact');
+  const pres = findMetric('present');
+  const billing = findMetric('factur');
 
-      ui.count.textContent = `${rows.length} métricas mostradas`;
-      setHints();
-    }
+  const k = [];
 
-    function renderAll(){
-      renderMeta();
-      renderCards();
-      renderTable();
-    }
+  if (calls) k.push({ label: `Llamadas (${colB || 'B'})`, value: calls[2] ?? calls[1], style:'dark' });
+  if (contacts) k.push({ label: `Contactos (${colB || 'B'})`, value: contacts[2] ?? contacts[1], style:'yellow' });
+  if (pres) k.push({ label: `Presentaciones (${colB || 'B'})`, value: pres[2] ?? pres[1], style:'orange' });
+  if (billing) k.push({ label: `Facturación (${colB || 'B'})`, value: billing[2] ?? billing[1], style:'green' });
 
-    // =========================
-    // Modal
-    // =========================
-    function openModal(){
-      const c = state.cards;
+  // ensure at least 3 cards max 6
+  return k.slice(0, 6);
+}
 
-      ui.fCampanias.value = Number(c.campanias);
-      ui.fClientes.value = Number(c.clientes);
-      ui.fConvMM.value = Number(c.convMM);
-      ui.fFacturado.value = Number(c.facturado);
-      ui.fInversion.value = Number(c.inversion);
-      ui.fMontoVendido.value = Number(c.montoVendido);
-      ui.fLeads.value = Number(c.leads);
+function deriveInboundFromComparative(){
+  const { rows } = appState.comparative;
+  if (!rows?.length) return {};
+  const pick = (needle) => rows.find(r => String(r[0]).toLowerCase().includes(needle));
 
-      ui.fTableJson.value = JSON.stringify(state.table, null, 2);
+  const inv = pick('invers');
+  const sold = pick('monto vend');
+  const leads = pick('lead gener');
+  const pnl = pick('perdida') || pick('ganancia');
+  const roi = pick('roi');
 
-      ui.backdrop.style.display = "flex";
-    }
-    function closeModal(){
-      ui.backdrop.style.display = "none";
-    }
+  const col = 2; // prefer second date (B)
+  const inbound = {};
+  if (inv) inbound["Inversión"] = inv[col] ?? inv[1];
+  if (sold) inbound["Monto Vendido"] = sold[col] ?? sold[1];
+  if (leads) inbound["Leads Generados"] = leads[col] ?? leads[1];
+  if (pnl) inbound["Pérdida o Ganancia"] = pnl[col] ?? pnl[1];
+  if (roi) inbound["ROI Vendido"] = roi[col] ?? roi[1];
+  return inbound;
+}
 
-    // =========================
-    // Events
-    // =========================
-    el("btnEdit").addEventListener("click", openModal);
-    el("btnClose").addEventListener("click", closeModal);
-    ui.backdrop.addEventListener("click", (e) => { if (e.target === ui.backdrop) closeModal(); });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+/* ---------------------------
+   4) LOADERS (CSV/JSON)
+---------------------------- */
+function applyDataAndRender(dataObj){
+  appState = normalizeDataObject(dataObj);
+  renderHeader();
+  renderKpis();
+  renderInbound();
+  renderInsights();
+  renderTable();
+  renderCharts();
+  setStatus("Datos cargados");
+  toast("Dashboard actualizado");
+}
 
-    el("btnSave").addEventListener("click", () => {
-      // cards
-      state.cards = {
-        campanias: Number(ui.fCampanias.value || 0),
-        clientes: Number(ui.fClientes.value || 0),
-        convMM: Number(ui.fConvMM.value || 0),
-        facturado: Number(ui.fFacturado.value || 0),
-        inversion: Number(ui.fInversion.value || 0),
-        montoVendido: Number(ui.fMontoVendido.value || 0),
-        leads: Number(ui.fLeads.value || 0),
-      };
+function normalizeDataObject(obj){
+  const out = {
+    meta: obj.meta || { title:"EFECTIVIDAD DE VENTAS", period:"—" },
+    kpis: Array.isArray(obj.kpis) ? obj.kpis : [],
+    inbound: obj.inbound && typeof obj.inbound === "object" ? obj.inbound : {},
+    comparative: obj.comparative && typeof obj.comparative === "object" ? obj.comparative : { columns:[], rows:[] }
+  };
 
-      // table (JSON)
+  // ensure structure
+  if (!Array.isArray(out.comparative.columns)) out.comparative.columns = [];
+  if (!Array.isArray(out.comparative.rows)) out.comparative.rows = [];
+
+  // If obj itself looks like wide csv parsed {columns,rows}
+  if (!out.comparative.columns.length && obj.columns && obj.rows){
+    out.comparative.columns = obj.columns;
+    out.comparative.rows = obj.rows;
+  }
+
+  // Title fallback
+  if (!out.meta.title) out.meta.title = "EFECTIVIDAD DE VENTAS";
+  return out;
+}
+
+function loadFromFile(file){
+  const mode = document.getElementById('modeSelect').value;
+
+  if (file.name.toLowerCase().endsWith('.json')){
+    const reader = new FileReader();
+    reader.onload = () => {
       try{
-        const parsed = JSON.parse(ui.fTableJson.value);
-        if (!Array.isArray(parsed)) throw new Error("JSON debe ser una lista");
-        // Normaliza keys mínimas
-        state.table = parsed.map(x => ({
-          metric: x.metric ?? "",
-          a: x.a ?? "",
-          b: x.b ?? "",
-          d: x.d ?? ""
-        }));
-      }catch(err){
-        alert("JSON inválido en la tabla. Revisa el formato.\n\nDetalle: " + err.message);
-        return;
+        const obj = JSON.parse(reader.result);
+        applyDataAndRender(obj);
+      } catch(e){
+        toast("JSON inválido");
+        console.error(e);
       }
+    };
+    reader.readAsText(file);
+    return;
+  }
 
-      saveState(state);
-      renderAll();
-      closeModal();
-    });
+  // CSV
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: (results) => {
+      try{
+        const rows = results.data;
+        const csvObj = csvToDataObject(rows, mode);
+        applyDataAndRender(csvObj);
+      } catch(e){
+        console.error(e);
+        toast("No pude interpretar el CSV. Revisa formato.");
+      }
+    }
+  });
+}
 
-    el("btnReset").addEventListener("click", () => {
-      state = { cards: { ...DEFAULT_CARDS }, table: DEFAULT_TABLE.slice() };
-      saveState(state);
-      query = "";
-      hideZeros = false;
-      sortKey = null;
-      sortDir = "asc";
-      ui.q.value = "";
-      ui.hideZeros.checked = false;
-      renderAll();
-    });
+function csvToDataObject(rows, mode){
+  // auto-detect: if has "fecha" & "metrica" & "valor" => long
+  const keys = Object.keys(rows[0] || {}).map(k => k.toLowerCase());
+  const hasLong = keys.includes("fecha") && (keys.includes("metrica") || keys.includes("métrica")) && keys.includes("valor");
 
-    ui.q.addEventListener("input", (e) => {
-      query = e.target.value;
-      renderTable();
-    });
+  if (mode === "long" || (mode === "auto" && hasLong)){
+    return longCsvToObj(rows);
+  }
+  return wideCsvToObj(rows);
+}
 
-    ui.hideZeros.addEventListener("change", (e) => {
-      hideZeros = e.target.checked;
-      renderTable();
-    });
+function wideCsvToObj(rows){
+  // Expect first column as metric label, and at least two numeric/date columns
+  const cols = Object.keys(rows[0] || {});
+  const metricCol = cols[0];
 
-    document.querySelectorAll("thead th.sortable").forEach(th => {
-      th.addEventListener("click", () => {
-        const key = th.getAttribute("data-key");
-        if (sortKey === key) sortDir = (sortDir === "asc" ? "desc" : "asc");
-        else { sortKey = key; sortDir = "asc"; }
-        renderTable();
-      });
-    });
+  const columns = ["Métrica", ...cols.slice(1)];
+  const outRows = rows.map(r => {
+    const arr = [r[metricCol]];
+    for (let i=1;i<cols.length;i++){
+      arr.push(r[cols[i]]);
+    }
+    return arr;
+  });
 
-    // Init
-    renderAll();
-  </script>
+  return {
+    meta:{ title:"EFECTIVIDAD DE VENTAS", period:"(CSV)" },
+    kpis: [],
+    inbound: {},
+    comparative: { columns, rows: outRows }
+  };
+}
+
+function longCsvToObj(rows){
+  // Convert long to wide by pivoting on fecha
+  // expecting columns: fecha, metrica, valor
+  const fechaKey = Object.keys(rows[0]).find(k => k.toLowerCase()==="fecha");
+  const metKey = Object.keys(rows[0]).find(k => k.toLowerCase()==="metrica" || k.toLowerCase()==="métrica");
+  const valKey = Object.keys(rows[0]).find(k => k.toLowerCase()==="valor");
+
+  const fechas = [...new Set(rows.map(r => r[fechaKey]))].sort();
+  const metrics = [...new Set(rows.map(r => r[metKey]))];
+
+  // map metric -> {fecha -> valor}
+  const map = new Map();
+  metrics.forEach(m => map.set(m, {}));
+  rows.forEach(r => {
+    const m = r[metKey];
+    const f = r[fechaKey];
+    map.get(m)[f] = r[valKey];
+  });
+
+  const columns = ["Métrica", ...fechas];
+  const outRows = metrics.map(m => {
+    const row = [m];
+    fechas.forEach(f => row.push(map.get(m)[f] ?? ""));
+    // optional difference if exactly 2 fechas
+    if (fechas.length === 2){
+      const a = parseNumber(map.get(m)[fechas[0]]);
+      const b = parseNumber(map.get(m)[fechas[1]]);
+      if (!Number.isNaN(a) && !Number.isNaN(b)){
+        // append Diferencia
+        row.push(b - a);
+      } else {
+        row.push("");
+      }
+    }
+    return row;
+  });
+
+  if (fechas.length === 2){
+    columns.push("Diferencia");
+  }
+
+  return {
+    meta:{ title:"EFECTIVIDAD DE VENTAS", period:"(CSV long)" },
+    kpis: [],
+    inbound: {},
+    comparative: { columns, rows: outRows }
+  };
+}
+
+/* ---------------------------
+   5) EXPORT
+---------------------------- */
+function exportTableCsv(){
+  const { columns, rows } = appState.comparative;
+  if (!columns?.length || !rows?.length){
+    toast("No hay tabla para exportar");
+    return;
+  }
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const filtered = !q ? rows : rows.filter(r => String(r[0]).toLowerCase().includes(q));
+
+  const escape = (v) => {
+    const s = String(v ?? "");
+    if (s.includes('"') || s.includes(',') || s.includes('\n')) return `"${s.replaceAll('"','""')}"`;
+    return s;
+  };
+
+  const lines = [];
+  lines.push(columns.map(escape).join(','));
+  filtered.forEach(r => lines.push(r.map(escape).join(',')));
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'comparativa_export.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("CSV exportado");
+}
+
+/* ---------------------------
+   6) SAMPLE DATA (tu caso)
+---------------------------- */
+const sample = {
+  meta: { title: "EFECTIVIDAD DE VENTAS", period: "ENERO 2026" },
+  // Puedes dejarlo vacío y se derivan KPIs desde la tabla
+  kpis: [
+    { label: "Campañas", value: 17, style: "yellow" },
+    { label: "Clientes", value: 32, style: "yellow" },
+    { label: "Conversiones MM", value: 15, style: "dark" },
+    { label: "Facturado Nuevo en el Mes", displayValue: "$49,050", value: 49050, style: "orange" }
+  ],
+  inbound: {
+    "Inversión": 23007,
+    "Monto Vendido": 20550,
+    "Lead Generados": 800,
+    "Perdida o Ganancia": -2457,
+    "ROI Vendido": -10.67
+  },
+  comparative: {
+    columns: ["Métrica","16/01/2026","19/01/2026","Diferencia"],
+    rows: [
+      ["Total de Llamadas (Dials)", 1789, 2044, 255],
+      ["Total de Contactos", 682, 529, -153],
+      ["Tiempo Total de Llamada", "35:43:00", "29:28:29", "-6:14:31"],
+      ["Éxitos en Five9", 12, 8, -4],
+      ["Lead Inbound MM", 0, 0, 0],
+      ["Presentaciones de Producto", 5, 11, 6],
+      ["Cotizaciones", 2, 1, -1],
+      ["Éxitos en HubSpot", 0, 12, 12],
+      ["Clientes Referidos", 0, 0, 0],
+      ["Clientes Outbound", 0, 0, 0],
+      ["Clientes Inbound Meses anteriores", 1, 1, 0],
+      ["Cliente Nuevo Lead MM", 2, 1, -1],
+      ["Total Clientes", 3, 2, -1],
+      ["Facturación Total ($) (Dinero Nuevo)", 3100, 2500, -600],
+      ["Campañas Nuevas", 1, 0, -1],
+      ["Tiempo Hablado por Agente", "2:22:00", "1:57", "-0:25:00"],
+      ["conversión de Clientes", "12.50%", "16.67%", 0],
+      ["conversion Inbound MM", "0.00%", "0.00%", 0],
+      ["(IPC)", 45.19, 312.50, 267]
+    ]
+  }
+};
+
+/* ---------------------------
+   7) EVENTS
+---------------------------- */
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  setStatus("Cargando...");
+  loadFromFile(file);
+});
+
+document.getElementById('loadSampleBtn').addEventListener('click', () => {
+  applyDataAndRender(sample);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  appState = { meta:{title:"EFECTIVIDAD DE VENTAS", period:"—"}, kpis:[], inbound:{}, comparative:{columns:[], rows:[]} };
+  destroyCharts();
+  document.getElementById('kpiGrid').innerHTML = "";
+  document.getElementById('inboundBox').innerHTML = "";
+  document.getElementById('insightsBox').innerHTML = "";
+  document.getElementById('dataTable').innerHTML = "";
+  document.getElementById('tableMeta').textContent = "—";
+  document.getElementById('searchInput').value = "";
+  setStatus("Sin datos");
+  toast("Reset listo");
+});
+
+document.getElementById('searchInput').addEventListener('input', () => {
+  renderTable();
+});
+
+document.getElementById('exportBtn').addEventListener('click', exportTableCsv);
+
+// first paint with sample (opcional: comenta esta línea si quieres que inicie vacío)
+applyDataAndRender(sample);
+</script>
+
 </body>
 </html>
+
+ 
