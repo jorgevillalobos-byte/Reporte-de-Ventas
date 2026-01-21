@@ -1,795 +1,822 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Efectividad de Ventas — Enero 2026</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard Diario (Estilo Power BI) | 19-20 Ene 2026</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
     :root{
-      --bg0:#0b1020; --bg1:#0a1530;
-      --card: rgba(255,255,255,.08);
-      --card2: rgba(255,255,255,.06);
-      --stroke: rgba(255,255,255,.12);
-      --text:#f5f7ff; --muted: rgba(245,247,255,.72);
+      --bg:#0b1220;
+      --panel:#0f1a2e;
+      --panel2:#0c1628;
+      --text:#e7eefc;
+      --muted:#9fb2d6;
+      --line:rgba(255,255,255,.08);
+      --accent:#2f7bff;
+      --good:#29d07f;
+      --bad:#ff4d6d;
+      --warn:#ffcc00;
       --shadow: 0 12px 30px rgba(0,0,0,.35);
       --radius: 18px;
-      --pos:#2ee59d; --neg:#ff6b6b;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
-    *{ box-sizing:border-box; }
+    *{box-sizing:border-box}
     body{
-      margin:0; color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
       background:
-        radial-gradient(1200px 600px at 10% 10%, rgba(0,255,163,.18), transparent 60%),
-        radial-gradient(900px 700px at 90% 20%, rgba(255,153,0,.16), transparent 55%),
-        radial-gradient(900px 700px at 60% 90%, rgba(85,120,255,.18), transparent 55%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
-      overflow-x:hidden;
+        radial-gradient(1200px 600px at 10% -20%, rgba(47,123,255,.25), transparent 60%),
+        radial-gradient(1000px 500px at 100% 0%, rgba(41,208,127,.18), transparent 50%),
+        linear-gradient(180deg, #070c16, var(--bg));
     }
-    .wrap{ max-width: 1200px; margin:0 auto; padding: 26px 18px 40px; }
-
-    .panel{
-      border: 1px solid var(--stroke);
-      background: linear-gradient(180deg, var(--card), var(--card2));
-      border-radius: var(--radius);
+    .wrap{max-width:1280px; margin:0 auto; padding:22px;}
+    header{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
+      margin-bottom:18px;
+    }
+    .title h1{margin:0; font-size:22px; letter-spacing:.2px;}
+    .title p{margin:6px 0 0; color:var(--muted); font-size:13px;}
+    .filters{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:10px;
+      min-width:min(720px, 100%);
+    }
+    .filter{
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
       box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      overflow:hidden;
     }
-    .panel-head{
-      padding: 14px 16px;
-      display:flex; justify-content:space-between; align-items:center; gap:12px;
-      border-bottom: 1px solid var(--stroke);
-      flex-wrap: wrap;
+    .filter label{display:block; font-size:11px; color:var(--muted); margin-bottom:6px;}
+    select, input{
+      width:100%;
+      background:transparent;
+      border:1px solid rgba(255,255,255,.12);
+      color:var(--text);
+      border-radius:12px;
+      padding:9px 10px;
+      outline:none;
+      font-size:13px;
     }
-    .panel-head h2{
-      margin:0; font-size: 14px; letter-spacing: 1.4px; text-transform: uppercase;
-      color: rgba(245,247,255,.9);
-    }
-    .panel-body{ padding: 14px 16px 16px; }
-
-    .topbar{
-      display:flex; gap:16px; align-items:center;
-      padding: 18px 18px;
-      border: 1px solid var(--stroke);
-      background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      margin-bottom: 16px;
-    }
-    .brand{ display:flex; align-items:center; gap:12px; min-width: 220px; }
-    .brand img{ height:44px; width:auto; display:block; filter: drop-shadow(0 6px 12px rgba(0,0,0,.35)); }
-    .brand .fallback{ display:none; font-weight: 800; color: var(--muted); }
-    .title{ flex:1; min-width: 0; display:flex; flex-direction:column; gap:4px; }
-    .title h1{
-      margin:0; font-size: 20px; letter-spacing: 2.2px; text-transform: uppercase;
-      white-space: nowrap; overflow:hidden; text-overflow: ellipsis;
-    }
-    .sub{ color: var(--muted); font-size: 13px; display:flex; gap:10px; flex-wrap:wrap; }
-
-    .pill{
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.06);
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size:12px;
-      color: var(--muted);
-      display:inline-flex; align-items:center; gap:8px;
-    }
-    .pill b{ color: rgba(245,247,255,.92); }
-
+    option{background:#0b1220;}
     .grid{
       display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap: 16px;
-      margin-top: 16px;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
     }
-    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } .brand{ min-width:0; } }
-
-    .kpis{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-    @media (max-width: 980px){ .kpis{ grid-template-columns: repeat(2, 1fr);} }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:14px 16px 0;
+    }
+    .card .hd h3{margin:0; font-size:13px; color:var(--muted); font-weight:600;}
+    .card .bd{padding:12px 16px 16px;}
+    .kpis{grid-column: 1 / -1; padding:14px;}
+    .kpiRow{
+      display:grid; grid-template-columns: repeat(6, minmax(0,1fr));
+      gap:12px;
+    }
     .kpi{
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.06);
-      border-radius: 16px;
-      padding: 12px;
+      background:rgba(0,0,0,.18);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px 12px;
+      min-height:84px;
     }
-    .kpi .label{ color: var(--muted); font-size: 12px; }
-    .kpi .value{ margin-top: 8px; font-size: 22px; font-weight: 850; }
-
-    .metric-row{
-      display:flex; justify-content:space-between; align-items:center; gap:12px;
-      padding: 12px;
-      border-radius: 14px;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.06);
+    .kpi .name{font-size:11px; color:var(--muted); margin-bottom:8px;}
+    .kpi .val{font-size:20px; font-weight:800; letter-spacing:.2px;}
+    .kpi .sub{
+      margin-top:6px;
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      font-size:12px; color:var(--muted);
     }
-    .metric-row .name{ font-weight:700; font-size: 13px; color: rgba(245,247,255,.9); }
-    .metric-row .num{ font-weight:850; font-variant-numeric: tabular-nums; }
-
-    /* Tables */
-    .table-wrap{ width:100%; overflow-x:auto; border-top: 1px solid var(--stroke); }
-    table{ width:100%; min-width: 1200px; border-collapse: collapse; font-size: 13px; }
+    .chip{
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      font-family:var(--mono);
+      font-size:11px;
+    }
+    .delta.good{color:var(--good)}
+    .delta.bad{color:var(--bad)}
+    .delta.neutral{color:var(--muted)}
+    .chart1{grid-column: 1 / 8;}
+    .chart2{grid-column: 8 / -1;}
+    .tableCard{grid-column: 1 / -1;}
+    canvas{width:100% !important; height:320px !important;}
+    .tableWrap{overflow:auto; border-radius:16px; border:1px solid var(--line); background:rgba(0,0,0,.18);}
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      min-width:1050px;
+    }
     thead th{
-      text-align:left; color: rgba(245,247,255,.82);
-      font-size: 12px; letter-spacing: .8px; text-transform: uppercase;
-      padding: 12px 14px; border-bottom: 1px solid var(--stroke);
-      background: rgba(0,0,0,.10); white-space: nowrap;
+      position:sticky; top:0;
+      background:rgba(11,18,32,.92);
+      backdrop-filter: blur(10px);
+      z-index:2;
+      text-align:left;
+      padding:10px 10px;
+      font-size:11px;
+      color:var(--muted);
+      border-bottom:1px solid var(--line);
+      white-space:nowrap;
     }
-    tbody td{ padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,.08); }
-    tbody tr:hover td{ background: rgba(255,255,255,.05); }
-    td.r{ text-align:right; white-space:nowrap; font-variant-numeric: tabular-nums; }
-    .muted{ color: var(--muted); }
-    .pos{ color: var(--pos); font-weight: 850; }
-    .neg{ color: var(--neg); font-weight: 850; }
-
-    /* Totals row */
-    tr.total-row td{
-      font-weight: 900;
-      background: rgba(255,255,255,.06);
-      border-top: 1px solid rgba(255,255,255,.16);
+    tbody td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      font-size:12px;
+      white-space:nowrap;
     }
-
-    /* Date search UI */
-    .filters{ display:flex; gap:10px; align-items:center; flex-wrap: wrap; }
-    .input{
-      appearance:none;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.06);
-      color: rgba(245,247,255,.92);
-      padding: 8px 10px;
-      border-radius: 12px;
-      font-size: 12px;
-      outline: none;
+    tbody tr:hover td{background:rgba(255,255,255,.03);}
+    .pill{
+      font-family:var(--mono);
+      font-size:11px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      display:inline-flex; align-items:center; gap:6px;
+    }
+    .pill.good{border-color:rgba(41,208,127,.35); background:rgba(41,208,127,.08);}
+    .pill.bad{border-color:rgba(255,77,109,.35); background:rgba(255,77,109,.08);}
+    .pill.neutral{border-color:rgba(255,255,255,.12);}
+    .mono{font-family:var(--mono)}
+    .right{text-align:right}
+    .muted{color:var(--muted)}
+    .foot{
+      margin-top:14px;
+      color:var(--muted);
+      font-size:12px;
+      display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
     }
     .btn{
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.08);
-      color: rgba(245,247,255,.92);
-      padding: 8px 12px;
-      border-radius: 12px;
-      font-weight: 800;
-      font-size: 12px;
-      cursor: pointer;
+      cursor:pointer;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      font-size:12px;
     }
-    .btn:hover{ background: rgba(255,255,255,.12); }
-
-    /* Compact Comparativa */
-    .cmp-grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      padding: 12px 16px 14px;
+    .btn:hover{background:rgba(255,255,255,.08);}
+    @media (max-width: 1100px){
+      .filters{grid-template-columns:1fr; min-width:unset;}
+      .kpiRow{grid-template-columns: repeat(2, minmax(0,1fr));}
+      .chart1{grid-column: 1 / -1;}
+      .chart2{grid-column: 1 / -1;}
+      canvas{height:300px !important;}
     }
-    @media (max-width: 980px){ .cmp-grid{ grid-template-columns: 1fr; } }
-
-    .cmp-card{
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.06);
-      border-radius: 16px;
-      padding: 10px 12px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-    }
-    .cmp-card .m{ font-size: 12px; color: rgba(245,247,255,.9); font-weight: 800; }
-    .cmp-card .v{
-      text-align:right;
-      font-variant-numeric: tabular-nums;
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-      min-width: 140px;
-    }
-    .cmp-card .v small{ color: var(--muted); font-size: 11px; }
-    .cmp-card .v b{ font-size: 14px; }
-
-    .cmp-mini{
-      border-top: 1px solid var(--stroke);
-    }
-    .cmp-mini table{ min-width: 920px; font-size: 12px; }
-    .cmp-mini thead th{ padding: 10px 12px; font-size: 11px; }
-    .cmp-mini tbody td{ padding: 9px 12px; }
-
-    .foot{ margin-top: 16px; color: var(--muted); font-size: 12px; text-align:center; }
   </style>
 </head>
 
 <body>
   <div class="wrap">
-
-    <!-- HEADER -->
-    <div class="topbar">
-      <div class="brand">
-        <img id="logo" alt="Elite Online Media">
-        <div class="fallback" id="logoFallback">Elite Online Media</div>
-      </div>
+    <header>
       <div class="title">
-        <h1>EFECTIVIDAD DE VENTAS — ENERO 2026</h1>
-        <div class="sub">
-          <span class="pill">Reporte ejecutivo</span>
-          <span class="pill" id="rangePill">Comparativa: —</span>
-          <span class="pill">Elite Online Media</span>
+        <h1>Dashboard Diario (Estilo Power BI)</h1>
+        <p>Comparativo por equipo y agente • <span class="mono">2026-01-19</span> vs <span class="mono">2026-01-20</span></p>
+      </div>
+
+      <div class="filters">
+        <div class="filter">
+          <label for="dateSel">Fecha (detalle y ranking)</label>
+          <select id="dateSel">
+            <option value="2026-01-19">19/01/2026</option>
+            <option value="2026-01-20">20/01/2026</option>
+          </select>
+        </div>
+
+        <div class="filter">
+          <label for="teamSel">Team</label>
+          <select id="teamSel">
+            <option value="__ALL__">Todos</option>
+          </select>
+        </div>
+
+        <div class="filter">
+          <label for="metricSel">Métrica principal (tarjetas y ranking)</label>
+          <select id="metricSel">
+            <option value="dials">Dials</option>
+            <option value="contacts">Contacts</option>
+            <option value="successFive9">Success Five9</option>
+            <option value="talkTimeSec">Talk Time</option>
+            <option value="leadInbound">Lead Inbound</option>
+            <option value="productPresentation">Product Presentation</option>
+            <option value="cotizacion">Cotización</option>
+            <option value="successHubspot">Success HubSpot</option>
+            <option value="totalClientes">Total de Clientes</option>
+            <option value="campanas">Campañas</option>
+            <option value="facturado">Facturado</option>
+          </select>
         </div>
       </div>
-    </div>
+    </header>
 
     <div class="grid">
 
-      <!-- LEFT: KPIs (ejemplo, puedes ajustar luego con tu data mensual real) -->
-      <div class="panel">
-        <div class="panel-head">
-          <h2>Resumen</h2>
-          <span class="pill" id="updatedPill">Actualizado: —</span>
+      <!-- KPI CARD -->
+      <div class="card kpis">
+        <div class="hd">
+          <h3>Resumen diario (con delta vs el otro día)</h3>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <span class="chip" id="scopeChip">Scope: Todos</span>
+            <button class="btn" id="resetBtn">Reset filtros</button>
+          </div>
         </div>
-        <div class="panel-body">
-          <div class="kpis" id="kpis"></div>
+        <div class="bd">
+          <div class="kpiRow" id="kpiRow"></div>
         </div>
       </div>
 
-      <!-- RIGHT: Inbound (ejemplo, puedes ajustar luego con tu data real) -->
-      <div class="panel">
-        <div class="panel-head">
-          <h2>Resultados Inbound</h2>
-          <span class="pill">ROI: <b id="roiVal">—</b></span>
+      <!-- CHART 1 -->
+      <div class="card chart1">
+        <div class="hd"><h3>Comparativo Totales por Día</h3></div>
+        <div class="bd">
+          <canvas id="totalsChart"></canvas>
         </div>
-        <div class="panel-body">
-          <div id="inbound"></div>
+      </div>
+
+      <!-- CHART 2 -->
+      <div class="card chart2">
+        <div class="hd"><h3>Ranking por Agente (según métrica seleccionada)</h3></div>
+        <div class="bd">
+          <canvas id="rankChart"></canvas>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="card tableCard">
+        <div class="hd">
+          <h3>Detalle por Agente (Fecha seleccionada)</h3>
+          <span class="muted" id="tableHint">Tip: usa “Team” para filtrar.</span>
+        </div>
+        <div class="bd">
+          <div class="tableWrap">
+            <table id="detailTable">
+              <thead>
+                <tr>
+                  <th>Team</th>
+                  <th>Agente</th>
+                  <th class="right">Dials</th>
+                  <th class="right">Contacts</th>
+                  <th class="right">Success Five9</th>
+                  <th class="right">Talk Time</th>
+                  <th class="right">Lead Inbound</th>
+                  <th class="right">Product Presentation</th>
+                  <th class="right">Cotización</th>
+                  <th class="right">Success HubSpot</th>
+                  <th class="right">Cliente Outbound</th>
+                  <th class="right">Referido</th>
+                  <th class="right">Inbound Meses Anteriores</th>
+                  <th class="right">Nuevos Lead MM</th>
+                  <th class="right">Total Clientes</th>
+                  <th class="right">Campañas</th>
+                  <th class="right">Facturado</th>
+                </tr>
+              </thead>
+              <tbody id="detailTbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
     </div>
 
-    <!-- Comparativa Operativa COMPLETA + compacta -->
-    <div class="panel" style="margin-top:16px;">
-      <div class="panel-head">
-        <h2>Comparativa Operativa (Completa)</h2>
-        <span class="pill">Compacto · Totales Oficiales</span>
+    <div class="foot">
+      <div>
+        <span class="pill neutral">Notas</span>
+        <span class="muted">El dashboard es estático (ideal para GitHub Pages). Talk Time se procesa como tiempo (HH:MM:SS).</span>
       </div>
-
-      <!-- Compact cards -->
-      <div class="cmp-grid" id="cmpCards"></div>
-
-      <!-- Mini table -->
-      <div class="cmp-mini table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Métrica</th>
-              <th class="r" id="cmpD1">—</th>
-              <th class="r" id="cmpD2">—</th>
-              <th class="r">Diferencia</th>
-            </tr>
-          </thead>
-          <tbody id="cmpBody"></tbody>
-        </table>
-      </div>
+      <div class="muted mono" id="lastUpdated"></div>
     </div>
-
-    <!-- Detalle por Agente - Buscador por fecha -->
-    <div class="panel" style="margin-top:16px;">
-      <div class="panel-head">
-        <h2>Detalle por Agente</h2>
-        <div class="filters">
-          <span class="pill">Buscar por fecha</span>
-          <select id="date1" class="input"></select>
-          <span class="muted">vs</span>
-          <select id="date2" class="input"></select>
-          <button class="btn" id="applyBtn">Aplicar</button>
-          <span class="pill">Filas: <b id="rowsCount">—</b></span>
-        </div>
-      </div>
-
-      <div class="panel-body" style="padding-bottom:0;">
-        <div class="pill" style="margin-bottom:12px;">
-          Día 1: <b id="d1Label">—</b> · Día 2: <b id="d2Label">—</b>
-        </div>
-      </div>
-
-      <!-- Tabla Día 1 -->
-      <div class="panel-body" style="padding-top:0;">
-        <div class="pill" style="margin-bottom:10px;">Tabla Día 1 (Totalizada)</div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Team</th>
-              <th>Fecha</th>
-              <th>Agente</th>
-              <th class="r">Dials</th>
-              <th class="r">Contacts</th>
-              <th class="r">Success Five9</th>
-              <th class="r">Talk Time</th>
-              <th class="r">Lead Inbound</th>
-              <th class="r">Product Presentation</th>
-              <th class="r">Cotización</th>
-              <th class="r">Success HubSpot</th>
-              <th class="r">Cliente Outbound</th>
-              <th class="r">Referido</th>
-              <th class="r">Inbound Meses Anteriores</th>
-              <th class="r">Nuevos Lead MM</th>
-              <th class="r">Total de Clientes</th>
-              <th class="r">Facturado</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyDay1"></tbody>
-        </table>
-      </div>
-
-      <!-- Tabla Día 2 -->
-      <div class="panel-body">
-        <div class="pill" style="margin-bottom:10px;">Tabla Día 2 (Totalizada)</div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Team</th>
-              <th>Fecha</th>
-              <th>Agente</th>
-              <th class="r">Dials</th>
-              <th class="r">Contacts</th>
-              <th class="r">Success Five9</th>
-              <th class="r">Talk Time</th>
-              <th class="r">Lead Inbound</th>
-              <th class="r">Product Presentation</th>
-              <th class="r">Cotización</th>
-              <th class="r">Success HubSpot</th>
-              <th class="r">Cliente Outbound</th>
-              <th class="r">Referido</th>
-              <th class="r">Inbound Meses Anteriores</th>
-              <th class="r">Nuevos Lead MM</th>
-              <th class="r">Total de Clientes</th>
-              <th class="r">Facturado</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyDay2"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="foot">Elite Online Media · Business Intelligence</div>
   </div>
 
   <script>
-    // ========= Logo robusto =========
-    const LOGO_CANDIDATES = ["./logo.png","./Logo.png","./logo%20EOM.png","./logo.png.png","./assets/logo.png"];
-    (function loadLogo(){
-      const img = document.getElementById("logo");
-      const fallback = document.getElementById("logoFallback");
-      let i=0;
-      const tryNext = () => {
-        if(i>=LOGO_CANDIDATES.length){
-          img.style.display="none";
-          fallback.style.display="block";
-          return;
-        }
-        img.src = LOGO_CANDIDATES[i++];
-        img.onerror = tryNext;
-        img.onload = () => { fallback.style.display="none"; img.style.display="block"; };
-      };
-      tryNext();
-    })();
-
-    // ========= Resumen (puedes reemplazar por tu data mensual real) =========
-    const reportTop = {
-      campañas: 17,
-      clientes: 32,
-      conversionesMM: 15,
-      facturadoNuevoMes: 49050,
-      inbound: {
-        inversion: 23007,
-        vendido: 20550,
-        leads: 800,
-        perdidaGanancia: -2457,
-        roiVendido: -10.67
-      }
-    };
-
-    // ========= Data por agente (día 1 y día 2) =========
-    const agentRows = [
-      { team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Angeles Espinoza", d1_dials:220, d1_contacts:23, d1_success5:2, d1_talk:"4:51:23", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:1, d1_new_mm:0, d1_total_cli:1, d1_fact:"",
-        d2:"17/01/2026", d2_dials:205, d2_contacts:16, d2_success5:0, d2_talk:"0:58:27", d2_lead:0, d2_pp:3, d2_cot:0, d2_hub:3, d2_out:0, d2_ref:0, d2_inb_prev:1, d2_new_mm:0, d2_total_cli:1, d2_fact:"$500.00" },
-      { team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Geraldine Murillo", d1_dials:0, d1_contacts:0, d1_success5:0, d1_talk:"0:00:00", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:297, d2_contacts:16, d2_success5:0, d2_talk:"1:36:11", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
-      { team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Judith Mercado", d1_dials:148, d1_contacts:22, d1_success5:0, d1_talk:"2:48:24", d1_lead:0, d1_pp:0, d1_cot:1, d1_hub:1, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:126, d2_contacts:13, d2_success5:2, d2_talk:"1:42:06", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
-      { team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Rodrigo Guadamuz", d1_dials:129, d1_contacts:9, d1_success5:2, d1_talk:"2:01:04", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:159, d2_contacts:11, d2_success5:0, d2_talk:"1:30:59", d2_lead:0, d2_pp:2, d2_cot:0, d2_hub:2, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
-      { team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Alexia Rodríguez", d1_dials:132, d1_contacts:18, d1_success5:3, d1_talk:"2:50:10", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:156, d2_contacts:18, d2_success5:0, d2_talk:"2:01:05", d2_lead:0, d2_pp:2, d2_cot:0, d2_hub:2, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
-      { team:"Equipo de Ventas Anuar", d1:"16/01/2026", agente:"Mariett Castro", d1_dials:122, d1_contacts:8, d1_success5:0, d1_talk:"3:33:05", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:2, d1_total_cli:2, d1_fact:"$950.00",
-        d2:"17/01/2026", d2_dials:181, d2_contacts:14, d2_success5:0, d2_talk:"3:08:35", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
-
-      { team:"Post venta", d1:"16/01/2026", agente:"Andrea Rivera", d1_dials:171, d1_contacts:122, d1_success5:1, d1_talk:"2:57:49", d1_lead:0, d1_pp:0, d1_cot:1, d1_hub:1, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:197, d2_contacts:172, d2_success5:0, d2_talk:"3:25:38", d2_lead:0, d2_pp:1, d2_cot:0, d2_hub:1, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"$500.00" },
-      { team:"Post venta", d1:"16/01/2026", agente:"Alejandra Rodriguez", d1_dials:63, d1_contacts:16, d1_success5:0, d1_talk:"2:40:50", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$450.00",
-        d2:"17/01/2026", d2_dials:65, d2_contacts:20, d2_success5:0, d2_talk:"1:18:55", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
-      { team:"Post venta", d1:"16/01/2026", agente:"Ariana Leiva", d1_dials:139, d1_contacts:62, d1_success5:0, d1_talk:"1:54:44", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$150.00",
-        d2:"17/01/2026", d2_dials:157, d2_contacts:73, d2_success5:1, d2_talk:"2:00:25", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"$500.00" },
-      { team:"Post venta", d1:"16/01/2026", agente:"David Espinoza", d1_dials:78, d1_contacts:53, d1_success5:0, d1_talk:"0:57:46", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$650.00",
-        d2:"17/01/2026", d2_dials:75, d2_contacts:55, d2_success5:0, d2_talk:"2:40:03", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
-      { team:"Post venta", d1:"16/01/2026", agente:"Jonathan Salinas", d1_dials:156, d1_contacts:117, d1_success5:1, d1_talk:"3:05:59", d1_lead:0, d1_pp:3, d1_cot:0, d1_hub:3, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:83, d2_contacts:23, d2_success5:3, d2_talk:"3:47:33", d2_lead:0, d2_pp:1, d2_cot:0, d2_hub:1, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
-      { team:"Post venta", d1:"16/01/2026", agente:"Mario Castano", d1_dials:143, d1_contacts:131, d1_success5:0, d1_talk:"1:26:10", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$300.00",
-        d2:"17/01/2026", d2_dials:33, d2_contacts:25, d2_success5:0, d2_talk:"1:40:47", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
-      { team:"Post venta", d1:"16/01/2026", agente:"Nicole Garcia", d1_dials:103, d1_contacts:37, d1_success5:2, d1_talk:"2:46:18", d1_lead:0, d1_pp:2, d1_cot:0, d1_hub:2, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"$600.00",
-        d2:"17/01/2026", d2_dials:164, d2_contacts:46, d2_success5:2, d2_talk:"1:50:24", d2_lead:0, d2_pp:1, d2_cot:1, d2_hub:2, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
-      { team:"Post venta", d1:"16/01/2026", agente:"Paola Paz", d1_dials:30, d1_contacts:25, d1_success5:1, d1_talk:"1:31:32", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:0, d2_contacts:0, d2_success5:0, d2_talk:"0:00:00", d2_lead:0, d2_pp:1, d2_cot:0, d2_hub:1, d2_out:0, d2_ref:0, d2_inb_prev:0, d2_new_mm:0, d2_total_cli:0, d2_fact:"" },
-      { team:"Post venta", d1:"16/01/2026", agente:"Veronica Ramirez", d1_dials:155, d1_contacts:39, d1_success5:0, d1_talk:"2:18:07", d1_lead:0, d1_pp:0, d1_cot:0, d1_hub:0, d1_out:0, d1_ref:0, d1_inb_prev:0, d1_new_mm:0, d1_total_cli:0, d1_fact:"",
-        d2:"17/01/2026", d2_dials:146, d2_contacts:27, d2_success5:0, d2_talk:"1:47:21", d2_lead:0, d2_pp:0, d2_cot:0, d2_hub:0, d2_out:0, d2_ref:0, d2_inb_prev:1, d2_new_mm:1, d2_total_cli:1, d2_fact:"$1,000.00" }
-    ];
-
-    // ========= Totales Oficiales (tal cual tu última fila) =========
-    const officialTotals = {
-      d1: {
-        fecha: "16/01/2026",
-        dials: 1789,
-        contacts: 682,
-        success5: 12,
-        talk: "35:43:21",
-        lead: 0,
-        pp: 5,
-        cot: 2,
-        hub: 7,                 // (de tu fila totales)
-        out: 0,
-        ref: 1,
-        inb_prev: 2,
-        new_mm: 3,
-        total_cli: 3,
-        fact: "$3,100.00"
-      },
-      d2: {
-        fecha: "17/01/2026",
+    // -----------------------------
+    // 1) DATA (embebida)
+    // -----------------------------
+    const DAILY_TOTALS = {
+      "2026-01-19": {
         dials: 2044,
         contacts: 529,
-        success5: 8,
-        talk: "29:28:29",
-        lead: 0,
-        pp: 11,
-        cot: 1,
-        hub: 12,
-        out: 0,
-        ref: 1,
-        inb_prev: 1,
-        new_mm: 2,
-        total_cli: 2,
-        fact: "$2,500.00"
+        talkTime: "29:28:29",
+        successFive9: 8,
+        leadInbound: 0,
+        productPresentation: 9,
+        cotizacion: 1,
+        successHubspot: 10,
+        clienteOutbound: 0,
+        referido: 0,
+        inboundMesesAnteriores: 1,
+        nuevosLeadMM: 1,
+        totalClientes: 2,
+        campanas: 0,
+        facturado: 2500.00
+      },
+      "2026-01-20": {
+        dials: 1770,
+        contacts: 617,
+        talkTime: "39:54:24",
+        successFive9: 17,
+        leadInbound: 67,
+        productPresentation: 12,
+        cotizacion: 2,
+        successHubspot: 14,
+        clienteOutbound: 1,
+        referido: 0,
+        inboundMesesAnteriores: 0,
+        nuevosLeadMM: 0,
+        totalClientes: 1,
+        campanas: 2,
+        facturado: 3700.00
       }
     };
 
-    // ========= Helpers =========
-    const fmtMoney0 = (n) => {
-      if (n === "" || n === null || n === undefined) return "";
-      const num = Number(String(n).replace(/[^0-9.-]/g,""));
-      if (Number.isNaN(num)) return String(n);
-      return new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', maximumFractionDigits:0 }).format(num);
-    };
-    const money2 = (n) => new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', maximumFractionDigits:2 }).format(n);
-    const toNumber = (val) => {
-      if (val === null || val === undefined) return 0;
-      const s = String(val).trim();
-      if (!s) return 0;
-      const n = Number(s.replace(/[^0-9.-]/g,""));
-      return Number.isFinite(n) ? n : 0;
-    };
+    // Detalle por agente (por día)
+    // Nota: campos vacíos/espacios => 0
+    const AGENT_ROWS = [
+      // 19/01
+      {date:"2026-01-19", team:"Equipo de Ventas Anuar", agent:"Angeles Espinoza", dials:205, contacts:16, successFive9:0, talkTime:"0:58:27", leadInbound:0, productPresentation:1, cotizacion:0, successHubspot:1, clienteOutbound:0, referido:0, inboundMesesAnteriores:1, nuevosLeadMM:0, totalClientes:1, campanas:0, facturado:500.00},
+      {date:"2026-01-19", team:"Equipo de Ventas Anuar", agent:"Geraldine Murillo", dials:297, contacts:16, successFive9:0, talkTime:"1:36:11", leadInbound:0, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-19", team:"Equipo de Ventas Anuar", agent:"Judith Mercado", dials:126, contacts:13, successFive9:2, talkTime:"1:42:06", leadInbound:0, productPresentation:2, cotizacion:0, successHubspot:2, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-19", team:"Equipo de Ventas Anuar", agent:"Rodrigo Guadamuz", dials:159, contacts:11, successFive9:0, talkTime:"1:30:59", leadInbound:0, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-19", team:"Equipo de Ventas Anuar", agent:"Alexia Rodríguez", dials:156, contacts:18, successFive9:0, talkTime:"2:01:05", leadInbound:0, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-19", team:"Equipo de Ventas Anuar", agent:"Mariett Castro", dials:181, contacts:14, successFive9:0, talkTime:"3:08:35", leadInbound:0, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
 
-    function uniq(arr){ return [...new Set(arr)].sort((a,b)=>parseDMY(a)-parseDMY(b)); }
-    function parseDMY(d){
-      const [dd,mm,yy] = d.split("/").map(x=>parseInt(x,10));
-      return new Date(yy, mm-1, dd).getTime();
+      {date:"2026-01-19", team:"Post venta", agent:"Andrea Rivera", dials:197, contacts:172, successFive9:0, talkTime:"3:25:38", leadInbound:0, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:500.00},
+      {date:"2026-01-19", team:"Post venta", agent:"Alejandra Rodriguez", dials:65, contacts:20, successFive9:0, talkTime:"1:18:55", leadInbound:0, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-19", team:"Post venta", agent:"Ariana Leiva", dials:157, contacts:73, successFive9:1, talkTime:"2:00:25", leadInbound:0, productPresentation:1, cotizacion:0, successHubspot:1, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:500.00},
+      {date:"2026-01-19", team:"Post venta", agent:"David Espinoza", dials:75, contacts:55, successFive9:0, talkTime:"2:40:03", leadInbound:0, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-19", team:"Post venta", agent:"Jonathan Salinas", dials:83, contacts:23, successFive9:3, talkTime:"3:47:33", leadInbound:0, productPresentation:3, cotizacion:0, successHubspot:3, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-19", team:"Post venta", agent:"Mario Castano", dials:33, contacts:25, successFive9:0, talkTime:"1:40:47", leadInbound:0, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-19", team:"Post venta", agent:"Nicole Garcia", dials:164, contacts:46, successFive9:2, talkTime:"1:50:24", leadInbound:0, productPresentation:2, cotizacion:1, successHubspot:3, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-19", team:"Post venta", agent:"Paola Paz", dials:0, contacts:0, successFive9:0, talkTime:"0:00:00", leadInbound:0, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-19", team:"Post venta", agent:"Veronica Ramirez", dials:146, contacts:27, successFive9:0, talkTime:"1:47:21", leadInbound:0, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:1, nuevosLeadMM:1, totalClientes:0, campanas:0, facturado:1000.00},
+
+      // 20/01
+      {date:"2026-01-20", team:"Equipo de Ventas Anuar", agent:"Angeles Espinoza", dials:243, contacts:32, successFive9:4, talkTime:"4:03:04", leadInbound:3, productPresentation:4, cotizacion:0, successHubspot:4, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-20", team:"Equipo de Ventas Anuar", agent:"Geraldine Murillo", dials:294, contacts:31, successFive9:0, talkTime:"2:35:57", leadInbound:11, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-20", team:"Equipo de Ventas Anuar", agent:"Judith Mercado", dials:179, contacts:24, successFive9:2, talkTime:"2:31:13", leadInbound:10, productPresentation:2, cotizacion:0, successHubspot:2, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-20", team:"Equipo de Ventas Anuar", agent:"Rodrigo Guadamuz", dials:0, contacts:0, successFive9:0, talkTime:"0:00:00", leadInbound:0, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-20", team:"Equipo de Ventas Anuar", agent:"Alexia Rodríguez", dials:132, contacts:22, successFive9:1, talkTime:"2:59:19", leadInbound:8, productPresentation:1, cotizacion:0, successHubspot:1, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:500.00},
+      {date:"2026-01-20", team:"Equipo de Ventas Anuar", agent:"Mariett Castro", dials:97, contacts:20, successFive9:4, talkTime:"3:54:16", leadInbound:7, productPresentation:2, cotizacion:0, successHubspot:2, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:1100.00},
+
+      {date:"2026-01-20", team:"Post venta", agent:"Andrea Rivera", dials:103, contacts:87, successFive9:0, talkTime:"4:05:41", leadInbound:6, productPresentation:1, cotizacion:0, successHubspot:1, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:1, facturado:450.00},
+      {date:"2026-01-20", team:"Post venta", agent:"Alejandra Rodriguez", dials:98, contacts:61, successFive9:0, talkTime:"3:00:45", leadInbound:0, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-20", team:"Post venta", agent:"Ariana Leiva", dials:109, contacts:58, successFive9:1, talkTime:"2:35:48", leadInbound:5, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:750.00},
+      {date:"2026-01-20", team:"Post venta", agent:"David Espinoza", dials:109, contacts:85, successFive9:0, talkTime:"1:35:00", leadInbound:5, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-20", team:"Post venta", agent:"Jonathan Salinas", dials:87, contacts:31, successFive9:0, talkTime:"2:56:26", leadInbound:0, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:300.00},
+      {date:"2026-01-20", team:"Post venta", agent:"Mario Castano", dials:73, contacts:61, successFive9:0, talkTime:"2:31:20", leadInbound:1, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:1, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:1, campanas:1, facturado:300.00},
+      {date:"2026-01-20", team:"Post venta", agent:"Nicole Garcia", dials:130, contacts:69, successFive9:4, talkTime:"3:12:46", leadInbound:5, productPresentation:1, cotizacion:2, successHubspot:3, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-20", team:"Post venta", agent:"Paola Paz", dials:0, contacts:0, successFive9:0, talkTime:"0:00:00", leadInbound:0, productPresentation:0, cotizacion:0, successHubspot:0, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:0.00},
+      {date:"2026-01-20", team:"Post venta", agent:"Veronica Ramirez", dials:116, contacts:36, successFive9:1, talkTime:"3:52:49", leadInbound:6, productPresentation:1, cotizacion:0, successHubspot:1, clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0, totalClientes:0, campanas:0, facturado:300.00}
+    ];
+
+    // -----------------------------
+    // 2) HELPERS
+    // -----------------------------
+    const fmtInt = (n) => new Intl.NumberFormat("es-ES").format(n ?? 0);
+    const fmtMoney = (n) => new Intl.NumberFormat("es-ES",{style:"currency",currency:"USD"}).format(n ?? 0);
+    const clamp = (x,min,max)=>Math.max(min,Math.min(max,x));
+
+    function timeToSeconds(hms){
+      const parts = String(hms || "0:00:00").split(":").map(x=>parseInt(x,10)||0);
+      while(parts.length<3) parts.unshift(0);
+      const [h,m,s]=parts;
+      return h*3600 + m*60 + s;
     }
-    function diffClass(n){
-      if (!Number.isFinite(n) || n === 0) return "";
-      return n > 0 ? "pos" : "neg";
+    function secondsToHMS(sec){
+      sec = Math.max(0, Math.floor(sec||0));
+      const h = Math.floor(sec/3600);
+      const m = Math.floor((sec%3600)/60);
+      const s = sec%60;
+      return `${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
     }
 
-    // Talk time parse/sum
-    function parseTimeToSeconds(t){
-      const s = String(t || "").trim();
-      if (!s) return 0;
-      const parts = s.split(":").map(x=>x.trim());
-      if (parts.length === 3){
-        const [h,m,sec] = parts.map(x=>parseInt(x,10) || 0);
-        return h*3600 + m*60 + sec;
+    function deltaClass(d){
+      if (d > 0) return "good";
+      if (d < 0) return "bad";
+      return "neutral";
+    }
+    function deltaText(d, isMoney=false, isTime=false){
+      if (isTime){
+        const sign = d>0?"+":d<0?"-":"";
+        return sign + secondsToHMS(Math.abs(d));
       }
-      if (parts.length === 2){
-        const [m,sec] = parts.map(x=>parseInt(x,10) || 0);
-        return m*60 + sec;
+      if (isMoney){
+        const sign = d>0?"+":"";
+        return sign + fmtMoney(d).replace("$-","-$");
       }
-      return 0;
-    }
-    function secondsToHHMMSS(total){
-      total = Math.max(0, Math.floor(total));
-      const h = Math.floor(total/3600);
-      const m = Math.floor((total%3600)/60);
-      const s = total%60;
-      const pad = (x)=>String(x).padStart(2,"0");
-      return `${h}:${pad(m)}:${pad(s)}`;
+      const sign = d>0?"+":"";
+      return sign + fmtInt(d);
     }
 
-    // ========= Render KPIs + inbound =========
-    document.getElementById("updatedPill").textContent = `Actualizado: ${new Date().toLocaleString('es-ES')}`;
+    function pickLabel(metric){
+      const map = {
+        dials: "Dials",
+        contacts: "Contacts",
+        successFive9: "Success Five9",
+        talkTimeSec: "Talk Time",
+        leadInbound: "Lead Inbound",
+        productPresentation: "Product Presentation",
+        cotizacion: "Cotización",
+        successHubspot: "Success HubSpot",
+        clienteOutbound: "Cliente Outbound",
+        referido: "Referido",
+        inboundMesesAnteriores: "Inbound Meses Anteriores",
+        nuevosLeadMM: "Nuevos Lead MM",
+        totalClientes: "Total Clientes",
+        campanas: "Campañas",
+        facturado: "Facturado"
+      };
+      return map[metric] || metric;
+    }
 
-    const kpisEl = document.getElementById("kpis");
-    [
-      { label:"Campañas", value: reportTop.campañas },
-      { label:"Clientes", value: reportTop.clientes },
-      { label:"Conversiones MM", value: reportTop.conversionesMM },
-      { label:"Facturado Nuevo", value: fmtMoney0(reportTop.facturadoNuevoMes) }
-    ].forEach(k => {
-      const div = document.createElement("div");
-      div.className="kpi";
-      div.innerHTML = `<div class="label">${k.label}</div><div class="value">${k.value}</div>`;
-      kpisEl.appendChild(div);
-    });
+    function getOtherDate(d){
+      return d === "2026-01-19" ? "2026-01-20" : "2026-01-19";
+    }
 
-    const inboundEl = document.getElementById("inbound");
-    const ib = reportTop.inbound;
-    document.getElementById("roiVal").textContent = ib.roiVendido;
-    [
-      { name:"Inversión", value: fmtMoney0(ib.inversion) },
-      { name:"Monto Vendido", value: fmtMoney0(ib.vendido) },
-      { name:"Leads Generados", value: (ib.leads ?? 0).toLocaleString('en-US') },
-      { name:"Pérdida / Ganancia", value: (ib.perdidaGanancia < 0 ? "-" : "") + money2(Math.abs(ib.perdidaGanancia)) }
-    ].forEach(r => {
-      const row = document.createElement("div");
-      row.className="metric-row";
-      row.innerHTML = `<div class="name">${r.name}</div><div class="num">${r.value}</div>`;
-      inboundEl.appendChild(row);
-    });
+    // -----------------------------
+    // 3) UI STATE
+    // -----------------------------
+    const state = {
+      date: "2026-01-19",
+      team: "__ALL__",
+      metric: "facturado"
+    };
 
-    // ========= UI fechas =========
-    const allDates = uniq(agentRows.flatMap(r => [r.d1, r.d2]).filter(Boolean));
-    const date1Sel = document.getElementById("date1");
-    const date2Sel = document.getElementById("date2");
-    function fillSelect(sel, dates){
-      sel.innerHTML = "";
-      dates.forEach(d=>{
+    const dateSel = document.getElementById("dateSel");
+    const teamSel = document.getElementById("teamSel");
+    const metricSel = document.getElementById("metricSel");
+    const scopeChip = document.getElementById("scopeChip");
+    const kpiRow = document.getElementById("kpiRow");
+    const detailTbody = document.getElementById("detailTbody");
+    const resetBtn = document.getElementById("resetBtn");
+    const lastUpdated = document.getElementById("lastUpdated");
+
+    // -----------------------------
+    // 4) INIT FILTERS
+    // -----------------------------
+    function initTeams(){
+      const teams = Array.from(new Set(AGENT_ROWS.map(r=>r.team))).sort();
+      for(const t of teams){
         const opt = document.createElement("option");
-        opt.value = d; opt.textContent = d;
-        sel.appendChild(opt);
-      });
-    }
-    fillSelect(date1Sel, allDates);
-    fillSelect(date2Sel, allDates);
-
-    date1Sel.value = officialTotals.d1.fecha; // default oficial
-    date2Sel.value = officialTotals.d2.fecha; // default oficial
-
-    // ========= Comparativa Operativa (usa Totales Oficiales si coinciden fechas) =========
-    function getOfficialForDate(dateStr){
-      if (officialTotals.d1.fecha === dateStr) return { ...officialTotals.d1, key:"d1" };
-      if (officialTotals.d2.fecha === dateStr) return { ...officialTotals.d2, key:"d2" };
-      return null;
+        opt.value = t;
+        opt.textContent = t;
+        teamSel.appendChild(opt);
+      }
     }
 
-    function renderComparativa(d1, d2){
-      document.getElementById("cmpD1").textContent = d1;
-      document.getElementById("cmpD2").textContent = d2;
+    // -----------------------------
+    // 5) DATA VIEWS
+    // -----------------------------
+    function filteredRows(date, team){
+      return AGENT_ROWS
+        .filter(r => r.date === date)
+        .filter(r => team === "__ALL__" ? true : r.team === team);
+    }
 
-      const a = getOfficialForDate(d1);
-      const b = getOfficialForDate(d2);
+    function summarizeRows(rows){
+      // Suma por campos numéricos; talk time a segundos
+      const sum = {
+        dials:0, contacts:0, successFive9:0, talkTimeSec:0,
+        leadInbound:0, productPresentation:0, cotizacion:0, successHubspot:0,
+        clienteOutbound:0, referido:0, inboundMesesAnteriores:0, nuevosLeadMM:0,
+        totalClientes:0, campanas:0, facturado:0
+      };
+      for(const r of rows){
+        sum.dials += r.dials||0;
+        sum.contacts += r.contacts||0;
+        sum.successFive9 += r.successFive9||0;
+        sum.talkTimeSec += timeToSeconds(r.talkTime);
+        sum.leadInbound += r.leadInbound||0;
+        sum.productPresentation += r.productPresentation||0;
+        sum.cotizacion += r.cotizacion||0;
+        sum.successHubspot += r.successHubspot||0;
+        sum.clienteOutbound += r.clienteOutbound||0;
+        sum.referido += r.referido||0;
+        sum.inboundMesesAnteriores += r.inboundMesesAnteriores||0;
+        sum.nuevosLeadMM += r.nuevosLeadMM||0;
+        sum.totalClientes += r.totalClientes||0;
+        sum.campanas += r.campanas||0;
+        sum.facturado += r.facturado||0;
+      }
+      return sum;
+    }
 
-      // Si no hay totales oficiales para esas fechas, cae a 0 (pero con tus fechas actuales sí hay).
-      const T1 = a || { dials:0, contacts:0, success5:0, talk:"0:00:00", lead:0, pp:0, cot:0, hub:0, out:0, ref:0, inb_prev:0, new_mm:0, total_cli:0, fact:"$0.00" };
-      const T2 = b || { dials:0, contacts:0, success5:0, talk:"0:00:00", lead:0, pp:0, cot:0, hub:0, out:0, ref:0, inb_prev:0, new_mm:0, total_cli:0, fact:"$0.00" };
+    function totalsFromSource(date, team){
+      // Si no hay team filter, usa DAILY_TOTALS (más fiel al “Total” que pegaste)
+      // Si hay team filter, recalcula desde AGENT_ROWS (porque el total por team no viene aparte)
+      if (team === "__ALL__"){
+        const t = DAILY_TOTALS[date];
+        return {
+          dials: t.dials,
+          contacts: t.contacts,
+          successFive9: t.successFive9,
+          talkTimeSec: timeToSeconds(t.talkTime),
+          leadInbound: t.leadInbound,
+          productPresentation: t.productPresentation,
+          cotizacion: t.cotizacion,
+          successHubspot: t.successHubspot,
+          clienteOutbound: t.clienteOutbound,
+          referido: t.referido,
+          inboundMesesAnteriores: t.inboundMesesAnteriores,
+          nuevosLeadMM: t.nuevosLeadMM,
+          totalClientes: t.totalClientes,
+          campanas: t.campanas,
+          facturado: t.facturado
+        };
+      }
+      return summarizeRows(filteredRows(date, team));
+    }
 
-      const fact1 = toNumber(T1.fact);
-      const fact2 = toNumber(T2.fact);
+    // -----------------------------
+    // 6) RENDER KPIs
+    // -----------------------------
+    function renderKPIs(){
+      const d = state.date;
+      const other = getOtherDate(d);
 
-      const talk1s = parseTimeToSeconds(T1.talk);
-      const talk2s = parseTimeToSeconds(T2.talk);
+      const cur = totalsFromSource(d, state.team);
+      const oth = totalsFromSource(other, state.team);
 
-      const ipc1 = T1.total_cli > 0 ? (fact1 / T1.total_cli) : 0; // IPC (Facturado/Clientes)
-      const ipc2 = T2.total_cli > 0 ? (fact2 / T2.total_cli) : 0;
+      scopeChip.textContent = `Scope: ${state.team === "__ALL__" ? "Todos" : state.team}`;
 
-      // Cards compactas
-      const cards = [
-        { name:"Dials", a:T1.dials, b:T2.dials, fmt:(x)=>x.toLocaleString('en-US') },
-        { name:"Contacts", a:T1.contacts, b:T2.contacts, fmt:(x)=>x.toLocaleString('en-US') },
-        { name:"Success Five9", a:T1.success5, b:T2.success5, fmt:(x)=>x.toLocaleString('en-US') },
-        { name:"Facturado", a:fact1, b:fact2, fmt:(x)=>money2(x) }
+      const kpis = [
+        {key:"dials", label:"Total Dials", fmt:(x)=>fmtInt(x), delta:(a,b)=>a-b},
+        {key:"contacts", label:"Total Contacts", fmt:(x)=>fmtInt(x), delta:(a,b)=>a-b},
+        {key:"successFive9", label:"Éxitos Five9", fmt:(x)=>fmtInt(x), delta:(a,b)=>a-b},
+        {key:"successHubspot", label:"Éxitos HubSpot", fmt:(x)=>fmtInt(x), delta:(a,b)=>a-b},
+        {key:"leadInbound", label:"Lead Inbound", fmt:(x)=>fmtInt(x), delta:(a,b)=>a-b},
+        {key:"facturado", label:"Facturado", fmt:(x)=>fmtMoney(x), delta:(a,b)=>a-b, isMoney:true}
       ];
 
-      const cmpCards = document.getElementById("cmpCards");
-      cmpCards.innerHTML = "";
-      cards.forEach(c=>{
-        const diff = c.b - c.a;
-        const cls = diffClass(diff);
-        const showDiff = (c.name === "Facturado") ? money2(diff) : diff.toLocaleString('en-US');
-        cmpCards.insertAdjacentHTML("beforeend", `
-          <div class="cmp-card">
-            <div class="m">${c.name}</div>
-            <div class="v">
-              <small>${d1}: ${c.fmt(c.a)}</small>
-              <small>${d2}: ${c.fmt(c.b)}</small>
-              <b class="${cls}">${diff>=0?"+":""}${showDiff}</b>
-            </div>
+      // Swap one KPI based on metricSel (para que el usuario sienta control)
+      const main = state.metric;
+      if (!kpis.some(k => k.key === main)){
+        // replace Lead Inbound card with chosen metric (if not already present)
+        kpis[4] = {
+          key: main,
+          label: pickLabel(main),
+          fmt: (x)=>{
+            if (main === "talkTimeSec") return secondsToHMS(x);
+            if (main === "facturado") return fmtMoney(x);
+            return fmtInt(x);
+          },
+          delta: (a,b)=>a-b,
+          isMoney: main === "facturado",
+          isTime: main === "talkTimeSec"
+        };
+      }
+
+      kpiRow.innerHTML = "";
+      for(const k of kpis){
+        const a = cur[k.key] ?? 0;
+        const b = oth[k.key] ?? 0;
+        const dlt = (k.delta ? k.delta(a,b) : (a-b));
+        const cls = deltaClass(dlt);
+
+        const div = document.createElement("div");
+        div.className = "kpi";
+        div.innerHTML = `
+          <div class="name">${k.label}</div>
+          <div class="val">${k.fmt ? k.fmt(a) : fmtInt(a)}</div>
+          <div class="sub">
+            <span class="chip mono">vs ${other.replaceAll("-","/")}</span>
+            <span class="delta ${cls} mono">${deltaText(dlt, !!k.isMoney, !!k.isTime)}</span>
           </div>
-        `);
-      });
+        `;
+        kpiRow.appendChild(div);
+      }
+    }
 
-      // Tabla completa compacta
-      const rows = [
-        ["Total de Llamadas (Dials)", T1.dials, T2.dials, false, (x)=>x.toLocaleString('en-US')],
-        ["Total de Contactos", T1.contacts, T2.contacts, false, (x)=>x.toLocaleString('en-US')],
-        ["Tiempo Total de Llamada", T1.talk, T2.talk, "time", (x)=>x],
-        ["Éxitos en Five9", T1.success5, T2.success5, false, (x)=>x.toLocaleString('en-US')],
-        ["Lead Inbound", T1.lead, T2.lead, false, (x)=>x.toLocaleString('en-US')],
-        ["Presentaciones de Producto", T1.pp, T2.pp, false, (x)=>x.toLocaleString('en-US')],
-        ["Cotizaciones", T1.cot, T2.cot, false, (x)=>x.toLocaleString('en-US')],
-        ["Éxitos en HubSpot", T1.hub, T2.hub, false, (x)=>x.toLocaleString('en-US')],
-        ["Cliente Outbound", T1.out, T2.out, false, (x)=>x.toLocaleString('en-US')],
-        ["Referido", T1.ref, T2.ref, false, (x)=>x.toLocaleString('en-US')],
-        ["Inbound Meses Anteriores", T1.inb_prev, T2.inb_prev, false, (x)=>x.toLocaleString('en-US')],
-        ["Clientes Nuevos Lead MM", T1.new_mm, T2.new_mm, false, (x)=>x.toLocaleString('en-US')],
-        ["Total de Clientes", T1.total_cli, T2.total_cli, false, (x)=>x.toLocaleString('en-US')],
-        ["Facturación Total ($)", fact1, fact2, "money", (x)=>money2(x)],
-        ["IPC (Facturado / Total Clientes)", ipc1, ipc2, "money", (x)=>money2(x)]
+    // -----------------------------
+    // 7) CHARTS
+    // -----------------------------
+    let totalsChart, rankChart;
+
+    function buildTotalsChart(){
+      const labels = ["19/01/2026", "20/01/2026"];
+      const d1 = totalsFromSource("2026-01-19", state.team);
+      const d2 = totalsFromSource("2026-01-20", state.team);
+
+      const metrics = [
+        {key:"dials", label:"Dials"},
+        {key:"contacts", label:"Contacts"},
+        {key:"successFive9", label:"Success Five9"},
+        {key:"successHubspot", label:"Success HubSpot"},
+        {key:"leadInbound", label:"Lead Inbound"},
+        {key:"facturado", label:"Facturado (USD)", money:true}
       ];
 
-      const body = document.getElementById("cmpBody");
-      body.innerHTML = "";
+      const ds = metrics.map(m => ({
+        label: m.label,
+        data: [d1[m.key] ?? 0, d2[m.key] ?? 0]
+      }));
 
-      rows.forEach(([name,a,b,type,fmt])=>{
-        let diff = 0;
-        let diffTxt = "0";
-        if (type === "time"){
-          diff = talk2s - talk1s;
-          diffTxt = diff === 0 ? "0" : (diff<0 ? "-" : "+") + secondsToHHMMSS(Math.abs(diff));
-        } else {
-          diff = (Number(b) || 0) - (Number(a) || 0);
-          diffTxt = (diff>=0?"+":"") + (type==="money" ? money2(diff) : diff.toLocaleString('en-US'));
-          if (diff === 0) diffTxt = "0";
+      const ctx = document.getElementById("totalsChart");
+      if (totalsChart) totalsChart.destroy();
+      totalsChart = new Chart(ctx, {
+        type: "bar",
+        data: { labels, datasets: ds },
+        options: {
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{
+            legend:{ position:"bottom", labels:{ color:"#e7eefc" } },
+            tooltip:{
+              callbacks:{
+                label: (ctx)=>{
+                  const label = ctx.dataset.label || "";
+                  const val = ctx.parsed.y ?? 0;
+                  const isMoney = label.includes("USD");
+                  return `${label}: ${isMoney ? fmtMoney(val) : fmtInt(val)}`;
+                }
+              }
+            }
+          },
+          scales:{
+            x:{ ticks:{ color:"#9fb2d6" }, grid:{ color:"rgba(255,255,255,.06)" } },
+            y:{ ticks:{ color:"#9fb2d6" }, grid:{ color:"rgba(255,255,255,.06)" } }
+          }
         }
-        const cls = diffClass(diff);
-
-        body.insertAdjacentHTML("beforeend", `
-          <tr>
-            <td>${name}</td>
-            <td class="r">${fmt(a)}</td>
-            <td class="r">${fmt(b)}</td>
-            <td class="r ${cls}">${diffTxt}</td>
-          </tr>
-        `);
       });
     }
 
-    // ========= Render tablas + Totales Oficiales =========
-    function renderTables(d1, d2){
-      document.getElementById("rangePill").textContent = `Comparativa: ${d1} vs ${d2}`;
+    function buildRankChart(){
+      const rows = filteredRows(state.date, state.team);
 
-      document.getElementById("d1Label").textContent = d1;
-      document.getElementById("d2Label").textContent = d2;
+      const metric = state.metric;
+      const label = pickLabel(metric);
 
-      const day1 = [];
-      const day2 = [];
-
-      agentRows.forEach(r=>{
-        const match1 = (r.d1 === d1) ? "d1" : (r.d2 === d1 ? "d2" : null);
-        const match2 = (r.d2 === d2) ? "d2" : (r.d1 === d2 ? "d1" : null);
-
-        if (match1){
-          day1.push({
-            team:r.team, fecha:d1, agente:r.agente,
-            dials: r[`${match1}_dials`], contacts:r[`${match1}_contacts`], success5:r[`${match1}_success5`],
-            talk: r[`${match1}_talk`], lead:r[`${match1}_lead`], pp:r[`${match1}_pp`],
-            cot:r[`${match1}_cot`], hub:r[`${match1}_hub`], out:r[`${match1}_out`],
-            ref:r[`${match1}_ref`], inb_prev:r[`${match1}_inb_prev`], new_mm:r[`${match1}_new_mm`],
-            total_cli:r[`${match1}_total_cli`], fact:r[`${match1}_fact`]
-          });
-        }
-        if (match2){
-          day2.push({
-            team:r.team, fecha:d2, agente:r.agente,
-            dials: r[`${match2}_dials`], contacts:r[`${match2}_contacts`], success5:r[`${match2}_success5`],
-            talk: r[`${match2}_talk`], lead:r[`${match2}_lead`], pp:r[`${match2}_pp`],
-            cot:r[`${match2}_cot`], hub:r[`${match2}_hub`], out:r[`${match2}_out`],
-            ref:r[`${match2}_ref`], inb_prev:r[`${match2}_inb_prev`], new_mm:r[`${match2}_new_mm`],
-            total_cli:r[`${match2}_total_cli`], fact:r[`${match2}_fact`]
-          });
-        }
+      // compute metric value per row
+      const values = rows.map(r => {
+        let v = r[metric] ?? 0;
+        if (metric === "talkTimeSec") v = timeToSeconds(r.talkTime);
+        return { agent: r.agent, team: r.team, v };
       });
 
-      const sortFn = (a,b) => (a.team+a.agente).localeCompare(b.team+b.agente, "es");
-      day1.sort(sortFn); day2.sort(sortFn);
+      // sort desc, take top 10 (but show all if fewer)
+      values.sort((a,b)=>b.v - a.v);
+      const top = values.slice(0, 10);
 
-      const tbody1 = document.getElementById("tbodyDay1");
-      const tbody2 = document.getElementById("tbodyDay2");
-      tbody1.innerHTML = "";
-      tbody2.innerHTML = "";
+      const labels = top.map(x => x.agent);
+      const data = top.map(x => x.v);
 
-      const rowTpl = (x) => `
-        <tr>
-          <td>${x.team}</td>
-          <td>${x.fecha}</td>
-          <td>${x.agente}</td>
-          <td class="r">${x.dials ?? ""}</td>
-          <td class="r">${x.contacts ?? ""}</td>
-          <td class="r">${x.success5 ?? ""}</td>
-          <td class="r">${x.talk ?? ""}</td>
-          <td class="r">${x.lead ?? ""}</td>
-          <td class="r">${x.pp ?? ""}</td>
-          <td class="r">${x.cot ?? ""}</td>
-          <td class="r">${x.hub ?? ""}</td>
-          <td class="r">${x.out ?? ""}</td>
-          <td class="r">${x.ref ?? ""}</td>
-          <td class="r">${x.inb_prev ?? ""}</td>
-          <td class="r">${x.new_mm ?? ""}</td>
-          <td class="r">${x.total_cli ?? ""}</td>
-          <td class="r">${x.fact ?? ""}</td>
-        </tr>
-      `;
-
-      day1.forEach(x => tbody1.insertAdjacentHTML("beforeend", rowTpl(x)));
-      day2.forEach(x => tbody2.insertAdjacentHTML("beforeend", rowTpl(x)));
-
-      // Totales Oficiales (si la fecha coincide)
-      const off1 = getOfficialForDate(d1);
-      const off2 = getOfficialForDate(d2);
-
-      if (off1){
-        tbody1.insertAdjacentHTML("beforeend", `
-          <tr class="total-row">
-            <td colspan="3">TOTALES (OFICIALES)</td>
-            <td class="r">${off1.dials.toLocaleString('en-US')}</td>
-            <td class="r">${off1.contacts.toLocaleString('en-US')}</td>
-            <td class="r">${off1.success5.toLocaleString('en-US')}</td>
-            <td class="r">${off1.talk}</td>
-            <td class="r">${off1.lead.toLocaleString('en-US')}</td>
-            <td class="r">${off1.pp.toLocaleString('en-US')}</td>
-            <td class="r">${off1.cot.toLocaleString('en-US')}</td>
-            <td class="r">${off1.hub.toLocaleString('en-US')}</td>
-            <td class="r">${off1.out.toLocaleString('en-US')}</td>
-            <td class="r">${off1.ref.toLocaleString('en-US')}</td>
-            <td class="r">${off1.inb_prev.toLocaleString('en-US')}</td>
-            <td class="r">${off1.new_mm.toLocaleString('en-US')}</td>
-            <td class="r">${off1.total_cli.toLocaleString('en-US')}</td>
-            <td class="r">${money2(toNumber(off1.fact))}</td>
-          </tr>
-        `);
-      }
-
-      if (off2){
-        tbody2.insertAdjacentHTML("beforeend", `
-          <tr class="total-row">
-            <td colspan="3">TOTALES (OFICIALES)</td>
-            <td class="r">${off2.dials.toLocaleString('en-US')}</td>
-            <td class="r">${off2.contacts.toLocaleString('en-US')}</td>
-            <td class="r">${off2.success5.toLocaleString('en-US')}</td>
-            <td class="r">${off2.talk}</td>
-            <td class="r">${off2.lead.toLocaleString('en-US')}</td>
-            <td class="r">${off2.pp.toLocaleString('en-US')}</td>
-            <td class="r">${off2.cot.toLocaleString('en-US')}</td>
-            <td class="r">${off2.hub.toLocaleString('en-US')}</td>
-            <td class="r">${off2.out.toLocaleString('en-US')}</td>
-            <td class="r">${off2.ref.toLocaleString('en-US')}</td>
-            <td class="r">${off2.inb_prev.toLocaleString('en-US')}</td>
-            <td class="r">${off2.new_mm.toLocaleString('en-US')}</td>
-            <td class="r">${off2.total_cli.toLocaleString('en-US')}</td>
-            <td class="r">${money2(toNumber(off2.fact))}</td>
-          </tr>
-        `);
-      }
-
-      document.getElementById("rowsCount").textContent = `${Math.max(day1.length, day2.length)}`;
-
-      // Comparativa completa con totales oficiales
-      renderComparativa(d1, d2);
+      const ctx = document.getElementById("rankChart");
+      if (rankChart) rankChart.destroy();
+      rankChart = new Chart(ctx, {
+        type:"bar",
+        data:{
+          labels,
+          datasets:[{
+            label: `${label} (${state.date === "2026-01-19" ? "19/01" : "20/01"})`,
+            data
+          }]
+        },
+        options:{
+          indexAxis:"y",
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{
+            legend:{ position:"bottom", labels:{ color:"#e7eefc" } },
+            tooltip:{
+              callbacks:{
+                label:(ctx)=>{
+                  const v = ctx.parsed.x ?? 0;
+                  if (metric === "facturado") return `${label}: ${fmtMoney(v)}`;
+                  if (metric === "talkTimeSec") return `${label}: ${secondsToHMS(v)}`;
+                  return `${label}: ${fmtInt(v)}`;
+                }
+              }
+            }
+          },
+          scales:{
+            x:{ ticks:{ color:"#9fb2d6" }, grid:{ color:"rgba(255,255,255,.06)" } },
+            y:{ ticks:{ color:"#9fb2d6" }, grid:{ color:"rgba(255,255,255,.06)" } }
+          }
+        }
+      });
     }
 
-    document.getElementById("applyBtn").addEventListener("click", () => {
-      renderTables(date1Sel.value, date2Sel.value);
+    // -----------------------------
+    // 8) TABLE
+    // -----------------------------
+    function renderTable(){
+      const rows = filteredRows(state.date, state.team);
+
+      // For conditional pill: compare agent value vs median of selected metric (in current view)
+      const metric = state.metric;
+      const vals = rows.map(r => metric === "talkTimeSec" ? timeToSeconds(r.talkTime) : (r[metric] ?? 0))
+                       .sort((a,b)=>a-b);
+      const median = vals.length ? vals[Math.floor(vals.length/2)] : 0;
+
+      detailTbody.innerHTML = "";
+      for(const r of rows){
+        const talkSec = timeToSeconds(r.talkTime);
+        const metricVal = metric === "talkTimeSec" ? talkSec : (r[metric] ?? 0);
+
+        let pillCls = "neutral";
+        if (metricVal > median) pillCls = "good";
+        else if (metricVal < median) pillCls = "bad";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${r.team}</td>
+          <td>${r.agent} <span class="pill ${pillCls}" title="Comparado vs mediana de la métrica seleccionada">${pickLabel(metric)}: ${
+            metric === "facturado" ? fmtMoney(metricVal) :
+            metric === "talkTimeSec" ? secondsToHMS(metricVal) :
+            fmtInt(metricVal)
+          }</span></td>
+
+          <td class="right mono">${fmtInt(r.dials)}</td>
+          <td class="right mono">${fmtInt(r.contacts)}</td>
+          <td class="right mono">${fmtInt(r.successFive9)}</td>
+          <td class="right mono">${r.talkTime}</td>
+          <td class="right mono">${fmtInt(r.leadInbound)}</td>
+          <td class="right mono">${fmtInt(r.productPresentation)}</td>
+          <td class="right mono">${fmtInt(r.cotizacion)}</td>
+          <td class="right mono">${fmtInt(r.successHubspot)}</td>
+          <td class="right mono">${fmtInt(r.clienteOutbound)}</td>
+          <td class="right mono">${fmtInt(r.referido)}</td>
+          <td class="right mono">${fmtInt(r.inboundMesesAnteriores)}</td>
+          <td class="right mono">${fmtInt(r.nuevosLeadMM)}</td>
+          <td class="right mono">${fmtInt(r.totalClientes)}</td>
+          <td class="right mono">${fmtInt(r.campanas)}</td>
+          <td class="right mono">${fmtMoney(r.facturado)}</td>
+        `;
+        detailTbody.appendChild(tr);
+      }
+    }
+
+    // -----------------------------
+    // 9) RENDER ALL
+    // -----------------------------
+    function renderAll(){
+      renderKPIs();
+      buildTotalsChart();
+      buildRankChart();
+      renderTable();
+      lastUpdated.textContent = `Render: ${new Date().toLocaleString("es-ES")}`;
+    }
+
+    // -----------------------------
+    // 10) EVENTS
+    // -----------------------------
+    dateSel.addEventListener("change", (e)=>{
+      state.date = e.target.value;
+      renderAll();
+    });
+    teamSel.addEventListener("change", (e)=>{
+      state.team = e.target.value;
+      renderAll();
+    });
+    metricSel.addEventListener("change", (e)=>{
+      state.metric = e.target.value;
+      renderAll();
+    });
+    resetBtn.addEventListener("click", ()=>{
+      state.date = "2026-01-19";
+      state.team = "__ALL__";
+      state.metric = "facturado";
+      dateSel.value = state.date;
+      teamSel.value = state.team;
+      metricSel.value = state.metric;
+      renderAll();
     });
 
-    // Render inicial
-    renderTables(date1Sel.value, date2Sel.value);
+    // -----------------------------
+    // 11) BOOT
+    // -----------------------------
+    initTeams();
+    // defaults
+    metricSel.value = state.metric;
+    renderAll();
   </script>
 </body>
 </html>
+
+    
+
+  
+  
+    
+
+     
