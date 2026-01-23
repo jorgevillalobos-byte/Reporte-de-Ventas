@@ -3,922 +3,454 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dashboard BI (PowerBI Pastel) — Resumen Comparativo</title>
+  <title>Sales Ops Dashboard</title>
 
-  <!-- Charts -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
-    :root{
-      /* Pastel (PowerBI-ish) */
-      --bg: #f7f8fc;
-      --card: rgba(255,255,255,.72);
-      --stroke: rgba(20,24,35,.10);
-      --text: #1e2430;
-      --muted: rgba(30,36,48,.65);
-
-      --p1:#bfe7ff;   /* sky */
-      --p2:#ffd6e7;   /* pink */
-      --p3:#d9f7d6;   /* mint */
-      --p4:#fff1bf;   /* lemon */
-      --p5:#e3ddff;   /* lavender */
-      --p6:#ffd9c8;   /* peach */
-
-      --ok:#1f9d74;
-      --bad:#d24b4b;
-
-      --shadow: 0 10px 26px rgba(15, 18, 30, .08);
-      --radius: 18px;
-    }
-
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      color:var(--text);
-      background:
-        radial-gradient(1200px 800px at 10% 10%, rgba(191,231,255,.55), transparent 55%),
-        radial-gradient(1000px 700px at 90% 20%, rgba(255,214,231,.55), transparent 55%),
-        radial-gradient(1100px 800px at 20% 95%, rgba(217,247,214,.55), transparent 60%),
-        radial-gradient(900px 650px at 85% 90%, rgba(227,221,255,.45), transparent 55%),
-        var(--bg);
-      min-height:100vh;
-    }
-
-    header{
-      padding: 20px 20px 10px;
-      max-width: 1240px;
-      margin: 0 auto;
-    }
-
-    .topbar{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:16px;
-      flex-wrap:wrap;
-    }
-
-    .brand{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-    .brand h1{
-      margin:0;
-      font-size: 20px;
-      letter-spacing:.2px;
-    }
-    .brand .sub{
-      font-size: 12px;
-      color:var(--muted);
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 6px 10px;
-      border: 1px solid var(--stroke);
-      border-radius: 999px;
-      background: rgba(255,255,255,.55);
-      box-shadow: 0 6px 18px rgba(15,18,30,.06);
-      font-size: 12px;
-      color: var(--muted);
-      backdrop-filter: blur(10px);
-    }
-    .dot{
-      width:10px;height:10px;border-radius:50%;
-      background: linear-gradient(180deg, var(--p2), var(--p1));
-      border: 1px solid rgba(30,36,48,.12);
-    }
-
-    .filters{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:flex-end;
-    }
-    select, input[type="search"]{
-      appearance:none;
-      border:1px solid var(--stroke);
-      background: rgba(255,255,255,.60);
-      padding: 10px 12px;
-      border-radius: 14px;
-      box-shadow: 0 8px 20px rgba(15,18,30,.06);
-      color: var(--text);
-      outline:none;
-      font-size: 13px;
-      backdrop-filter: blur(10px);
-    }
-    input[type="search"]{ min-width: 220px; }
-
-    main{
-      max-width:1240px;
-      margin: 0 auto;
-      padding: 10px 20px 24px;
-      display:grid;
-      gap:14px;
-    }
-
-    .grid-kpis{
-      display:grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap:14px;
-    }
-
-    .card{
-      background: var(--card);
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(12px);
-      overflow:hidden;
-      position:relative;
-    }
-
-    .card::before{
-      content:"";
-      position:absolute; inset:-2px;
-      background: linear-gradient(135deg, rgba(255,255,255,.55), rgba(255,255,255,0));
-      pointer-events:none;
-      opacity:.55;
-    }
-
-    .kpi{
-      grid-column: span 3;
-      padding: 14px 14px 12px;
-      min-height: 98px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
-    .kpi .row{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-    }
-    .kpi .label{
-      font-size: 12px;
-      color:var(--muted);
-      line-height: 1.2;
-    }
-    .kpi .value{
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing:.2px;
-    }
-    .kpi .delta{
-      font-size: 12px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.55);
-      color: var(--muted);
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      max-width: 100%;
-      white-space:nowrap;
-    }
-    .arrow{
-      width: 0;height:0;
-      border-left: 5px solid transparent;
-      border-right: 5px solid transparent;
-    }
-    .up{ border-bottom: 8px solid var(--ok); }
-    .down{ border-top: 8px solid var(--bad); }
-
-    .spark{
-      height: 10px;
-      border-radius: 999px;
-      background: rgba(30,36,48,.08);
-      overflow:hidden;
-      border: 1px solid rgba(30,36,48,.08);
-    }
-    .spark > i{
-      display:block; height:100%;
-      width: 50%;
-      background: linear-gradient(90deg, var(--p1), var(--p5));
-      border-radius:999px;
-      opacity:.95;
-    }
-
-    .grid-charts{
-      display:grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap:14px;
-    }
-
-    .chart{
-      grid-column: span 6;
-      padding: 14px;
-    }
-    .chart h3{
-      margin: 0 0 10px 0;
-      font-size: 14px;
-      letter-spacing:.2px;
-    }
-    .chart .meta{
-      margin-top:-6px;
-      font-size: 12px;
-      color: var(--muted);
-      display:flex; gap:10px; flex-wrap:wrap;
-    }
-    .chart canvas{ width:100%; height: 300px; }
-
-    .wide{ grid-column: span 12; }
-
-    .table-card{
-      padding: 14px;
-    }
-    .table-head{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:10px;
-    }
-    .table-head h3{
-      margin:0;
-      font-size: 14px;
-    }
-    .table-head .hint{
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    table{
-      width:100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      overflow:hidden;
-      border-radius: 16px;
-      border: 1px solid rgba(30,36,48,.10);
-      background: rgba(255,255,255,.55);
-    }
-
-    thead th{
-      text-align:left;
-      font-size: 12px;
-      color: rgba(30,36,48,.72);
-      padding: 10px 10px;
-      border-bottom: 1px solid rgba(30,36,48,.08);
-      position:sticky; top:0;
-      background: rgba(255,255,255,.78);
-      backdrop-filter: blur(10px);
-      z-index: 1;
-      white-space:nowrap;
-    }
-
-    tbody td{
-      font-size: 12px;
-      padding: 9px 10px;
-      border-bottom: 1px solid rgba(30,36,48,.06);
-      vertical-align:middle;
-      white-space:nowrap;
-    }
-    tbody tr:hover td{
-      background: rgba(191,231,255,.22);
-    }
-
-    .tag{
-      display:inline-flex;
-      align-items:center;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border:1px solid rgba(30,36,48,.10);
-      font-size: 11px;
-      color: rgba(30,36,48,.78);
-      background: rgba(255,255,255,.55);
-    }
-    .tag.team1{ background: rgba(217,247,214,.55); }
-    .tag.team2{ background: rgba(255,214,231,.55); }
-
-    .num{ text-align:right; font-variant-numeric: tabular-nums; }
-    .muted{ color: var(--muted); }
-
-    .footer{
-      padding: 14px 20px 26px;
-      max-width:1240px;
-      margin:0 auto;
-      color: var(--muted);
-      font-size: 12px;
-      display:flex;
-      justify-content:space-between;
-      flex-wrap:wrap;
-      gap:10px;
-    }
-
+    :root { --bg:#0b1220; --card:#111b2e; --muted:#a9b4c7; --text:#eef2ff; --line:#23314f; }
+    body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+      background:linear-gradient(180deg,#070b14 0%, #0b1220 100%); color:var(--text); }
+    header{ padding:18px 18px 10px; border-bottom:1px solid var(--line); position:sticky; top:0; background:#0b1220cc; backdrop-filter: blur(8px); z-index:10;}
+    h1{ margin:0; font-size:18px; font-weight:700; letter-spacing:.2px; }
+    .wrap{ padding:18px; max-width:1300px; margin:0 auto; }
+    .grid{ display:grid; gap:12px; }
+    .filters{ grid-template-columns: repeat(4,minmax(0,1fr)); }
+    .kpis{ grid-template-columns: repeat(5,minmax(0,1fr)); }
+    .row2{ grid-template-columns: 2fr 1fr; }
+    .row3{ grid-template-columns: 1.2fr 1.8fr; }
+    .card{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px; }
+    label{ display:block; font-size:12px; color:var(--muted); margin:0 0 6px; }
+    select,input{ width:100%; padding:10px 10px; border-radius:12px; border:1px solid var(--line);
+      background:#0d1628; color:var(--text); outline:none; }
+    .kpi .name{ font-size:12px; color:var(--muted); }
+    .kpi .val{ font-size:22px; font-weight:800; margin-top:4px; }
+    .kpi .sub{ font-size:12px; color:var(--muted); margin-top:4px; }
+    canvas{ width:100% !important; height:320px !important; }
+    table{ width:100%; border-collapse:collapse; font-size:13px; }
+    th,td{ padding:10px 8px; border-bottom:1px solid var(--line); }
+    th{ text-align:left; color:var(--muted); font-weight:600; }
+    tr:hover td{ background:#0d1628; }
+    .muted{ color:var(--muted); font-size:12px; }
+    .pill{ display:inline-block; padding:4px 8px; border-radius:999px; background:#0d1628; border:1px solid var(--line); font-size:12px; color:var(--muted); }
     @media (max-width: 1100px){
-      .kpi{ grid-column: span 6; }
-      .chart{ grid-column: span 12; }
-      .chart canvas{ height: 280px; }
-    }
-    @media (max-width: 640px){
-      .kpi{ grid-column: span 12; }
-      input[type="search"]{ min-width: 0; width:100%; }
-      select{ width:100%; }
+      .filters{ grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .kpis{ grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .row2,.row3{ grid-template-columns: 1fr; }
+      canvas{ height:260px !important; }
     }
   </style>
 </head>
 
 <body>
-  <header>
-    <div class="topbar">
-      <div class="brand">
-        <h1>Resumen Comparativo — Ventas & Postventa</h1>
-        <div class="sub">
-          <span class="pill"><span class="dot"></span> Estilo PowerBI Pastel • HTML + Chart.js</span>
-          <span class="pill" id="rangePill">Rango: —</span>
-          <span class="pill" id="focusPill">Vista: —</span>
-        </div>
-      </div>
+<header>
+  <h1>📊 Sales Ops Dashboard (GitHub Pages)</h1>
+</header>
 
-      <div class="filters">
-        <select id="viewSelect" title="Vista">
-          <option value="compare" selected>Comparativo (20 vs 21)</option>
-          <option value="day-2026-01-20">Solo 20/01/2026</option>
-          <option value="day-2026-01-21">Solo 21/01/2026</option>
-        </select>
-
-        <select id="teamSelect" title="Equipo">
-          <option value="all" selected>Todos los equipos</option>
-          <option value="Equipo de Ventas Anuar">Equipo de Ventas Anuar</option>
-          <option value="Post venta">Post venta</option>
-        </select>
-
-        <input id="searchBox" type="search" placeholder="Buscar agente..." />
-      </div>
+<div class="wrap">
+  <!-- Filters -->
+  <div class="grid filters">
+    <div class="card">
+      <label>Fecha (desde)</label>
+      <input type="date" id="dateStart" />
     </div>
-  </header>
-
-  <main>
-    <!-- KPI row -->
-    <section class="grid-kpis">
-      <div class="card kpi" id="kpiDials"></div>
-      <div class="card kpi" id="kpiContacts"></div>
-      <div class="card kpi" id="kpiTalkTime"></div>
-      <div class="card kpi" id="kpiRevenue"></div>
-    </section>
-
-    <!-- Charts -->
-    <section class="grid-charts">
-      <div class="card chart">
-        <h3>Embudo (por día): Inbound → Presentación → Cotización → Success HubSpot</h3>
-        <div class="meta" id="metaFunnel"></div>
-        <canvas id="funnelChart"></canvas>
-      </div>
-
-      <div class="card chart">
-        <h3>Rendimiento: Dials, Contacts, Success Five9 (por día)</h3>
-        <div class="meta" id="metaPerf"></div>
-        <canvas id="perfChart"></canvas>
-      </div>
-
-      <div class="card chart wide">
-        <h3>Ranking de Agentes (Facturado) — con filtros</h3>
-        <div class="meta" id="metaRank"></div>
-        <canvas id="rankChart"></canvas>
-      </div>
-    </section>
-
-    <!-- Table -->
-    <section class="card table-card">
-      <div class="table-head">
-        <div>
-          <h3>Detalle por Agente</h3>
-          <div class="hint">Tip: filtra por “Equipo” y busca por nombre. Ordena mentalmente: Facturado es la métrica reina.</div>
-        </div>
-        <div class="pill" id="tablePill">Registros: —</div>
-      </div>
-
-      <div style="overflow:auto; max-height: 520px;">
-        <table>
-          <thead>
-            <tr>
-              <th>Team</th>
-              <th>Agente</th>
-              <th>Fecha</th>
-              <th class="num">Dials</th>
-              <th class="num">Contacts</th>
-              <th class="num">Success Five9</th>
-              <th class="num">Talk Time</th>
-              <th class="num">Lead Inbound</th>
-              <th class="num">Presentación</th>
-              <th class="num">Cotización</th>
-              <th class="num">Success HubSpot</th>
-              <th class="num">Clientes (F. sin Conexión)</th>
-              <th class="num">Campañas</th>
-              <th class="num">Facturado</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
-    </section>
-  </main>
-
-  <div class="footer">
-    <div>Hecho para GitHub Pages: guarda este archivo como <span class="muted">index.html</span> en tu repo y actívalo en Settings → Pages.</div>
-    <div class="muted" id="lastUpdated">Dataset: 20/01/2026 y 21/01/2026</div>
+    <div class="card">
+      <label>Fecha (hasta)</label>
+      <input type="date" id="dateEnd" />
+    </div>
+    <div class="card">
+      <label>Team</label>
+      <select id="teamSel"></select>
+    </div>
+    <div class="card">
+      <label>Agente</label>
+      <select id="agentSel"></select>
+    </div>
   </div>
 
+  <!-- KPIs -->
+  <div style="height:12px"></div>
+  <div class="grid kpis" id="kpiGrid"></div>
+
+  <!-- Trend + Funnel -->
+  <div style="height:12px"></div>
+  <div class="grid row2">
+    <div class="card">
+      <div class="muted">Tendencia por día</div>
+      <canvas id="trendChart"></canvas>
+    </div>
+    <div class="card">
+      <div class="muted">Funnel (agregado)</div>
+      <canvas id="funnelChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Ranking + Scatter -->
+  <div style="height:12px"></div>
+  <div class="grid row3">
+    <div class="card">
+      <div class="muted">
+        Ranking por agente (Facturado)
+        <span class="pill" id="rankCount"></span>
+      </div>
+      <div style="overflow:auto; max-height:420px;">
+        <table id="rankTable">
+          <thead>
+            <tr>
+              <th>Agente</th><th>Team</th><th>Dials</th><th>Contacts</th><th>Success HS</th><th>Facturado</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="muted">Scatter: Contacts vs Facturado (por agente)</div>
+      <canvas id="scatterChart"></canvas>
+    </div>
+  </div>
+
+  <div style="height:16px"></div>
+  <div class="muted">
+    Data source: <code>data/daily_summary.csv</code> y <code>data/agents_detail.csv</code>
+  </div>
+</div>
+
 <script>
-/* =========================
-   1) DATA (pegada tal cual)
-   ========================= */
-const dailySummary = [
-  {
-    date: "2026-01-20",
-    dials: 1770,
-    contacts: 617,
-    talkTime: "15:54:24",
-    successFive9: 17,
-    leadInbound: 67,
-    presentacion: 12,
-    cotizaciones: 2,
-    successHubspot: 14,
-    facturadoNuevo: 3700.00,
-    totalCampanas: 2,
+  // ---------- Utilities ----------
+  const money = (x) => (x==null || isNaN(x)) ? "—" : new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(x);
+  const intf  = (x) => (x==null || isNaN(x)) ? "—" : new Intl.NumberFormat("en-US").format(Math.round(x));
+  const pct   = (x) => (x==null || isNaN(x)) ? "—" : (x*100).toFixed(2) + "%";
 
-    clientesSinConexion: 1,
-    referidos: 0,
-    inboundMesesAnt: 0,
-    inboundMM: 0,
-    totalClientes: 1,
-    promedioTimerAgente: "2:39:38",
-    conversionClientes: 0.0714,
-    conversionInboundMM: 0.0000,
-    ipc: 44.05
-  },
-  {
-    date: "2026-01-21",
-    dials: 1988,
-    contacts: 680,
-    talkTime: "8:35:40",
-    successFive9: 6,
-    leadInbound: 1,           // (según el primer bloque)
-    presentacion: 5,
-    cotizaciones: 5,
-    successHubspot: 10,
-    facturadoNuevo: 6000.00,
-    totalCampanas: 3,
-
-    clientesSinConexion: 1,
-    referidos: 0,
-    inboundMesesAnt: 0,
-    inboundMM: 0,
-    totalClientes: 3,
-    promedioTimerAgente: "2:10:23",
-    conversionClientes: 0.30,
-    conversionInboundMM: 2.00,
-    ipc: 857.14
-  }
-];
-
-// Detalle por agente (20/01/2026)
-const agents = [
-  { team:"Equipo de Ventas Anuar", agente:"Angeles Espinoza", fecha:"2026-01-20", dials:243, contacts:32, successFive9:4, talkTime:"4:03:04", leadInbound:3, presentacion:4, cotizacion:0, successHubspot:4, clientesSinConexion:0, campanas:0, facturado:0 },
-  { team:"Equipo de Ventas Anuar", agente:"Geraldine Murillo", fecha:"2026-01-20", dials:294, contacts:31, successFive9:0, talkTime:"2:35:57", leadInbound:11, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:0 },
-  { team:"Equipo de Ventas Anuar", agente:"Judith Mercado", fecha:"2026-01-20", dials:179, contacts:24, successFive9:2, talkTime:"2:31:13", leadInbound:10, presentacion:2, cotizacion:0, successHubspot:2, clientesSinConexion:0, campanas:0, facturado:0 },
-  { team:"Equipo de Ventas Anuar", agente:"Rodrigo Guadamuz", fecha:"2026-01-20", dials:0, contacts:0, successFive9:0, talkTime:"0:00:00", leadInbound:0, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:0 },
-  { team:"Equipo de Ventas Anuar", agente:"Alexia Rodríguez", fecha:"2026-01-20", dials:132, contacts:22, successFive9:1, talkTime:"2:59:19", leadInbound:8, presentacion:1, cotizacion:0, successHubspot:1, clientesSinConexion:0, campanas:0, facturado:500.00 },
-  { team:"Equipo de Ventas Anuar", agente:"Mariett Castro", fecha:"2026-01-20", dials:97, contacts:20, successFive9:4, talkTime:"3:54:16", leadInbound:7, presentacion:2, cotizacion:0, successHubspot:2, clientesSinConexion:0, campanas:0, facturado:1100.00 },
-
-  { team:"Post venta", agente:"Andrea Rivera", fecha:"2026-01-20", dials:103, contacts:87, successFive9:0, talkTime:"4:05:41", leadInbound:6, presentacion:1, cotizacion:0, successHubspot:1, clientesSinConexion:0, campanas:1, facturado:450.00 },
-  { team:"Post venta", agente:"Alejandra Rodriguez", fecha:"2026-01-20", dials:98, contacts:61, successFive9:0, talkTime:"3:00:45", leadInbound:0, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:0 },
-  { team:"Post venta", agente:"Ariana Leiva", fecha:"2026-01-20", dials:109, contacts:58, successFive9:1, talkTime:"2:35:48", leadInbound:5, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:750.00 },
-  { team:"Post venta", agente:"David Espinoza", fecha:"2026-01-20", dials:109, contacts:85, successFive9:0, talkTime:"1:35:00", leadInbound:5, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:0 },
-  { team:"Post venta", agente:"Jonathan Salinas", fecha:"2026-01-20", dials:87, contacts:31, successFive9:0, talkTime:"2:56:26", leadInbound:0, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:300.00 },
-  { team:"Post venta", agente:"Mario Castano", fecha:"2026-01-20", dials:73, contacts:61, successFive9:0, talkTime:"2:31:20", leadInbound:1, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:1, campanas:1, facturado:300.00 },
-  { team:"Post venta", agente:"Nicole Garcia", fecha:"2026-01-20", dials:130, contacts:69, successFive9:4, talkTime:"3:12:46", leadInbound:5, presentacion:1, cotizacion:2, successHubspot:3, clientesSinConexion:0, campanas:0, facturado:0 },
-  { team:"Post venta", agente:"Paola Paz", fecha:"2026-01-20", dials:0, contacts:0, successFive9:0, talkTime:"0:00:00", leadInbound:0, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:0 },
-  { team:"Post venta", agente:"Veronica Ramirez", fecha:"2026-01-20", dials:116, contacts:36, successFive9:1, talkTime:"3:52:49", leadInbound:6, presentacion:1, cotizacion:0, successHubspot:1, clientesSinConexion:0, campanas:0, facturado:300.00 },
-
-  // Detalle por agente (21/01/2026)
-  { team:"Equipo de Ventas Anuar", agente:"Angeles Espinoza", fecha:"2026-01-21", dials:314, contacts:38, successFive9:1, talkTime:"2:49:44", leadInbound:0, presentacion:1, cotizacion:0, successHubspot:1, clientesSinConexion:0, campanas:0, facturado:0 },
-  { team:"Equipo de Ventas Anuar", agente:"Geraldine Murillo", fecha:"2026-01-21", dials:237, contacts:28, successFive9:2, talkTime:"3:14:49", leadInbound:0, presentacion:2, cotizacion:0, successHubspot:2, clientesSinConexion:0, campanas:0, facturado:1000.00 },
-  { team:"Equipo de Ventas Anuar", agente:"Judith Mercado", fecha:"2026-01-21", dials:195, contacts:41, successFive9:1, talkTime:"2:17:36", leadInbound:0, presentacion:1, cotizacion:0, successHubspot:1, clientesSinConexion:0, campanas:0, facturado:0 },
-  { team:"Equipo de Ventas Anuar", agente:"Rodrigo Guadamuz", fecha:"2026-01-21", dials:154, contacts:17, successFive9:0, talkTime:"1:43:23", leadInbound:0, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:0 },
-  { team:"Equipo de Ventas Anuar", agente:"Alexia Rodríguez", fecha:"2026-01-21", dials:168, contacts:25, successFive9:0, talkTime:"2:27:53", leadInbound:0, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:650.00 },
-  { team:"Equipo de Ventas Anuar", agente:"Mariett Castro", fecha:"2026-01-21", dials:81, contacts:13, successFive9:1, talkTime:"3:44:38", leadInbound:0, presentacion:1, cotizacion:0, successHubspot:1, clientesSinConexion:0, campanas:0, facturado:0 },
-
-  { team:"Post venta", agente:"Andrea Rivera", fecha:"2026-01-21", dials:99, contacts:79, successFive9:0, talkTime:"3:00:56", leadInbound:0, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:1, campanas:2, facturado:1700.00 },
-  { team:"Post venta", agente:"Alejandra Rodriguez", fecha:"2026-01-21", dials:80, contacts:55, successFive9:0, talkTime:"2:34:20", leadInbound:0, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:900.00 },
-  { team:"Post venta", agente:"Ariana Leiva", fecha:"2026-01-21", dials:192, contacts:95, successFive9:0, talkTime:"1:04:02", leadInbound:0, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:750.00 },
-  { team:"Post venta", agente:"David Espinoza", fecha:"2026-01-21", dials:0, contacts:0, successFive9:0, talkTime:"0:00:00", leadInbound:0, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:0 },
-  { team:"Post venta", agente:"Jonathan Salinas", fecha:"2026-01-21", dials:66, contacts:61, successFive9:0, talkTime:"1:56:10", leadInbound:0, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:0 },
-  { team:"Post venta", agente:"Mario Castano", fecha:"2026-01-21", dials:143, contacts:116, successFive9:0, talkTime:"1:46:57", leadInbound:0, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:0 },
-  { team:"Post venta", agente:"Nicole Garcia", fecha:"2026-01-21", dials:119, contacts:71, successFive9:1, talkTime:"3:04:17", leadInbound:0, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:1, facturado:750.00 },
-  { team:"Post venta", agente:"Paola Paz", fecha:"2026-01-21", dials:0, contacts:0, successFive9:0, talkTime:"0:00:00", leadInbound:0, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:0 },
-  { team:"Post venta", agente:"Veronica Ramirez", fecha:"2026-01-21", dials:140, contacts:41, successFive9:0, talkTime:"2:50:55", leadInbound:0, presentacion:0, cotizacion:0, successHubspot:0, clientesSinConexion:0, campanas:0, facturado:250.00 },
-];
-
-/* =========================
-   2) UTILIDADES
-   ========================= */
-const fmtInt = (n) => (n ?? 0).toLocaleString("en-US");
-const fmtMoney = (n) => (n ?? 0).toLocaleString("en-US", { style:"currency", currency:"USD" });
-const fmtPct = (n) => (n ?? 0).toLocaleString("es-MX", { style:"percent", minimumFractionDigits:2, maximumFractionDigits:2 });
-
-function hmsToSeconds(hms){
-  if(!hms) return 0;
-  const parts = String(hms).split(":").map(Number);
-  const [h,m,s] = parts.length === 3 ? parts : [0,0,0];
-  return (h*3600) + (m*60) + s;
-}
-function secondsToHMS(sec){
-  sec = Math.max(0, Math.round(sec));
-  const h = Math.floor(sec / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  const s = sec % 60;
-  return `${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-}
-function deltaBadge(delta, isMoney=false, isTime=false){
-  const up = delta > 0;
-  const down = delta < 0;
-  const arrow = up ? "up" : (down ? "down" : "");
-  let valueTxt;
-  if(isTime) valueTxt = (delta === 0) ? "0:00:00" : (delta < 0 ? "-" : "") + secondsToHMS(Math.abs(delta));
-  else if(isMoney) valueTxt = (delta === 0) ? fmtMoney(0) : (delta < 0 ? "-" : "") + fmtMoney(Math.abs(delta));
-  else valueTxt = (delta === 0) ? "0" : (delta < 0 ? "-" : "") + fmtInt(Math.abs(delta));
-
-  const cls = up ? "color:var(--ok)" : (down ? "color:var(--bad)" : "color:var(--muted)");
-  return `
-    <span class="delta" style="${cls}">
-      ${arrow ? `<span class="arrow ${arrow}"></span>` : `<span style="width:10px"></span>`}
-      Δ ${valueTxt}
-    </span>`;
-}
-
-function parseISOToLabel(iso){
-  const [y,m,d] = iso.split("-");
-  return `${d}/${m}/${y}`;
-}
-
-function getMode(){
-  const v = document.getElementById("viewSelect").value;
-  const team = document.getElementById("teamSelect").value;
-  const q = document.getElementById("searchBox").value.trim().toLowerCase();
-  return { v, team, q };
-}
-
-function filterAgents({v, team, q}){
-  return agents.filter(r => {
-    const byView = v === "compare" ? true : r.fecha === v.replace("day-","");
-    const byTeam = team === "all" ? true : r.team === team;
-    const byQ = !q ? true : r.agente.toLowerCase().includes(q);
-    return byView && byTeam && byQ;
-  });
-}
-
-function getDailyByView(v){
-  if(v === "compare") return dailySummary.slice();
-  const iso = v.replace("day-","");
-  return dailySummary.filter(d => d.date === iso);
-}
-
-/* =========================
-   3) KPI RENDER
-   ========================= */
-function renderKpis(mode){
-  const v = mode.v;
-  const days = getDailyByView(v);
-
-  const rangePill = document.getElementById("rangePill");
-  const focusPill = document.getElementById("focusPill");
-
-  if(v === "compare"){
-    rangePill.textContent = `Rango: ${parseISOToLabel(dailySummary[0].date)} vs ${parseISOToLabel(dailySummary[1].date)}`;
-    focusPill.textContent = `Vista: Comparativo`;
-  }else{
-    rangePill.textContent = `Rango: ${parseISOToLabel(days[0]?.date ?? dailySummary[0].date)}`;
-    focusPill.textContent = `Vista: Un día`;
+  function parseCSV(text){
+    // Parser simple para CSV "limpio" (sin comas dentro de valores).
+    const lines = text.trim().split(/\r?\n/);
+    const headers = lines[0].split(",").map(h=>h.trim());
+    return lines.slice(1).map(line=>{
+      const cols = line.split(",");
+      const obj = {};
+      headers.forEach((h,i)=> obj[h] = (cols[i] ?? "").trim());
+      return obj;
+    });
   }
 
-  const d0 = dailySummary[0];
-  const d1 = dailySummary[1];
+  function toISODate(s){
+    // Acepta "2026-01-21" o "21/01/2026"
+    if(!s) return null;
+    if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if(m) return `${m[3]}-${m[2]}-${m[1]}`;
+    return null;
+  }
 
-  // When compare: show day2 value + delta vs day1
-  // When single day: show that day + no delta
-  const getVal = (key) => (v === "compare" ? d1[key] : days[0][key]);
-  const getDelta = (key, transform=null) => {
-    if(v !== "compare") return 0;
-    const a = transform ? transform(d0[key]) : d0[key];
-    const b = transform ? transform(d1[key]) : d1[key];
-    return (b - a);
-  };
+  function timeToSeconds(hms){
+    // "H:MM:SS" o "HH:MM:SS"
+    if(!hms) return 0;
+    const parts = hms.split(":").map(Number);
+    if(parts.length !== 3 || parts.some(n=>isNaN(n))) return 0;
+    return parts[0]*3600 + parts[1]*60 + parts[2];
+  }
 
-  // Dials
-  const dialsVal = getVal("dials");
-  const dialsDelta = getDelta("dials");
-  document.getElementById("kpiDials").innerHTML = `
-    <div class="row">
-      <div class="label">Total de Llamadas (Dials)</div>
-      <span class="tag" style="background: rgba(191,231,255,.55)">Actividad</span>
-    </div>
-    <div class="row">
-      <div class="value">${fmtInt(dialsVal)}</div>
-      ${v==="compare" ? deltaBadge(dialsDelta) : `<span class="delta">Sin comparación</span>`}
-    </div>
-    <div class="spark"><i style="width:${Math.min(100, (dialsVal / Math.max(d0.dials,d1.dials))*100)}%"></i></div>
-  `;
+  function sum(arr){ return arr.reduce((a,b)=>a+(+b||0),0); }
 
-  // Contacts
-  const contactsVal = getVal("contacts");
-  const contactsDelta = getDelta("contacts");
-  document.getElementById("kpiContacts").innerHTML = `
-    <div class="row">
-      <div class="label">Contacts</div>
-      <span class="tag" style="background: rgba(217,247,214,.55)">Conexión</span>
-    </div>
-    <div class="row">
-      <div class="value">${fmtInt(contactsVal)}</div>
-      ${v==="compare" ? deltaBadge(contactsDelta) : `<span class="delta">Sin comparación</span>`}
-    </div>
-    <div class="spark"><i style="width:${Math.min(100, (contactsVal / Math.max(d0.contacts,d1.contacts))*100)}%; background: linear-gradient(90deg, var(--p3), var(--p1))"></i></div>
-  `;
+  // ---------- Load data ----------
+  let daily = [];
+  let agents = [];
 
-  // Talk time
-  const ttVal = getVal("talkTime");
-  const ttDelta = getDelta("talkTime", hmsToSeconds);
-  document.getElementById("kpiTalkTime").innerHTML = `
-    <div class="row">
-      <div class="label">Talk Time</div>
-      <span class="tag" style="background: rgba(227,221,255,.55)">Tiempo</span>
-    </div>
-    <div class="row">
-      <div class="value">${ttVal}</div>
-      ${v==="compare" ? deltaBadge(ttDelta, false, true) : `<span class="delta">Sin comparación</span>`}
-    </div>
-    <div class="spark"><i style="width:${Math.min(100, (hmsToSeconds(ttVal) / Math.max(hmsToSeconds(d0.talkTime),hmsToSeconds(d1.talkTime)))*100)}%; background: linear-gradient(90deg, var(--p5), var(--p6))"></i></div>
-  `;
+  async function loadAll(){
+    const [d1,d2] = await Promise.all([
+      fetch("data/daily_summary.csv").then(r=>r.text()),
+      fetch("data/agents_detail.csv").then(r=>r.text()),
+    ]);
 
-  // Revenue
-  const revVal = getVal("facturadoNuevo");
-  const revDelta = getDelta("facturadoNuevo");
-  document.getElementById("kpiRevenue").innerHTML = `
-    <div class="row">
-      <div class="label">Facturado Nuevo</div>
-      <span class="tag" style="background: rgba(255,241,191,.65)">$</span>
-    </div>
-    <div class="row">
-      <div class="value">${fmtMoney(revVal)}</div>
-      ${v==="compare" ? deltaBadge(revDelta, true, false) : `<span class="delta">Sin comparación</span>`}
-    </div>
-    <div class="spark"><i style="width:${Math.min(100, (revVal / Math.max(d0.facturadoNuevo,d1.facturadoNuevo))*100)}%; background: linear-gradient(90deg, var(--p4), var(--p2))"></i></div>
-  `;
-}
+    daily = parseCSV(d1).map(r=>({
+      Fecha: toISODate(r["Fecha"]),
+      Dials: +r["Dials"]||0,
+      Contacts: +r["Contacts"]||0,
+      TalkTimeSec: timeToSeconds(r["Talk Time"]),
+      SuccessFive9: +r["Success Five9"]||0,
+      LeadInbound: +r["Lead Inbound"]||0,
+      Presentation: +r["Product Presentation"]||0,
+      Cotizaciones: +r["Cotizaciones"]||0,
+      SuccessHubspot: +r["Success Hubspot"]||0,
+      Facturado: +r["Facturado"]||0,
+      Campañas: +r["Campañas"]||0,
+    })).filter(r=>r.Fecha);
 
-/* =========================
-   4) CHARTS
-   ========================= */
-let funnelChart, perfChart, rankChart;
+    agents = parseCSV(d2).map(r=>({
+      Team: r["Team"] || "—",
+      Agente: r["Agente"] || "—",
+      Fecha: toISODate(r["Fecha"]),
+      Dials: +r["Dials"]||0,
+      Contacts: +r["Contacts"]||0,
+      SuccessFive9: +r["Success Five9"]||0,
+      TalkTimeSec: timeToSeconds(r["Talk Time"]),
+      LeadInbound: +r["Lead Inbound"]||0,
+      Presentation: +r["Product Presentation"]||0,
+      Cotizacion: +r["Cotizacion"]||0,
+      SuccessHubspot: +r["Success Hubspot"]||0,
+      Facturado: +r["Facturado"]||0,
+      Campañas: +r["Campañas"]||0,
+      TotalClientes: +r["Total de Clientes"]||0,
+    })).filter(r=>r.Fecha);
 
-function chartDefaults(){
-  Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
-  Chart.defaults.color = "rgba(30,36,48,.75)";
-  Chart.defaults.borderColor = "rgba(30,36,48,.10)";
-}
+    initFilters();
+    render();
+  }
 
-function pastelAlpha(hex, a){
-  // hex like #rrggbb -> rgba
-  const h = hex.replace("#","");
-  const r = parseInt(h.slice(0,2),16);
-  const g = parseInt(h.slice(2,4),16);
-  const b = parseInt(h.slice(4,6),16);
-  return `rgba(${r},${g},${b},${a})`;
-}
+  // ---------- Filters ----------
+  const dateStart = document.getElementById("dateStart");
+  const dateEnd = document.getElementById("dateEnd");
+  const teamSel = document.getElementById("teamSel");
+  const agentSel = document.getElementById("agentSel");
 
-function buildFunnelChart(mode){
-  const days = getDailyByView(mode.v);
-  const labels = days.map(d => parseISOToLabel(d.date));
+  function initFilters(){
+    const allDates = [...new Set([...daily.map(d=>d.Fecha), ...agents.map(a=>a.Fecha)].filter(Boolean))].sort();
+    const minD = allDates[0];
+    const maxD = allDates[allDates.length-1];
 
-  const inbound = days.map(d => d.leadInbound ?? 0);
-  const pres = days.map(d => d.presentacion ?? 0);
-  const coti = days.map(d => d.cotizaciones ?? 0);
-  const shub = days.map(d => d.successHubspot ?? 0);
+    dateStart.value = minD;
+    dateEnd.value = maxD;
 
-  document.getElementById("metaFunnel").innerHTML = `
-    <span class="pill">Inbound: ${inbound.reduce((a,b)=>a+b,0)}</span>
-    <span class="pill">Presentación: ${pres.reduce((a,b)=>a+b,0)}</span>
-    <span class="pill">Cotizaciones: ${coti.reduce((a,b)=>a+b,0)}</span>
-    <span class="pill">Success HubSpot: ${shub.reduce((a,b)=>a+b,0)}</span>
-  `;
+    const teams = [...new Set(agents.map(a=>a.Team))].sort();
+    teamSel.innerHTML = `<option value="__all__">Todos</option>` + teams.map(t=>`<option value="${t}">${t}</option>`).join("");
 
-  const ctx = document.getElementById("funnelChart");
-  if(funnelChart) funnelChart.destroy();
+    fillAgents();
 
-  funnelChart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [
-        { label:"Inbound", data: inbound, backgroundColor: pastelAlpha(getCSS("--p1"), .65), borderColor: pastelAlpha(getCSS("--p1"), .9), borderWidth: 1, borderRadius: 10 },
-        { label:"Presentación", data: pres, backgroundColor: pastelAlpha(getCSS("--p3"), .65), borderColor: pastelAlpha(getCSS("--p3"), .9), borderWidth: 1, borderRadius: 10 },
-        { label:"Cotización", data: coti, backgroundColor: pastelAlpha(getCSS("--p4"), .70), borderColor: pastelAlpha(getCSS("--p4"), .95), borderWidth: 1, borderRadius: 10 },
-        { label:"Success HubSpot", data: shub, backgroundColor: pastelAlpha(getCSS("--p2"), .65), borderColor: pastelAlpha(getCSS("--p2"), .9), borderWidth: 1, borderRadius: 10 },
-      ]
-    },
-    options: {
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        legend:{ position:"top", labels:{ boxWidth: 14, boxHeight: 14, usePointStyle:true, pointStyle:"rectRounded" } },
-        tooltip:{ mode:"index", intersect:false }
-      },
-      scales:{
-        x:{ stacked:false, grid:{ display:false } },
-        y:{ beginAtZero:true }
-      }
+    [dateStart,dateEnd,teamSel,agentSel].forEach(el=> el.addEventListener("change", render));
+    teamSel.addEventListener("change", ()=>{ fillAgents(); render(); });
+  }
+
+  function fillAgents(){
+    const t = teamSel.value;
+    const filtered = (t==="__all__") ? agents : agents.filter(a=>a.Team===t);
+    const names = [...new Set(filtered.map(a=>a.Agente))].sort();
+    agentSel.innerHTML = `<option value="__all__">Todos</option>` + names.map(n=>`<option value="${n}">${n}</option>`).join("");
+  }
+
+  function applyFilters(){
+    const s = dateStart.value;
+    const e = dateEnd.value;
+    const t = teamSel.value;
+    const a = agentSel.value;
+
+    const inRange = (x) => x.Fecha && x.Fecha >= s && x.Fecha <= e;
+
+    let a2 = agents.filter(inRange);
+    if(t !== "__all__") a2 = a2.filter(x=>x.Team===t);
+    if(a !== "__all__") a2 = a2.filter(x=>x.Agente===a);
+
+    let d2 = daily.filter(inRange);
+    return {a2, d2};
+  }
+
+  // ---------- Charts ----------
+  let trendChart, funnelChart, scatterChart;
+
+  function destroy(chart){ if(chart) chart.destroy(); }
+
+  function renderKPIs(rows){
+    const totals = {
+      dials: sum(rows.map(r=>r.Dials)),
+      contacts: sum(rows.map(r=>r.Contacts)),
+      s5: sum(rows.map(r=>r.SuccessFive9)),
+      sh: sum(rows.map(r=>r.SuccessHubspot)),
+      talk: sum(rows.map(r=>r.TalkTimeSec)),
+      inbound: sum(rows.map(r=>r.LeadInbound)),
+      pres: sum(rows.map(r=>r.Presentation)),
+      cot: sum(rows.map(r=>r.Cotizacion)),
+      camp: sum(rows.map(r=>r.Campañas)),
+      fact: sum(rows.map(r=>r.Facturado)),
+    };
+
+    const contactRate = totals.dials ? totals.contacts / totals.dials : null;
+    const successRate = totals.contacts ? totals.sh / totals.contacts : null;
+    const factPerSuccess = totals.sh ? totals.fact / totals.sh : null;
+    const talkHrs = totals.talk / 3600;
+
+    const kpis = [
+      ["Dials", intf(totals.dials), ""],
+      ["Contacts", intf(totals.contacts), "Contact Rate: " + (contactRate==null ? "—" : pct(contactRate))],
+      ["Success Five9", intf(totals.s5), ""],
+      ["Success Hubspot", intf(totals.sh), "Success Rate: " + (successRate==null ? "—" : pct(successRate))],
+      ["Facturado", money(totals.fact), "Facturado/Success: " + (factPerSuccess==null ? "—" : money(factPerSuccess))],
+      ["Talk Time", talkHrs.toFixed(2) + " h", ""],
+      ["Lead Inbound", intf(totals.inbound), ""],
+      ["Presentación", intf(totals.pres), ""],
+      ["Cotización", intf(totals.cot), ""],
+      ["Campañas", intf(totals.camp), ""],
+    ];
+
+    const grid = document.getElementById("kpiGrid");
+    grid.innerHTML = kpis.map(([n,v,s])=>`
+      <div class="card kpi">
+        <div class="name">${n}</div>
+        <div class="val">${v}</div>
+        <div class="sub">${s || "&nbsp;"}</div>
+      </div>
+    `).join("");
+  }
+
+  function renderTrend(dRows, aRows){
+    // Preferimos daily_summary si hay, si no agregamos desde agents
+    const byDate = new Map();
+
+    if(dRows.length){
+      dRows.slice().sort((x,y)=>x.Fecha.localeCompare(y.Fecha)).forEach(r=>{
+        byDate.set(r.Fecha, {Fecha:r.Fecha, Dials:r.Dials, Contacts:r.Contacts, SuccessHS:r.SuccessHubspot, Fact:r.Facturado});
+      });
+    } else {
+      aRows.forEach(r=>{
+        if(!byDate.has(r.Fecha)) byDate.set(r.Fecha, {Fecha:r.Fecha, Dials:0, Contacts:0, SuccessHS:0, Fact:0});
+        const o = byDate.get(r.Fecha);
+        o.Dials += r.Dials; o.Contacts += r.Contacts; o.SuccessHS += r.SuccessHubspot; o.Fact += r.Facturado;
+      });
     }
-  });
-}
 
-function buildPerfChart(mode){
-  const days = getDailyByView(mode.v);
-  const labels = days.map(d => parseISOToLabel(d.date));
+    const trend = [...byDate.values()].sort((x,y)=>x.Fecha.localeCompare(y.Fecha));
+    const labels = trend.map(x=>x.Fecha);
 
-  const dials = days.map(d => d.dials ?? 0);
-  const contacts = days.map(d => d.contacts ?? 0);
-  const s5 = days.map(d => d.successFive9 ?? 0);
-
-  document.getElementById("metaPerf").innerHTML = `
-    <span class="pill">Dials total: ${fmtInt(dials.reduce((a,b)=>a+b,0))}</span>
-    <span class="pill">Contacts total: ${fmtInt(contacts.reduce((a,b)=>a+b,0))}</span>
-    <span class="pill">Success Five9 total: ${fmtInt(s5.reduce((a,b)=>a+b,0))}</span>
-  `;
-
-  const ctx = document.getElementById("perfChart");
-  if(perfChart) perfChart.destroy();
-
-  perfChart = new Chart(ctx, {
-    type:"line",
-    data:{
-      labels,
-      datasets:[
-        { label:"Dials", data:dials, tension:.35, fill:true,
-          backgroundColor: pastelAlpha(getCSS("--p1"), .35),
-          borderColor: pastelAlpha(getCSS("--p1"), .95),
-          pointBackgroundColor: pastelAlpha(getCSS("--p1"), .95),
-          pointRadius: 4, pointHoverRadius: 5
-        },
-        { label:"Contacts", data:contacts, tension:.35, fill:true,
-          backgroundColor: pastelAlpha(getCSS("--p3"), .28),
-          borderColor: pastelAlpha(getCSS("--p3"), .95),
-          pointBackgroundColor: pastelAlpha(getCSS("--p3"), .95),
-          pointRadius: 4, pointHoverRadius: 5
-        },
-        { label:"Success Five9", data:s5, tension:.35, fill:false,
-          borderColor: pastelAlpha(getCSS("--p2"), .95),
-          pointBackgroundColor: pastelAlpha(getCSS("--p2"), .95),
-          pointRadius: 4, pointHoverRadius: 5
-        },
-      ]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        legend:{ position:"top", labels:{ boxWidth: 14, boxHeight: 14, usePointStyle:true, pointStyle:"circle" } },
-        tooltip:{ mode:"index", intersect:false }
+    destroy(trendChart);
+    trendChart = new Chart(document.getElementById("trendChart"),{
+      type:"line",
+      data:{
+        labels,
+        datasets:[
+          {label:"Dials", data:trend.map(x=>x.Dials)},
+          {label:"Contacts", data:trend.map(x=>x.Contacts)},
+          {label:"Success Hubspot", data:trend.map(x=>x.SuccessHS)},
+          {label:"Facturado", data:trend.map(x=>x.Fact), yAxisID:"y1"},
+        ]
       },
-      scales:{
-        x:{ grid:{ display:false } },
-        y:{ beginAtZero:true }
-      }
-    }
-  });
-}
-
-function buildRankChart(mode){
-  const rows = filterAgents(mode);
-
-  // Sum facturado by agente across filtered slice
-  const map = new Map();
-  for(const r of rows){
-    const key = r.agente;
-    map.set(key, (map.get(key) ?? 0) + (r.facturado ?? 0));
-  }
-  const ranking = [...map.entries()]
-    .map(([agente, facturado]) => ({ agente, facturado }))
-    .sort((a,b) => b.facturado - a.facturado)
-    .slice(0, 12);
-
-  const labels = ranking.map(x => x.agente);
-  const values = ranking.map(x => x.facturado);
-
-  document.getElementById("metaRank").innerHTML = `
-    <span class="pill">Top mostrados: ${ranking.length}</span>
-    <span class="pill">Total facturado (filtros): ${fmtMoney(values.reduce((a,b)=>a+b,0))}</span>
-  `;
-
-  const ctx = document.getElementById("rankChart");
-  if(rankChart) rankChart.destroy();
-
-  rankChart = new Chart(ctx, {
-    type:"bar",
-    data:{
-      labels,
-      datasets:[{
-        label:"Facturado",
-        data: values,
-        backgroundColor: values.map((v,i)=> pastelAlpha(["#bfe7ff","#ffd6e7","#d9f7d6","#fff1bf","#e3ddff","#ffd9c8"][i%6], .75)),
-        borderColor: values.map((v,i)=> pastelAlpha(["#bfe7ff","#ffd6e7","#d9f7d6","#fff1bf","#e3ddff","#ffd9c8"][i%6], .95)),
-        borderWidth: 1,
-        borderRadius: 12
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        legend:{ display:false },
-        tooltip:{
-          callbacks:{
-            label: (ctx) => ` ${fmtMoney(ctx.parsed.y)}`
-          }
+      options:{
+        responsive:true,
+        interaction:{mode:"index", intersect:false},
+        scales:{
+          y:{beginAtZero:true},
+          y1:{beginAtZero:true, position:"right", grid:{drawOnChartArea:false}}
         }
+      }
+    });
+  }
+
+  function renderFunnel(aRows){
+    const inbound = sum(aRows.map(r=>r.LeadInbound));
+    const pres = sum(aRows.map(r=>r.Presentation));
+    const cot = sum(aRows.map(r=>r.Cotizacion));
+    const sh = sum(aRows.map(r=>r.SuccessHubspot));
+    const fact = sum(aRows.map(r=>r.Facturado));
+
+    destroy(funnelChart);
+    funnelChart = new Chart(document.getElementById("funnelChart"),{
+      type:"bar",
+      data:{
+        labels:["Inbound","Presentación","Cotización","Success HS","Facturado"],
+        datasets:[{label:"Valor", data:[inbound,pres,cot,sh,fact]}]
       },
-      scales:{
-        x:{ grid:{ display:false }, ticks:{ maxRotation: 0, autoSkip: false } },
-        y:{
-          beginAtZero:true,
-          ticks:{
-            callback: (v) => {
-              // compact money labels
-              const n = Number(v);
-              if(n >= 1000) return `$${(n/1000).toFixed(1)}k`;
-              return `$${n}`;
+      options:{
+        responsive:true,
+        scales:{ y:{beginAtZero:true} },
+        plugins:{ legend:{display:false} }
+      }
+    });
+  }
+
+  function renderRankingAndScatter(aRows){
+    // Agrupar por Team+Agente
+    const key = (r)=> `${r.Team}|||${r.Agente}`;
+    const map = new Map();
+    aRows.forEach(r=>{
+      const k = key(r);
+      if(!map.has(k)){
+        map.set(k, {Team:r.Team, Agente:r.Agente, Dials:0, Contacts:0, SuccessHS:0, Facturado:0});
+      }
+      const o = map.get(k);
+      o.Dials += r.Dials;
+      o.Contacts += r.Contacts;
+      o.SuccessHS += r.SuccessHubspot;
+      o.Facturado += r.Facturado;
+    });
+
+    const ranked = [...map.values()].sort((a,b)=> (b.Facturado - a.Facturado));
+
+    // Tabla
+    document.getElementById("rankCount").textContent = `${ranked.length} agentes`;
+    const tbody = document.querySelector("#rankTable tbody");
+    tbody.innerHTML = ranked.map(r=>`
+      <tr>
+        <td>${r.Agente}</td>
+        <td>${r.Team}</td>
+        <td>${intf(r.Dials)}</td>
+        <td>${intf(r.Contacts)}</td>
+        <td>${intf(r.SuccessHS)}</td>
+        <td>${money(r.Facturado)}</td>
+      </tr>
+    `).join("");
+
+    // Scatter
+    destroy(scatterChart);
+    scatterChart = new Chart(document.getElementById("scatterChart"),{
+      type:"scatter",
+      data:{
+        datasets: [{
+          label:"Agentes",
+          data: ranked.map(r=>({x:r.Contacts, y:r.Facturado, _name:r.Agente, _team:r.Team, _s:r.SuccessHS}))
+        }]
+      },
+      options:{
+        responsive:true,
+        plugins:{
+          tooltip:{
+            callbacks:{
+              label: (ctx)=>{
+                const p = ctx.raw;
+                return `${p._name} (${p._team}) - Contacts: ${intf(p.x)}, Facturado: ${money(p.y)}, Success HS: ${intf(p._s)}`;
+              }
             }
-          }
+          },
+          legend:{display:false}
+        },
+        scales:{
+          x:{beginAtZero:true, title:{display:true, text:"Contacts"}},
+          y:{beginAtZero:true, title:{display:true, text:"Facturado"}}
         }
       }
-    }
-  });
-}
-
-function getCSS(varName){
-  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-}
-
-/* =========================
-   5) TABLE
-   ========================= */
-function renderTable(mode){
-  const rows = filterAgents(mode);
-  const tbody = document.getElementById("tbody");
-  tbody.innerHTML = "";
-
-  const teamClass = (t) => t === "Post venta" ? "team2" : "team1";
-
-  for(const r of rows){
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><span class="tag ${teamClass(r.team)}">${r.team}</span></td>
-      <td>${r.agente}</td>
-      <td class="muted">${parseISOToLabel(r.fecha)}</td>
-      <td class="num">${fmtInt(r.dials)}</td>
-      <td class="num">${fmtInt(r.contacts)}</td>
-      <td class="num">${fmtInt(r.successFive9)}</td>
-      <td class="num">${r.talkTime}</td>
-      <td class="num">${fmtInt(r.leadInbound)}</td>
-      <td class="num">${fmtInt(r.presentacion)}</td>
-      <td class="num">${fmtInt(r.cotizacion)}</td>
-      <td class="num">${fmtInt(r.successHubspot)}</td>
-      <td class="num">${fmtInt(r.clientesSinConexion)}</td>
-      <td class="num">${fmtInt(r.campanas)}</td>
-      <td class="num">${fmtMoney(r.facturado)}</td>
-    `;
-    tbody.appendChild(tr);
+    });
   }
 
-  document.getElementById("tablePill").textContent = `Registros: ${rows.length}`;
-}
+  // ---------- Main render ----------
+  function render(){
+    const {a2, d2} = applyFilters();
 
-/* =========================
-   6) ORQUESTA
-   ========================= */
-function rerender(){
-  const mode = getMode();
-  renderKpis(mode);
-  buildFunnelChart(mode);
-  buildPerfChart(mode);
-  buildRankChart(mode);
-  renderTable(mode);
-}
+    // Para KPIs usamos a2; si está vacío, intentamos reconstruir desde d2 (sin ranking)
+    if(a2.length){
+      renderKPIs(a2);
+      renderTrend(d2, a2);
+      renderFunnel(a2);
+      renderRankingAndScatter(a2);
+    } else {
+      // fallback con daily
+      const fake = d2.map(r=>({
+        Dials:r.Dials, Contacts:r.Contacts, SuccessFive9:r.SuccessFive9, SuccessHubspot:r.SuccessHubspot,
+        TalkTimeSec:r.TalkTimeSec, LeadInbound:r.LeadInbound, Presentation:r.Presentation, Cotizacion:r.Cotizaciones,
+        Campañas:r.Campañas, Facturado:r.Facturado
+      }));
+      renderKPIs(fake);
+      renderTrend(d2, []);
+      renderFunnel(fake);
+      document.querySelector("#rankTable tbody").innerHTML = "";
+      document.getElementById("rankCount").textContent = "0 agentes";
+      destroy(scatterChart);
+    }
+  }
 
-document.getElementById("viewSelect").addEventListener("change", rerender);
-document.getElementById("teamSelect").addEventListener("change", rerender);
-document.getElementById("searchBox").addEventListener("input", rerender);
-
-chartDefaults();
-rerender();
+  // ---------- Start ----------
+  loadAll().catch(err=>{
+    console.error(err);
+    alert("Error cargando CSV. Revisa que existan: data/daily_summary.csv y data/agents_detail.csv");
+  });
 </script>
+
 </body>
 </html>
