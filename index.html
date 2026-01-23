@@ -3,428 +3,746 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sales Ops Dashboard</title>
+  <title>Elite Online Media | Dashboard Diario</title>
 
-  <!-- Chart.js (solo line + scatter) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- DataTables (Bootstrap 5) -->
+  <link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.11/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 
   <style>
     :root{
-      --bg:#f5f6f8;
-      --card:#ffffff;
-      --text:#1f2937;
-      --muted:#6b7280;
-      --line:#e5e7eb;
-      --shadow: 0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.06);
-      --radius:14px;
+      --eom-bg:#0b1220;
+      --eom-card:#0f1b33;
+      --eom-border: rgba(255,255,255,.10);
+      --eom-text: rgba(255,255,255,.92);
+      --eom-muted: rgba(255,255,255,.65);
+      --eom-accent:#7dd3fc;
     }
-
-    *{ box-sizing:border-box; }
-
     body{
-      margin:0;
-      font-family:Roboto, system-ui, -apple-system, Segoe UI, Arial;
-      background:var(--bg);
-      color:var(--text);
+      background: radial-gradient(1200px 600px at 10% 0%, rgba(125,211,252,.15), transparent 50%),
+                  radial-gradient(900px 500px at 90% 20%, rgba(167,139,250,.12), transparent 55%),
+                  var(--eom-bg);
+      color: var(--eom-text);
     }
-
-    header{
-      position:sticky;
-      top:0;
-      z-index:10;
-      background:#ffffffcc;
+    .navbar{
+      background: rgba(15,27,51,.75);
       backdrop-filter: blur(10px);
-      border-bottom:1px solid var(--line);
+      border-bottom: 1px solid var(--eom-border);
     }
-
-    .topbar{
-      max-width:1320px;
-      margin:0 auto;
-      padding:14px 18px;
+    .brand-wrap{
+      display:flex; align-items:center; gap:.75rem;
     }
-
-    h1{
-      margin:0;
-      font-size:16px;
-      font-weight:700;
+    .brand-logo{
+      width:44px; height:44px; border-radius:12px;
+      background: linear-gradient(135deg, rgba(125,211,252,.35), rgba(167,139,250,.25));
+      border: 1px solid var(--eom-border);
+      display:flex; align-items:center; justify-content:center;
+      overflow:hidden;
     }
-
-    .subhead{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:2px;
-    }
-
-    .wrap{
-      padding:18px;
-      max-width:1320px;
-      margin:0 auto;
-    }
-
-    .grid{ display:grid; gap:12px; }
-    .filters{ grid-template-columns: repeat(4, minmax(0,1fr)); }
-    .kpis{ grid-template-columns: repeat(5, minmax(0,1fr)); }
-    .row2{ grid-template-columns: 1.6fr 1fr; }
-    .row3{ grid-template-columns: 1.2fr 1.8fr; }
+    /* Si subes un logo real, ponlo en /assets/logo.png y descomenta la img de abajo */
+    .brand-logo img{ width:100%; height:100%; object-fit:contain; }
+    .brand-title{ line-height:1.1; }
+    .brand-title .small{ color: var(--eom-muted); font-size:.85rem; }
 
     .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow: var(--shadow);
-      padding:12px;
+      background: rgba(15,27,51,.70);
+      border: 1px solid var(--eom-border);
+      border-radius: 18px;
+      box-shadow: 0 14px 40px rgba(0,0,0,.25);
     }
-
-    label{
-      display:block;
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:6px;
+    .card .card-title{ color: var(--eom-muted); font-weight:600; letter-spacing:.2px; }
+    .kpi{
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: .2px;
     }
-
-    select,input{
-      width:100%;
-      padding:10px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:#fff;
+    .kpi-sub{
+      color: var(--eom-muted);
+      font-size:.85rem;
     }
-
-    .kpi .name{
-      font-size:12px;
-      color:var(--muted);
-      font-weight:500;
+    .pill{
+      border: 1px solid var(--eom-border);
+      border-radius: 999px;
+      padding:.4rem .75rem;
+      color: var(--eom-muted);
+      background: rgba(0,0,0,.15);
     }
-
-    .kpi .val{
-      font-size:22px;
+    .section-title{
+      font-weight:800;
+      letter-spacing:.3px;
+    }
+    .muted{ color: var(--eom-muted); }
+    .table{
+      color: var(--eom-text);
+    }
+    .table thead th{
+      color: var(--eom-muted);
+      border-color: var(--eom-border) !important;
       font-weight:700;
-      margin-top:6px;
     }
-
-    .kpi .sub{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:6px;
+    .table tbody td{
+      border-color: var(--eom-border) !important;
     }
-
-    .title{
-      font-size:13px;
+    .dataTables_wrapper .dataTables_filter input,
+    .dataTables_wrapper .dataTables_length select{
+      background: rgba(0,0,0,.20) !important;
+      border: 1px solid var(--eom-border) !important;
+      color: var(--eom-text) !important;
+      border-radius: 10px !important;
+      padding:.35rem .6rem !important;
+    }
+    .dataTables_wrapper .dataTables_paginate .page-link{
+      background: rgba(0,0,0,.20) !important;
+      border: 1px solid var(--eom-border) !important;
+      color: var(--eom-text) !important;
+    }
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_paginate{
+      color: var(--eom-muted) !important;
+    }
+    .badge-soft{
+      background: rgba(125,211,252,.15);
+      border: 1px solid rgba(125,211,252,.25);
+      color: #c8f3ff;
       font-weight:700;
-      margin-bottom:8px;
     }
-
-    canvas{
-      width:100% !important;
-      height:320px !important;
+    .footnote{
+      color: var(--eom-muted);
+      font-size:.85rem;
     }
-
-    table{
-      width:100%;
-      border-collapse:collapse;
-      font-size:13px;
-    }
-
-    th,td{
-      padding:10px 8px;
-      border-bottom:1px solid var(--line);
-    }
-
-    th{
-      text-align:left;
-      color:var(--muted);
-      font-weight:700;
-      font-size:12px;
-      text-transform:uppercase;
-    }
-
-    tr:hover td{ background:#fafafa; }
-
-    .muted{
-      color:var(--muted);
-      font-size:12px;
-    }
-
-    /* Funnel */
-    .funnel{ display:grid; gap:10px; }
-    .frow{
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:10px;
-      display:flex;
-      justify-content:space-between;
-      background:#fff;
-    }
-
-    .fname{ font-weight:700; font-size:13px; }
-    .fmeta{ font-size:12px; color:var(--muted); }
-
-    @media (max-width:1100px){
-      .filters{ grid-template-columns: repeat(2,1fr); }
-      .kpis{ grid-template-columns: repeat(2,1fr); }
-      .row2,.row3{ grid-template-columns: 1fr; }
-      canvas{ height:260px !important; }
-    }
+    canvas{ max-height: 280px; }
   </style>
 </head>
 
 <body>
+  <nav class="navbar sticky-top">
+    <div class="container py-2">
+      <div class="brand-wrap">
+        <div class="brand-logo" title="Elite Online Media">
+          <!-- OPCIÓN A: Logo real (recomendado)
+               1) Sube tu logo a tu repo: /assets/logo.png
+               2) Descomenta esta línea:
+          -->
+          <!-- <img src="assets/logo.png" alt="Elite Online Media"> -->
 
-<header>
-  <div class="topbar">
-    <h1>Sales Ops Dashboard</h1>
-    <div class="subhead">Reporte operativo – estilo Looker Studio</div>
-  </div>
-</header>
+          <!-- OPCIÓN B: Placeholder (mientras subes el logo) -->
+          <span style="font-weight:900;color:var(--eom-accent);">EOM</span>
+        </div>
+        <div class="brand-title">
+          <div style="font-weight:900;">Elite Online Media</div>
+          <div class="small">Dashboard Diario (dinámico e interactivo)</div>
+        </div>
+      </div>
 
-<div class="wrap">
-
-  <!-- FILTROS -->
-  <div class="grid filters">
-    <div class="card">
-      <label>Fecha desde</label>
-      <input type="date" id="dateStart">
+      <div class="d-flex align-items-center gap-2">
+        <span class="pill">Fecha:</span>
+        <select id="dateSelect" class="form-select form-select-sm" style="min-width: 180px; background: rgba(0,0,0,.20); color: var(--eom-text); border:1px solid var(--eom-border); border-radius: 12px;">
+        </select>
+      </div>
     </div>
-    <div class="card">
-      <label>Fecha hasta</label>
-      <input type="date" id="dateEnd">
-    </div>
-    <div class="card">
-      <label>Team</label>
-      <select id="teamSel"></select>
-    </div>
-    <div class="card">
-      <label>Agente</label>
-      <select id="agentSel"></select>
-    </div>
-  </div>
+  </nav>
 
-  <!-- KPIs -->
-  <div style="height:12px"></div>
-  <div class="grid kpis" id="kpiGrid"></div>
-
-  <!-- Tendencia + Funnel -->
-  <div style="height:12px"></div>
-  <div class="grid row2">
-    <div class="card">
-      <div class="title">Rendimiento diario</div>
-      <canvas id="trendChart"></canvas>
+  <main class="container my-4">
+    <!-- KPIs -->
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+      <div>
+        <div class="section-title fs-4">Resumen del día</div>
+        <div class="muted" id="rangeHint">Comparativo y detalle por agente</div>
+      </div>
+      <span class="badge badge-soft px-3 py-2" id="deltaBadge">Δ vs día anterior: —</span>
     </div>
 
-    <div class="card">
-      <div class="title">Embudo</div>
-      <div class="funnel" id="funnelBox"></div>
-    </div>
-  </div>
+    <div class="row g-3" id="kpiGrid"></div>
 
-  <!-- Ranking + Scatter -->
-  <div style="height:12px"></div>
-  <div class="grid row3">
-    <div class="card">
-      <div class="title">Ranking por agente (Facturado)</div>
-      <div style="overflow:auto; max-height:420px;">
-        <table id="rankTable">
-          <thead>
-            <tr>
-              <th>Agente</th>
-              <th>Team</th>
-              <th>Dials</th>
-              <th>Contacts</th>
-              <th>Success</th>
-              <th>Facturado</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+    <!-- Charts -->
+    <div class="row g-3 mt-1">
+      <div class="col-12 col-xl-7">
+        <div class="card p-3 h-100">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="card-title mb-0">Tendencia</div>
+              <div class="fw-bold">Dials & Facturado (por día)</div>
+            </div>
+            <span class="pill">Interactivo</span>
+          </div>
+          <div class="mt-2">
+            <canvas id="trendChart"></canvas>
+          </div>
+          <div class="footnote mt-2">Tip: puedes pasar el mouse para ver valores exactos.</div>
+        </div>
+      </div>
+      <div class="col-12 col-xl-5">
+        <div class="card p-3 h-100">
+          <div class="card-title mb-0">Eficiencia</div>
+          <div class="fw-bold">Talk Time vs Dials (por día)</div>
+          <div class="mt-2">
+            <canvas id="effChart"></canvas>
+          </div>
+          <div class="footnote mt-2">Talk Time convertido a horas para el gráfico.</div>
+        </div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="title">Contacts vs Facturado</div>
-      <canvas id="scatterChart"></canvas>
-    </div>
-  </div>
-
-  <div class="muted" style="margin-top:14px;">
-    Fuente de datos: CSV (GitHub Pages)
-  </div>
-</div>
-
-<script>
-/* ==========================
-   UTILIDADES
-========================== */
-const money = v => isNaN(v) ? "—" : `$${v.toLocaleString()}`;
-const intf = v => isNaN(v) ? "—" : v.toLocaleString();
-
-const sum = arr => arr.reduce((a,b)=>a+(+b||0),0);
-
-function parseCSV(txt){
-  const l = txt.trim().split(/\r?\n/);
-  const h = l[0].split(",");
-  return l.slice(1).map(r=>{
-    const o={};
-    r.split(",").forEach((v,i)=>o[h[i]]=v);
-    return o;
-  });
-}
-
-function toISO(d){
-  if(d.includes("-")) return d;
-  const [dd,mm,yy]=d.split("/");
-  return `${yy}-${mm}-${dd}`;
-}
-
-/* ==========================
-   CARGA DE DATOS
-========================== */
-let agents=[], daily=[];
-
-async function load(){
-  daily = parseCSV(await fetch("data/daily_summary.csv").then(r=>r.text()))
-    .map(r=>({...r, Fecha:toISO(r.Fecha), Facturado:+r.Facturado||0}));
-
-  agents = parseCSV(await fetch("data/agents_detail.csv").then(r=>r.text()))
-    .map(r=>({...r, Fecha:toISO(r.Fecha), Facturado:+r.Facturado||0}));
-
-  initFilters();
-  render();
-}
-
-/* ==========================
-   FILTROS
-========================== */
-const ds=document.getElementById("dateStart");
-const de=document.getElementById("dateEnd");
-const ts=document.getElementById("teamSel");
-const as=document.getElementById("agentSel");
-
-function initFilters(){
-  const dates=[...new Set(agents.map(a=>a.Fecha))].sort();
-  ds.value=dates[0];
-  de.value=dates[dates.length-1];
-
-  ts.innerHTML=`<option value="all">Todos</option>`+
-    [...new Set(agents.map(a=>a.Team))].map(t=>`<option>${t}</option>`).join("");
-
-  fillAgents();
-  [ds,de,ts,as].forEach(e=>e.onchange=render);
-  ts.onchange=()=>{fillAgents();render();}
-}
-
-function fillAgents(){
-  const t=ts.value;
-  const list=agents.filter(a=>t==="all"||a.Team===t);
-  as.innerHTML=`<option value="all">Todos</option>`+
-    [...new Set(list.map(a=>a.Agente))].map(a=>`<option>${a}</option>`).join("");
-}
-
-function filtered(){
-  return agents.filter(a=>
-    a.Fecha>=ds.value && a.Fecha<=de.value &&
-    (ts.value==="all"||a.Team===ts.value) &&
-    (as.value==="all"||a.Agente===as.value)
-  );
-}
-
-/* ==========================
-   RENDER
-========================== */
-let trendChart, scatterChart;
-
-function render(){
-  const rows=filtered();
-
-  // KPIs
-  const kpis=[
-    ["Dials",sum(rows.map(r=>+r.Dials))],
-    ["Contacts",sum(rows.map(r=>+r.Contacts))],
-    ["Success",sum(rows.map(r=>+r["Success Hubspot"]))],
-    ["Facturado",money(sum(rows.map(r=>r.Facturado)))],
-  ];
-
-  document.getElementById("kpiGrid").innerHTML=
-    kpis.map(k=>`
-      <div class="card kpi">
-        <div class="name">${k[0]}</div>
-        <div class="val">${k[1]}</div>
-      </div>`).join("");
-
-  // Trend (line)
-  if(trendChart) trendChart.destroy();
-  const byDate={};
-  rows.forEach(r=>{
-    byDate[r.Fecha]=(byDate[r.Fecha]||0)+r.Facturado;
-  });
-
-  trendChart=new Chart(trendChart=document.getElementById("trendChart"),{
-    type:"line",
-    data:{
-      labels:Object.keys(byDate),
-      datasets:[{
-        label:"Facturado",
-        data:Object.values(byDate),
-        borderWidth:2,
-        tension:.3
-      }]
-    }
-  });
-
-  // Funnel
-  const funnel=[
-    ["Inbound",sum(rows.map(r=>+r["Lead Inbound"]))],
-    ["Presentación",sum(rows.map(r=>+r["Product Presentation"]))],
-    ["Cotización",sum(rows.map(r=>+r.Cotizacion))],
-    ["Success",sum(rows.map(r=>+r["Success Hubspot"]))],
-    ["Facturado",money(sum(rows.map(r=>r.Facturado)))]
-  ];
-
-  document.getElementById("funnelBox").innerHTML=
-    funnel.map(f=>`
-      <div class="frow">
-        <div>
-          <div class="fname">${f[0]}</div>
-          <div class="fmeta">—</div>
+    <!-- Two daily tables -->
+    <div class="row g-3 mt-1">
+      <div class="col-12 col-xl-7">
+        <div class="card p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <div class="card-title mb-0">Tabla diaria 1</div>
+              <div class="fw-bold">Operación (por día)</div>
+            </div>
+            <span class="pill" id="tbl1Title">—</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0" id="dailyTable1">
+              <thead>
+                <tr>
+                  <th>Métrica</th>
+                  <th class="text-end">Valor</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="footnote mt-2">Incluye Success Five9 / HubSpot, Inbound, Presentación, Cotizaciones, Campañas y Facturado.</div>
         </div>
-        <div><strong>${f[1]}</strong></div>
-      </div>`).join("");
+      </div>
 
-  // Ranking
-  const map={};
-  rows.forEach(r=>{
-    map[r.Agente]=(map[r.Agente]||0)+r.Facturado;
-  });
+      <div class="col-12 col-xl-5">
+        <div class="card p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <div class="card-title mb-0">Tabla diaria 2</div>
+              <div class="fw-bold">Clientes & Conversión (por día)</div>
+            </div>
+            <span class="pill" id="tbl2Title">—</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0" id="dailyTable2">
+              <thead>
+                <tr>
+                  <th>Métrica</th>
+                  <th class="text-end">Valor</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="footnote mt-2">Nota: valores como <span class="pill">#DIV/0!</span> se muestran como “N/A”.</div>
+        </div>
+      </div>
+    </div>
 
-  document.querySelector("#rankTable tbody").innerHTML=
-    Object.entries(map).sort((a,b)=>b[1]-a[1]).map(r=>`
-      <tr>
-        <td>${r[0]}</td>
-        <td>${money(r[1])}</td>
-        <td colspan="4"></td>
-      </tr>`).join("");
+    <!-- Agent table -->
+    <div class="row g-3 mt-1">
+      <div class="col-12">
+        <div class="card p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+            <div>
+              <div class="card-title mb-0">Detalle por agente</div>
+              <div class="fw-bold">Tabla por día (filtra, ordena, busca)</div>
+            </div>
+            <span class="pill" id="agentsTitle">—</span>
+          </div>
 
-  // Scatter
-  if(scatterChart) scatterChart.destroy();
-  scatterChart=new Chart(scatterChart=document.getElementById("scatterChart"),{
-    type:"scatter",
-    data:{
-      datasets:[{
-        data:rows.map(r=>({x:+r.Contacts,y:r.Facturado}))
-      }]
+          <div class="table-responsive">
+            <table class="table table-striped table-sm align-middle w-100" id="agentsTable">
+              <thead>
+                <tr>
+                  <th>Team</th>
+                  <th>Agente</th>
+                  <th>Fecha</th>
+                  <th class="text-end">Dials</th>
+                  <th class="text-end">Contacts</th>
+                  <th class="text-end">Success Five9</th>
+                  <th>Talk Time</th>
+                  <th class="text-end">Lead Inbound</th>
+                  <th class="text-end">Product Presentation</th>
+                  <th class="text-end">Cotización</th>
+                  <th class="text-end">Success HubSpot</th>
+                  <th class="text-end">Clientes (F. sin Conexión)</th>
+                  <th class="text-end">Referido</th>
+                  <th class="text-end">Inbound Meses Ant.</th>
+                  <th class="text-end">Nuevos Lead MM</th>
+                  <th class="text-end">Total de Clientes</th>
+                  <th class="text-end">Campañas</th>
+                  <th class="text-end">Facturado</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="footnote mt-2">
+            Tip: puedes buscar por agente o team, y ordenar por Facturado / Dials / Contacts.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footnote mt-4">
+      <div class="fw-bold">Cómo usarlo en GitHub Pages</div>
+      <ol class="mb-0">
+        <li>Guarda este archivo como <span class="pill">index.html</span> en tu repo.</li>
+        <li>Si quieres el logo real: sube tu imagen a <span class="pill">/assets/logo.png</span> y descomenta la etiqueta <span class="pill">&lt;img&gt;</span> en el header.</li>
+        <li>Activa GitHub Pages (Settings → Pages) y selecciona la rama / root.</li>
+      </ol>
+    </div>
+  </main>
+
+  <!-- libs -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/datatables.net@1.13.11/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.13.11/js/dataTables.bootstrap5.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <script>
+    // =========================
+    // 1) DATA (pegada de tu mensaje)
+    // =========================
+
+    // Resumen Diario - Tabla 1 (Operación)
+    const dailyOps = [
+      {
+        date: "20/01/2026",
+        dials: 1988,
+        contacts: 680,
+        talkTime: "8:35:40",
+        successFive9: 6,
+        leadInbound: 0,
+        presentacion: 5,
+        cotizaciones: 0,
+        successHubspot: 5,
+        facturadoNuevo: 6000.00,
+        totalCampañas: 3
+      },
+      {
+        date: "21/01/2026",
+        dials: 2371,
+        contacts: 748,
+        talkTime: "11:50:40",
+        successFive9: 6,
+        leadInbound: 1,
+        presentacion: 4,
+        cotizaciones: 4,
+        successHubspot: 8,
+        facturadoNuevo: 7111.00,
+        totalCampañas: 0
+      }
+    ];
+
+    // Resumen Diario - Tabla 2 (Clientes & Conversión)
+    const dailyClients = [
+      {
+        date: "20/01/2026",
+        clientesSinConexion: 1,
+        referidos: 0,
+        inboundMesesAnt: 0,
+        inboundMM: 2,
+        totalClientes: 3,
+        promedioTimerPorAgente: "2:10:23",
+        conversionClientes: "60.00%",
+        conversionInboundMM: "#DIV/0!",
+        ipc: 1000.00
+      },
+      {
+        date: "21/01/2026",
+        clientesSinConexion: 2,
+        referidos: 0,
+        inboundMesesAnt: 0,
+        inboundMM: 1,
+        totalClientes: 3,
+        promedioTimerPorAgente: "2:23:23",
+        conversionClientes: "37.50%",
+        conversionInboundMM: "100.00%",
+        ipc: 1015.86
+      }
+    ];
+
+    // Detalle por Agente (por día)
+    const agentRows = [
+      // 21/01/2026
+      {team:"Equipo de Ventas Anuar", agente:"Angeles Espinoza", fecha:"21/01/2026", dials:314, contacts:38, successFive9:1, talkTime:"2:49:44", leadInbound:0, productPresentation:1, cotizacion:0, successHubspot:1, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:null},
+      {team:"Equipo de Ventas Anuar", agente:"Geraldine Murillo", fecha:"21/01/2026", dials:237, contacts:28, successFive9:2, talkTime:"3:14:49", leadInbound:0, productPresentation:2, cotizacion:0, successHubspot:2, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:1000.00},
+      {team:"Equipo de Ventas Anuar", agente:"Judith Mercado", fecha:"21/01/2026", dials:195, contacts:41, successFive9:1, talkTime:"2:17:36", leadInbound:0, productPresentation:1, cotizacion:0, successHubspot:1, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:null},
+      {team:"Equipo de Ventas Anuar", agente:"Rodrigo Guadamuz", fecha:"21/01/2026", dials:154, contacts:17, successFive9:0, talkTime:"1:43:23", leadInbound:0, productPresentation:null, cotizacion:0, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:null},
+      {team:"Equipo de Ventas Anuar", agente:"Alexia Rodríguez", fecha:"21/01/2026", dials:168, contacts:25, successFive9:0, talkTime:"2:27:53", leadInbound:0, productPresentation:null, cotizacion:0, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:650.00},
+      {team:"Equipo de Ventas Anuar", agente:"Mariett Castro", fecha:"21/01/2026", dials:81, contacts:13, successFive9:1, talkTime:"3:44:38", leadInbound:0, productPresentation:1, cotizacion:0, successHubspot:1, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:null},
+
+      {team:"Post venta", agente:"Andrea Rivera", fecha:"21/01/2026", dials:99, contacts:79, successFive9:0, talkTime:"3:00:56", leadInbound:0, productPresentation:null, cotizacion:0, successHubspot:0, clientesSinConexion:1, referido:0, inboundMesesAnt:0, nuevosLeadMM:1, totalClientes:2, campañas:2, facturado:1700.00},
+      {team:"Post venta", agente:"Alejandra Rodriguez", fecha:"21/01/2026", dials:80, contacts:55, successFive9:0, talkTime:"2:34:20", leadInbound:0, productPresentation:null, cotizacion:0, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:900.00},
+      {team:"Post venta", agente:"Ariana Leiva", fecha:"21/01/2026", dials:192, contacts:95, successFive9:0, talkTime:"1:04:02", leadInbound:0, productPresentation:null, cotizacion:0, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:750.00},
+      {team:"Post venta", agente:"David Espinoza", fecha:"21/01/2026", dials:0, contacts:0, successFive9:0, talkTime:"0:00:00", leadInbound:0, productPresentation:null, cotizacion:0, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:null},
+      {team:"Post venta", agente:"Jonathan Salinas", fecha:"21/01/2026", dials:66, contacts:61, successFive9:0, talkTime:"1:56:10", leadInbound:0, productPresentation:null, cotizacion:0, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:null},
+      {team:"Post venta", agente:"Mario Castano", fecha:"21/01/2026", dials:143, contacts:116, successFive9:0, talkTime:"1:46:57", leadInbound:0, productPresentation:null, cotizacion:0, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:null},
+      {team:"Post venta", agente:"Nicole Garcia", fecha:"21/01/2026", dials:119, contacts:71, successFive9:1, talkTime:"3:04:17", leadInbound:0, productPresentation:null, cotizacion:0, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:1, totalClientes:1, campañas:1, facturado:750.00},
+      {team:"Post venta", agente:"Paola Paz", fecha:"21/01/2026", dials:0, contacts:0, successFive9:0, talkTime:"0:00:00", leadInbound:0, productPresentation:null, cotizacion:0, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:null},
+      {team:"Post venta", agente:"Veronica Ramirez", fecha:"21/01/2026", dials:140, contacts:41, successFive9:0, talkTime:"2:50:55", leadInbound:0, productPresentation:null, cotizacion:0, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:250.00},
+
+      // 22/01/2026 (en tu mensaje aparece como bloque 22/01, pero tu resumen diario llega a 21/01;
+      // lo dejo para que el dashboard muestre agentes de ese día también si lo seleccionas)
+      {team:"Equipo de Ventas Anuar", agente:"Angeles Espinoza", fecha:"22/01/2026", dials:304, contacts:38, successFive9:0, talkTime:"2:41:30", leadInbound:0, productPresentation:null, cotizacion:null, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:1, totalClientes:null, campañas:null, facturado:525.00},
+      {team:"Equipo de Ventas Anuar", agente:"Geraldine Murillo", fecha:"22/01/2026", dials:396, contacts:64, successFive9:0, talkTime:"1:40:21", leadInbound:0, productPresentation:null, cotizacion:null, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:null},
+      {team:"Equipo de Ventas Anuar", agente:"Judith Mercado", fecha:"22/01/2026", dials:206, contacts:27, successFive9:2, talkTime:"2:44:43", leadInbound:0, productPresentation:2, cotizacion:null, successHubspot:2, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:null},
+      {team:"Equipo de Ventas Anuar", agente:"Rodrigo Guadamuz", fecha:"22/01/2026", dials:153, contacts:18, successFive9:1, talkTime:"4:17:15", leadInbound:0, productPresentation:null, cotizacion:null, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:1, totalClientes:1, campañas:null, facturado:300.00},
+      {team:"Equipo de Ventas Anuar", agente:"Alexia Rodríguez", fecha:"22/01/2026", dials:184, contacts:20, successFive9:1, talkTime:"3:06:16", leadInbound:0, productPresentation:1, cotizacion:null, successHubspot:1, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:null},
+      {team:"Equipo de Ventas Anuar", agente:"Mariett Castro", fecha:"22/01/2026", dials:194, contacts:24, successFive9:0, talkTime:"2:20:15", leadInbound:0, productPresentation:null, cotizacion:null, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:600.00},
+
+      {team:"Post venta", agente:"Andrea Rivera", fecha:"22/01/2026", dials:64, contacts:44, successFive9:1, talkTime:"3:31:32", leadInbound:0, productPresentation:null, cotizacion:null, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:500.00},
+      {team:"Post venta", agente:"Alejandra Rodriguez", fecha:"22/01/2026", dials:70, contacts:48, successFive9:0, talkTime:"2:21:21", leadInbound:0, productPresentation:null, cotizacion:null, successHubspot:0, clientesSinConexion:1, referido:null, inboundMesesAnt:null, nuevosLeadMM:1, totalClientes:null, campañas:null, facturado:2850.00},
+      {team:"Post venta", agente:"Ariana Leiva", fecha:"22/01/2026", dials:149, contacts:77, successFive9:0, talkTime:"1:49:14", leadInbound:0, productPresentation:null, cotizacion:null, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:550.00},
+      {team:"Post venta", agente:"David Espinoza", fecha:"22/01/2026", dials:91, contacts:79, successFive9:0, talkTime:"2:01:08", leadInbound:0, productPresentation:null, cotizacion:null, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:150.00},
+      {team:"Post venta", agente:"Jonathan Salinas", fecha:"22/01/2026", dials:68, contacts:62, successFive9:0, talkTime:"2:53:50", leadInbound:0, productPresentation:null, cotizacion:null, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:100.00},
+      {team:"Post venta", agente:"Mario Castano", fecha:"22/01/2026", dials:144, contacts:113, successFive9:0, talkTime:"2:27:33", leadInbound:1, productPresentation:null, cotizacion:null, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:null},
+      {team:"Post venta", agente:"Nicole Garcia", fecha:"22/01/2026", dials:130, contacts:69, successFive9:1, talkTime:"2:41:58", leadInbound:1, productPresentation:1, cotizacion:null, successHubspot:1, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:1000.00},
+      {team:"Post venta", agente:"Paola Paz", fecha:"22/01/2026", dials:0, contacts:0, successFive9:0, talkTime:"0:00:00", leadInbound:0, productPresentation:null, cotizacion:null, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:null},
+      {team:"Post venta", agente:"Veronica Ramirez", fecha:"22/01/2026", dials:218, contacts:65, successFive9:0, talkTime:"1:13:44", leadInbound:0, productPresentation:null, cotizacion:null, successHubspot:0, clientesSinConexion:null, referido:null, inboundMesesAnt:null, nuevosLeadMM:null, totalClientes:null, campañas:0, facturado:536.00}
+    ];
+
+    // =========================
+    // 2) HELPERS
+    // =========================
+    const money = (n) => {
+      if (n === null || n === undefined || n === "") return "—";
+      const v = Number(n);
+      if (Number.isNaN(v)) return "—";
+      return v.toLocaleString("en-US", { style:"currency", currency:"USD" });
+    };
+
+    const safe = (v) => (v === null || v === undefined || v === "" ? "—" : v);
+
+    const pct = (v) => {
+      if (v === null || v === undefined || v === "") return "—";
+      if (typeof v === "string" && v.includes("#DIV/0")) return "N/A";
+      return v;
+    };
+
+    const parseHMS = (hms) => {
+      // "H:MM:SS" -> seconds
+      if (!hms || typeof hms !== "string") return 0;
+      const parts = hms.split(":").map(x => Number(x));
+      if (parts.length !== 3 || parts.some(Number.isNaN)) return 0;
+      return parts[0]*3600 + parts[1]*60 + parts[2];
+    };
+
+    const secondsToHMS = (sec) => {
+      sec = Math.max(0, Math.round(sec));
+      const h = Math.floor(sec/3600);
+      const m = Math.floor((sec%3600)/60);
+      const s = sec%60;
+      return `${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+    };
+
+    const toHours = (hms) => parseHMS(hms) / 3600;
+
+    const getUniqueDates = () => {
+      const set = new Set();
+      dailyOps.forEach(d => set.add(d.date));
+      dailyClients.forEach(d => set.add(d.date));
+      agentRows.forEach(r => set.add(r.fecha));
+      // Orden por fecha (dd/mm/yyyy)
+      return Array.from(set).sort((a,b)=>{
+        const [da,ma,ya] = a.split("/").map(Number);
+        const [db,mb,yb] = b.split("/").map(Number);
+        return new Date(ya,ma-1,da) - new Date(yb,mb-1,db);
+      });
+    };
+
+    const findOps = (date) => dailyOps.find(d => d.date === date) || null;
+    const findClients = (date) => dailyClients.find(d => d.date === date) || null;
+
+    const computeDeltaBadge = (selectedDate) => {
+      const dates = getUniqueDates();
+      const idx = dates.indexOf(selectedDate);
+      if (idx <= 0) return "Δ vs día anterior: —";
+      const prevDate = dates[idx-1];
+      const cur = findOps(selectedDate);
+      const prev = findOps(prevDate);
+      if (!cur || !prev) return `Δ vs día anterior (${prevDate}): N/A`;
+
+      const dialsDelta = cur.dials - prev.dials;
+      const factDelta = (cur.facturadoNuevo ?? 0) - (prev.facturadoNuevo ?? 0);
+      const talkDeltaSec = parseHMS(cur.talkTime) - parseHMS(prev.talkTime);
+
+      const sign = (x) => x > 0 ? "+" : "";
+      return `Δ vs ${prevDate}: Dials ${sign(dialsDelta)}${dialsDelta.toLocaleString()} | Facturado ${sign(factDelta)}${money(factDelta)} | Talk ${sign(talkDeltaSec)}${secondsToHMS(talkDeltaSec)}`;
+    };
+
+    // =========================
+    // 3) UI RENDER
+    // =========================
+    const kpisConfig = [
+      { key:"dials", label:"Total de Llamadas (Dials)", format:(v)=> safe(v?.toLocaleString()) },
+      { key:"contacts", label:"Contacts", format:(v)=> safe(v?.toLocaleString()) },
+      { key:"talkTime", label:"Talk Time", format:(v)=> safe(v) },
+      { key:"successFive9", label:"Success Five9", format:(v)=> safe(v) },
+      { key:"leadInbound", label:"Lead Inbound", format:(v)=> safe(v) },
+      { key:"presentacion", label:"Presentación", format:(v)=> safe(v) },
+      { key:"cotizaciones", label:"Cotizaciones", format:(v)=> safe(v) },
+      { key:"successHubspot", label:"Success HubSpot", format:(v)=> safe(v) },
+      { key:"facturadoNuevo", label:"Facturado Nuevo", format:(v)=> money(v) },
+      { key:"totalCampañas", label:"Total Campañas", format:(v)=> safe(v) },
+
+      // from clients table
+      { key:"totalClientes", label:"Total Clientes", from:"clients", format:(v)=> safe(v) },
+      { key:"conversionClientes", label:"Conversión de Clientes", from:"clients", format:(v)=> pct(v) },
+      { key:"conversionInboundMM", label:"Conversión Inbound MM", from:"clients", format:(v)=> pct(v) },
+      { key:"ipc", label:"IPC", from:"clients", format:(v)=> money(v) }
+    ];
+
+    function renderKPIs(date){
+      const ops = findOps(date);
+      const cli = findClients(date);
+      const grid = document.getElementById("kpiGrid");
+      grid.innerHTML = "";
+
+      kpisConfig.forEach(cfg => {
+        const src = cfg.from === "clients" ? cli : ops;
+        const value = src ? src[cfg.key] : null;
+
+        const col = document.createElement("div");
+        col.className = "col-12 col-sm-6 col-lg-4 col-xl-3";
+
+        col.innerHTML = `
+          <div class="card p-3 h-100">
+            <div class="card-title mb-1">${cfg.label}</div>
+            <div class="kpi">${cfg.format(value)}</div>
+            <div class="kpi-sub">${date}</div>
+          </div>
+        `;
+        grid.appendChild(col);
+      });
     }
-  });
-}
 
-load();
-</script>
+    function renderDailyTables(date){
+      const ops = findOps(date);
+      const cli = findClients(date);
 
+      document.getElementById("tbl1Title").textContent = date;
+      document.getElementById("tbl2Title").textContent = date;
+
+      const t1 = document.querySelector("#dailyTable1 tbody");
+      const t2 = document.querySelector("#dailyTable2 tbody");
+      t1.innerHTML = "";
+      t2.innerHTML = "";
+
+      const rows1 = [
+        ["Total de Llamadas (Dials)", ops ? ops.dials.toLocaleString() : "—"],
+        ["Contacts", ops ? ops.contacts.toLocaleString() : "—"],
+        ["Talk Time", ops ? ops.talkTime : "—"],
+        ["Success Five9", ops ? ops.successFive9 : "—"],
+        ["Lead Inbound", ops ? ops.leadInbound : "—"],
+        ["Presentación", ops ? ops.presentacion : "—"],
+        ["Cotizaciones", ops ? ops.cotizaciones : "—"],
+        ["Success HubSpot", ops ? ops.successHubspot : "—"],
+        ["Facturado Nuevo", ops ? money(ops.facturadoNuevo) : "—"],
+        ["Total Campañas", ops ? ops.totalCampañas : "—"]
+      ];
+
+      const rows2 = [
+        ["Clientes (F. sin Conexión)", cli ? safe(cli.clientesSinConexion) : "—"],
+        ["Referidos", cli ? safe(cli.referidos) : "—"],
+        ["Inbound Meses Ant.", cli ? safe(cli.inboundMesesAnt) : "—"],
+        ["Inbound MM", cli ? safe(cli.inboundMM) : "—"],
+        ["Total Clientes", cli ? safe(cli.totalClientes) : "—"],
+        ["Promedio Timer por Agente", cli ? safe(cli.promedioTimerPorAgente) : "—"],
+        ["Conversión de Clientes", cli ? pct(cli.conversionClientes) : "—"],
+        ["Conversión Inbound MM", cli ? pct(cli.conversionInboundMM) : "—"],
+        ["IPC", cli ? money(cli.ipc) : "—"]
+      ];
+
+      for (const [k,v] of rows1){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${k}</td><td class="text-end">${v}</td>`;
+        t1.appendChild(tr);
+      }
+      for (const [k,v] of rows2){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${k}</td><td class="text-end">${v}</td>`;
+        t2.appendChild(tr);
+      }
+    }
+
+    let agentsDT = null;
+
+    function renderAgentsTable(date){
+      document.getElementById("agentsTitle").textContent = date;
+
+      const rows = agentRows.filter(r => r.fecha === date);
+
+      const tbody = document.querySelector("#agentsTable tbody");
+      tbody.innerHTML = "";
+
+      for (const r of rows){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${safe(r.team)}</td>
+          <td>${safe(r.agente)}</td>
+          <td>${safe(r.fecha)}</td>
+          <td class="text-end">${safe(r.dials)?.toLocaleString?.() ?? safe(r.dials)}</td>
+          <td class="text-end">${safe(r.contacts)?.toLocaleString?.() ?? safe(r.contacts)}</td>
+          <td class="text-end">${safe(r.successFive9)}</td>
+          <td>${safe(r.talkTime)}</td>
+          <td class="text-end">${safe(r.leadInbound)}</td>
+          <td class="text-end">${safe(r.productPresentation)}</td>
+          <td class="text-end">${safe(r.cotizacion)}</td>
+          <td class="text-end">${safe(r.successHubspot)}</td>
+          <td class="text-end">${safe(r.clientesSinConexion)}</td>
+          <td class="text-end">${safe(r.referido)}</td>
+          <td class="text-end">${safe(r.inboundMesesAnt)}</td>
+          <td class="text-end">${safe(r.nuevosLeadMM)}</td>
+          <td class="text-end">${safe(r.totalClientes)}</td>
+          <td class="text-end">${safe(r.campañas)}</td>
+          <td class="text-end">${r.facturado === null || r.facturado === undefined ? "—" : money(r.facturado)}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      // (Re)Init DataTables
+      if (agentsDT){
+        agentsDT.destroy();
+        agentsDT = null;
+      }
+
+      agentsDT = $("#agentsTable").DataTable({
+        pageLength: 10,
+        order: [[17, "desc"]], // Facturado desc
+        responsive: true
+      });
+    }
+
+    // =========================
+    // 4) CHARTS
+    // =========================
+    let trendChart = null;
+    let effChart = null;
+
+    function renderCharts(selectedDate){
+      // Use dailyOps for trend; if you later agregas 22/01 al resumen diario, se verá automáticamente.
+      const labels = dailyOps.map(d => d.date);
+      const dials = dailyOps.map(d => d.dials);
+      const fact = dailyOps.map(d => d.facturadoNuevo ?? 0);
+      const talkHours = dailyOps.map(d => toHours(d.talkTime));
+
+      // Trend chart
+      const ctx1 = document.getElementById("trendChart");
+      if (trendChart) trendChart.destroy();
+      trendChart = new Chart(ctx1, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            { label: "Dials", data: dials, tension: 0.25 },
+            { label: "Facturado (USD)", data: fact, tension: 0.25, yAxisID: "y2" }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { color: "rgba(255,255,255,.75)" } },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const name = ctx.dataset.label || "";
+                  const v = ctx.parsed.y;
+                  if (name.includes("Facturado")) return `${name}: ${money(v)}`;
+                  return `${name}: ${Number(v).toLocaleString()}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: { ticks: { color:"rgba(255,255,255,.65)" }, grid: { color:"rgba(255,255,255,.08)" } },
+            y: { ticks: { color:"rgba(255,255,255,.65)" }, grid: { color:"rgba(255,255,255,.08)" } },
+            y2: {
+              position: "right",
+              ticks: { color:"rgba(255,255,255,.65)", callback: (v)=> money(v) },
+              grid: { drawOnChartArea: false }
+            }
+          }
+        }
+      });
+
+      // Efficiency chart (bar)
+      const ctx2 = document.getElementById("effChart");
+      if (effChart) effChart.destroy();
+      effChart = new Chart(ctx2, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            { label: "Talk Time (horas)", data: talkHours },
+            { label: "Dials", data: dials, yAxisID: "y2" }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: "rgba(255,255,255,.75)" } } },
+          scales: {
+            x: { ticks: { color:"rgba(255,255,255,.65)" }, grid: { color:"rgba(255,255,255,.08)" } },
+            y: { ticks: { color:"rgba(255,255,255,.65)" }, grid: { color:"rgba(255,255,255,.08)" } },
+            y2: {
+              position: "right",
+              ticks: { color:"rgba(255,255,255,.65)" },
+              grid: { drawOnChartArea: false }
+            }
+          }
+        }
+      });
+
+      // Hint range
+      const dates = getUniqueDates();
+      if (dates.length >= 2){
+        document.getElementById("rangeHint").textContent = `Fechas disponibles: ${dates[0]} → ${dates[dates.length-1]}`;
+      } else {
+        document.getElementById("rangeHint").textContent = `Fecha disponible: ${selectedDate}`;
+      }
+    }
+
+    // =========================
+    // 5) INIT
+    // =========================
+    function setDate(date){
+      renderKPIs(date);
+      renderDailyTables(date);
+      renderAgentsTable(date);
+      renderCharts(date);
+      document.getElementById("deltaBadge").textContent = computeDeltaBadge(date);
+    }
+
+    function init(){
+      const dates = getUniqueDates();
+      const select = document.getElementById("dateSelect");
+      select.innerHTML = "";
+      dates.forEach(d => {
+        const opt = document.createElement("option");
+        opt.value = d;
+        opt.textContent = d;
+        select.appendChild(opt);
+      });
+
+      // Selecciona por defecto el último día disponible (más reciente)
+      const defaultDate = dates[dates.length-1];
+      select.value = defaultDate;
+
+      select.addEventListener("change", (e) => setDate(e.target.value));
+      setDate(defaultDate);
+    }
+
+    init();
+  </script>
 </body>
 </html>
 
 
-           
+ 
 
        
