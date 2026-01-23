@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Sales Ops Dashboard</title>
 
-  <!-- Chart.js (solo line + scatter; sin barras) -->
+  <!-- Chart.js (solo line + scatter) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-  <!-- Fuente estilo Google -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
   <style>
@@ -21,31 +19,50 @@
       --muted:#6b7280;
       --line:#e5e7eb;
       --shadow: 0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.06);
-      --blue:#1a73e8;       /* Google-ish */
-      --blue2:#e8f0fe;
       --radius:14px;
     }
+
     *{ box-sizing:border-box; }
+
     body{
       margin:0;
       font-family:Roboto, system-ui, -apple-system, Segoe UI, Arial;
       background:var(--bg);
       color:var(--text);
     }
+
     header{
-      position:sticky; top:0; z-index:10;
+      position:sticky;
+      top:0;
+      z-index:10;
       background:#ffffffcc;
       backdrop-filter: blur(10px);
       border-bottom:1px solid var(--line);
     }
+
     .topbar{
-      max-width:1320px; margin:0 auto;
+      max-width:1320px;
+      margin:0 auto;
       padding:14px 18px;
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
     }
-    h1{ margin:0; font-size:16px; font-weight:700; letter-spacing:.2px; }
-    .subhead{ font-size:12px; color:var(--muted); }
-    .wrap{ padding:18px; max-width:1320px; margin:0 auto; }
+
+    h1{
+      margin:0;
+      font-size:16px;
+      font-weight:700;
+    }
+
+    .subhead{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+
+    .wrap{
+      padding:18px;
+      max-width:1320px;
+      margin:0 auto;
+    }
 
     .grid{ display:grid; gap:12px; }
     .filters{ grid-template-columns: repeat(4, minmax(0,1fr)); }
@@ -61,77 +78,93 @@
       padding:12px;
     }
 
-    label{ display:block; font-size:12px; color:var(--muted); margin:0 0 6px; }
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
     select,input{
       width:100%;
-      padding:10px 10px;
+      padding:10px;
       border-radius:12px;
       border:1px solid var(--line);
       background:#fff;
-      color:var(--text);
-      outline:none;
     }
-    select:focus,input:focus{ border-color:#c7d2fe; box-shadow:0 0 0 3px rgba(26,115,232,.12); }
 
-    .kpi .name{ font-size:12px; color:var(--muted); font-weight:500; }
-    .kpi .val{ font-size:22px; font-weight:700; margin-top:6px; color:#111827; }
-    .kpi .sub{ font-size:12px; color:var(--muted); margin-top:6px; }
-
-    .title{
-      display:flex; align-items:center; justify-content:space-between; gap:8px;
-      margin-bottom:8px;
-    }
-    .title .t{ font-size:13px; font-weight:700; }
-    .pill{
-      display:inline-block; padding:5px 10px;
-      border-radius:999px;
-      background:var(--blue2);
-      color:var(--blue);
-      border:1px solid #d2e3fc;
+    .kpi .name{
       font-size:12px;
+      color:var(--muted);
       font-weight:500;
     }
 
-    canvas{ width:100% !important; height:320px !important; }
+    .kpi .val{
+      font-size:22px;
+      font-weight:700;
+      margin-top:6px;
+    }
 
-    table{ width:100%; border-collapse:collapse; font-size:13px; }
-    th,td{ padding:10px 8px; border-bottom:1px solid var(--line); }
-    th{ text-align:left; color:var(--muted); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+    .kpi .sub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:6px;
+    }
+
+    .title{
+      font-size:13px;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+
+    canvas{
+      width:100% !important;
+      height:320px !important;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+    }
+
+    th,td{
+      padding:10px 8px;
+      border-bottom:1px solid var(--line);
+    }
+
+    th{
+      text-align:left;
+      color:var(--muted);
+      font-weight:700;
+      font-size:12px;
+      text-transform:uppercase;
+    }
+
     tr:hover td{ background:#fafafa; }
 
-    .muted{ color:var(--muted); font-size:12px; }
-    .foot{ margin-top:12px; color:var(--muted); font-size:12px; }
-
-    /* Funnel table */
-    .funnel{
-      width:100%;
-      display:grid;
-      gap:10px;
+    .muted{
+      color:var(--muted);
+      font-size:12px;
     }
+
+    /* Funnel */
+    .funnel{ display:grid; gap:10px; }
     .frow{
       border:1px solid var(--line);
       border-radius:12px;
       padding:10px;
       display:flex;
-      align-items:center;
       justify-content:space-between;
       background:#fff;
     }
-    .fleft{
-      display:flex; flex-direction:column; gap:2px;
-    }
+
     .fname{ font-weight:700; font-size:13px; }
     .fmeta{ font-size:12px; color:var(--muted); }
-    .fright{
-      text-align:right;
-      display:flex; flex-direction:column; gap:2px;
-    }
-    .fval{ font-weight:700; }
-    .fperc{ font-size:12px; color:var(--muted); }
 
-    @media (max-width: 1100px){
-      .filters{ grid-template-columns: repeat(2,minmax(0,1fr)); }
-      .kpis{ grid-template-columns: repeat(2,minmax(0,1fr)); }
+    @media (max-width:1100px){
+      .filters{ grid-template-columns: repeat(2,1fr); }
+      .kpis{ grid-template-columns: repeat(2,1fr); }
       .row2,.row3{ grid-template-columns: 1fr; }
       canvas{ height:260px !important; }
     }
@@ -139,27 +172,25 @@
 </head>
 
 <body>
+
 <header>
   <div class="topbar">
-    <div>
-      <h1>Sales Ops Dashboard</h1>
-      <div class="subhead">Vista tipo Looker Studio (HTML estático para GitHub Pages)</div>
-    </div>
-    <div class="pill">Fuente: CSV</div>
+    <h1>Sales Ops Dashboard</h1>
+    <div class="subhead">Reporte operativo – estilo Looker Studio</div>
   </div>
 </header>
 
 <div class="wrap">
 
-  <!-- Filters -->
+  <!-- FILTROS -->
   <div class="grid filters">
     <div class="card">
-      <label>Fecha (desde)</label>
-      <input type="date" id="dateStart" />
+      <label>Fecha desde</label>
+      <input type="date" id="dateStart">
     </div>
     <div class="card">
-      <label>Fecha (hasta)</label>
-      <input type="date" id="dateEnd" />
+      <label>Fecha hasta</label>
+      <input type="date" id="dateEnd">
     </div>
     <div class="card">
       <label>Team</label>
@@ -175,25 +206,17 @@
   <div style="height:12px"></div>
   <div class="grid kpis" id="kpiGrid"></div>
 
-  <!-- Trend + Funnel (sin barras) -->
+  <!-- Tendencia + Funnel -->
   <div style="height:12px"></div>
   <div class="grid row2">
     <div class="card">
-      <div class="title">
-        <div class="t">Tendencia por día</div>
-        <span class="pill" id="trendHint">Line</span>
-      </div>
+      <div class="title">Rendimiento diario</div>
       <canvas id="trendChart"></canvas>
-      <div class="foot">Tip: Facturado usa el eje derecho para no “aplastar” las demás métricas.</div>
     </div>
 
     <div class="card">
-      <div class="title">
-        <div class="t">Funnel (sin gráfica de barra)</div>
-        <span class="pill">Tabla</span>
-      </div>
+      <div class="title">Embudo</div>
       <div class="funnel" id="funnelBox"></div>
-      <div class="foot">Nota: Facturado es dinero; las demás etapas suelen ser conteos.</div>
     </div>
   </div>
 
@@ -201,15 +224,17 @@
   <div style="height:12px"></div>
   <div class="grid row3">
     <div class="card">
-      <div class="title">
-        <div class="t">Ranking por agente (Facturado)</div>
-        <span class="pill" id="rankCount"></span>
-      </div>
+      <div class="title">Ranking por agente (Facturado)</div>
       <div style="overflow:auto; max-height:420px;">
         <table id="rankTable">
           <thead>
             <tr>
-              <th>Agente</th><th>Team</th><th>Dials</th><th>Contacts</th><th>Success HS</th><th>Facturado</th>
+              <th>Agente</th>
+              <th>Team</th>
+              <th>Dials</th>
+              <th>Contacts</th>
+              <th>Success</th>
+              <th>Facturado</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -218,426 +243,188 @@
     </div>
 
     <div class="card">
-      <div class="title">
-        <div class="t">Scatter: Contacts vs Facturado</div>
-        <span class="pill">Points</span>
-      </div>
+      <div class="title">Contacts vs Facturado</div>
       <canvas id="scatterChart"></canvas>
-      <div class="foot">Cada punto es un agente agregado por el filtro.</div>
     </div>
   </div>
 
   <div class="muted" style="margin-top:14px;">
-    Data source: <code>data/daily_summary.csv</code> y <code>data/agents_detail.csv</code>
+    Fuente de datos: CSV (GitHub Pages)
   </div>
 </div>
 
 <script>
-  // ---------- Utilities ----------
-  const money = (x) => (x==null || isNaN(x)) ? "—" : new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(x);
-  const intf  = (x) => (x==null || isNaN(x)) ? "—" : new Intl.NumberFormat("en-US").format(Math.round(x));
-  const pct   = (x) => (x==null || isNaN(x)) ? "—" : (x*100).toFixed(2) + "%";
+/* ==========================
+   UTILIDADES
+========================== */
+const money = v => isNaN(v) ? "—" : `$${v.toLocaleString()}`;
+const intf = v => isNaN(v) ? "—" : v.toLocaleString();
 
-  function parseCSV(text){
-    // Parser simple para CSV "limpio" (sin comas dentro de valores).
-    const lines = text.trim().split(/\r?\n/);
-    const headers = lines[0].split(",").map(h=>h.trim());
-    return lines.slice(1).map(line=>{
-      const cols = line.split(",");
-      const obj = {};
-      headers.forEach((h,i)=> obj[h] = (cols[i] ?? "").trim());
-      return obj;
-    });
-  }
+const sum = arr => arr.reduce((a,b)=>a+(+b||0),0);
 
-  function toISODate(s){
-    if(!s) return null;
-    if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-    const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if(m) return `${m[3]}-${m[2]}-${m[1]}`;
-    return null;
-  }
-
-  function timeToSeconds(hms){
-    if(!hms) return 0;
-    const parts = hms.split(":").map(Number);
-    if(parts.length !== 3 || parts.some(n=>isNaN(n))) return 0;
-    return parts[0]*3600 + parts[1]*60 + parts[2];
-  }
-
-  function sum(arr){ return arr.reduce((a,b)=>a+(+b||0),0); }
-
-  // ---------- Load data ----------
-  let daily = [];
-  let agents = [];
-
-  async function loadAll(){
-    const [d1,d2] = await Promise.all([
-      fetch("data/daily_summary.csv").then(r=>r.text()),
-      fetch("data/agents_detail.csv").then(r=>r.text()),
-    ]);
-
-    daily = parseCSV(d1).map(r=>({
-      Fecha: toISODate(r["Fecha"]),
-      Dials: +r["Dials"]||0,
-      Contacts: +r["Contacts"]||0,
-      TalkTimeSec: timeToSeconds(r["Talk Time"]),
-      SuccessFive9: +r["Success Five9"]||0,
-      LeadInbound: +r["Lead Inbound"]||0,
-      Presentation: +r["Product Presentation"]||0,
-      Cotizaciones: +r["Cotizaciones"]||0,
-      SuccessHubspot: +r["Success Hubspot"]||0,
-      Facturado: +r["Facturado"]||0,
-      Campañas: +r["Campañas"]||0,
-    })).filter(r=>r.Fecha);
-
-    agents = parseCSV(d2).map(r=>({
-      Team: r["Team"] || "—",
-      Agente: r["Agente"] || "—",
-      Fecha: toISODate(r["Fecha"]),
-      Dials: +r["Dials"]||0,
-      Contacts: +r["Contacts"]||0,
-      SuccessFive9: +r["Success Five9"]||0,
-      TalkTimeSec: timeToSeconds(r["Talk Time"]),
-      LeadInbound: +r["Lead Inbound"]||0,
-      Presentation: +r["Product Presentation"]||0,
-      Cotizacion: +r["Cotizacion"]||0,
-      SuccessHubspot: +r["Success Hubspot"]||0,
-      Facturado: +r["Facturado"]||0,
-      Campañas: +r["Campañas"]||0,
-      TotalClientes: +r["Total de Clientes"]||0,
-    })).filter(r=>r.Fecha);
-
-    initFilters();
-    render();
-  }
-
-  // ---------- Filters ----------
-  const dateStart = document.getElementById("dateStart");
-  const dateEnd = document.getElementById("dateEnd");
-  const teamSel = document.getElementById("teamSel");
-  const agentSel = document.getElementById("agentSel");
-
-  function initFilters(){
-    const allDates = [...new Set([...daily.map(d=>d.Fecha), ...agents.map(a=>a.Fecha)].filter(Boolean))].sort();
-    const minD = allDates[0];
-    const maxD = allDates[allDates.length-1];
-
-    dateStart.value = minD;
-    dateEnd.value = maxD;
-
-    const teams = [...new Set(agents.map(a=>a.Team))].sort();
-    teamSel.innerHTML = `<option value="__all__">Todos</option>` + teams.map(t=>`<option value="${t}">${t}</option>`).join("");
-
-    fillAgents();
-
-    [dateStart,dateEnd,teamSel,agentSel].forEach(el=> el.addEventListener("change", render));
-    teamSel.addEventListener("change", ()=>{ fillAgents(); render(); });
-  }
-
-  function fillAgents(){
-    const t = teamSel.value;
-    const filtered = (t==="__all__") ? agents : agents.filter(a=>a.Team===t);
-    const names = [...new Set(filtered.map(a=>a.Agente))].sort();
-    agentSel.innerHTML = `<option value="__all__">Todos</option>` + names.map(n=>`<option value="${n}">${n}</option>`).join("");
-  }
-
-  function applyFilters(){
-    const s = dateStart.value;
-    const e = dateEnd.value;
-    const t = teamSel.value;
-    const a = agentSel.value;
-
-    const inRange = (x) => x.Fecha && x.Fecha >= s && x.Fecha <= e;
-
-    let a2 = agents.filter(inRange);
-    if(t !== "__all__") a2 = a2.filter(x=>x.Team===t);
-    if(a !== "__all__") a2 = a2.filter(x=>x.Agente===a);
-
-    let d2 = daily.filter(inRange);
-    return {a2, d2};
-  }
-
-  // ---------- Charts ----------
-  let trendChart, scatterChart;
-
-  function destroy(chart){ if(chart) chart.destroy(); }
-
-  function renderKPIs(rows){
-    const totals = {
-      dials: sum(rows.map(r=>r.Dials)),
-      contacts: sum(rows.map(r=>r.Contacts)),
-      s5: sum(rows.map(r=>r.SuccessFive9)),
-      sh: sum(rows.map(r=>r.SuccessHubspot)),
-      talk: sum(rows.map(r=>r.TalkTimeSec)),
-      inbound: sum(rows.map(r=>r.LeadInbound)),
-      pres: sum(rows.map(r=>r.Presentation)),
-      cot: sum(rows.map(r=>r.Cotizacion)),
-      camp: sum(rows.map(r=>r.Campañas)),
-      fact: sum(rows.map(r=>r.Facturado)),
-    };
-
-    const contactRate = totals.dials ? totals.contacts / totals.dials : null;
-    const successRate = totals.contacts ? totals.sh / totals.contacts : null;
-    const factPerSuccess = totals.sh ? totals.fact / totals.sh : null;
-    const talkHrs = totals.talk / 3600;
-
-    const kpis = [
-      ["Dials", intf(totals.dials), ""],
-      ["Contacts", intf(totals.contacts), "Contact Rate: " + (contactRate==null ? "—" : pct(contactRate))],
-      ["Success Five9", intf(totals.s5), ""],
-      ["Success Hubspot", intf(totals.sh), "Success Rate: " + (successRate==null ? "—" : pct(successRate))],
-      ["Facturado", money(totals.fact), "Facturado/Success: " + (factPerSuccess==null ? "—" : money(factPerSuccess))],
-      ["Talk Time", talkHrs.toFixed(2) + " h", ""],
-      ["Lead Inbound", intf(totals.inbound), ""],
-      ["Presentación", intf(totals.pres), ""],
-      ["Cotización", intf(totals.cot), ""],
-      ["Campañas", intf(totals.camp), ""],
-    ];
-
-    const grid = document.getElementById("kpiGrid");
-    grid.innerHTML = kpis.map(([n,v,s])=>`
-      <div class="card kpi">
-        <div class="name">${n}</div>
-        <div class="val">${v}</div>
-        <div class="sub">${s || "&nbsp;"}</div>
-      </div>
-    `).join("");
-  }
-
-  function renderTrend(dRows, aRows){
-    // Preferimos daily_summary si hay, si no agregamos desde agents
-    const byDate = new Map();
-
-    if(dRows.length){
-      dRows.slice().sort((x,y)=>x.Fecha.localeCompare(y.Fecha)).forEach(r=>{
-        byDate.set(r.Fecha, {
-          Fecha:r.Fecha,
-          Dials:r.Dials,
-          Contacts:r.Contacts,
-          SuccessHS:r.SuccessHubspot,
-          Fact:r.Facturado
-        });
-      });
-    } else {
-      aRows.forEach(r=>{
-        if(!byDate.has(r.Fecha)) byDate.set(r.Fecha, {Fecha:r.Fecha, Dials:0, Contacts:0, SuccessHS:0, Fact:0});
-        const o = byDate.get(r.Fecha);
-        o.Dials += r.Dials; o.Contacts += r.Contacts; o.SuccessHS += r.SuccessHubspot; o.Fact += r.Facturado;
-      });
-    }
-
-    const trend = [...byDate.values()].sort((x,y)=>x.Fecha.localeCompare(y.Fecha));
-    const labels = trend.map(x=>x.Fecha);
-
-    destroy(trendChart);
-
-    trendChart = new Chart(document.getElementById("trendChart"),{
-      type:"line",
-      data:{
-        labels,
-        datasets:[
-          {
-            label:"Dials",
-            data:trend.map(x=>x.Dials),
-            borderWidth:2,
-            pointRadius:3,
-            tension:.25
-          },
-          {
-            label:"Contacts",
-            data:trend.map(x=>x.Contacts),
-            borderWidth:2,
-            pointRadius:3,
-            tension:.25
-          },
-          {
-            label:"Success Hubspot",
-            data:trend.map(x=>x.SuccessHS),
-            borderWidth:2,
-            pointRadius:3,
-            tension:.25
-          },
-          {
-            label:"Facturado",
-            data:trend.map(x=>x.Fact),
-            borderWidth:2,
-            pointRadius:3,
-            tension:.25,
-            yAxisID:"y1"
-          },
-        ]
-      },
-      options:{
-        responsive:true,
-        interaction:{mode:"index", intersect:false},
-        plugins:{
-          legend:{ position:"bottom", labels:{ boxWidth:10, boxHeight:10 } },
-          tooltip:{ callbacks:{
-            label:(ctx)=>{
-              const v = ctx.raw;
-              return ctx.dataset.label === "Facturado"
-                ? `${ctx.dataset.label}: ${money(v)}`
-                : `${ctx.dataset.label}: ${intf(v)}`;
-            }
-          }}
-        },
-        scales:{
-          x:{ grid:{ color:"rgba(0,0,0,0.04)" } },
-          y:{ beginAtZero:true, grid:{ color:"rgba(0,0,0,0.04)" } },
-          y1:{ beginAtZero:true, position:"right", grid:{ drawOnChartArea:false } }
-        }
-      }
-    });
-  }
-
-  function renderFunnelTable(aRows){
-    const inbound = sum(aRows.map(r=>r.LeadInbound));
-    const pres = sum(aRows.map(r=>r.Presentation));
-    const cot = sum(aRows.map(r=>r.Cotizacion));
-    const sh = sum(aRows.map(r=>r.SuccessHubspot));
-    const fact = sum(aRows.map(r=>r.Facturado));
-
-    const steps = [
-      {name:"Lead Inbound", val: inbound, type:"count"},
-      {name:"Presentación", val: pres, type:"count"},
-      {name:"Cotización", val: cot, type:"count"},
-      {name:"Success Hubspot", val: sh, type:"count"},
-      {name:"Facturado", val: fact, type:"money"},
-    ];
-
-    // conversión vs paso anterior (para conteos). Facturado lo mostramos como "por Success" si se puede.
-    const rows = steps.map((s, i)=>{
-      let meta = "";
-      let conv = null;
-
-      if(i === 0){
-        meta = "Base";
-      } else if(s.type === "count" && steps[i-1].val > 0){
-        conv = s.val / steps[i-1].val;
-        meta = `vs anterior: ${pct(conv)}`;
-      } else if(s.type === "money"){
-        if(sh > 0) meta = `por Success: ${money(fact / sh)}`;
-        else meta = "—";
-      } else {
-        meta = "—";
-      }
-
-      const v = (s.type === "money") ? money(s.val) : intf(s.val);
-      return { ...s, displayVal: v, meta };
-    });
-
-    const box = document.getElementById("funnelBox");
-    box.innerHTML = rows.map((r)=>`
-      <div class="frow">
-        <div class="fleft">
-          <div class="fname">${r.name}</div>
-          <div class="fmeta">${r.meta}</div>
-        </div>
-        <div class="fright">
-          <div class="fval">${r.displayVal}</div>
-          <div class="fperc">&nbsp;</div>
-        </div>
-      </div>
-    `).join("");
-  }
-
-  function renderRankingAndScatter(aRows){
-    // Agrupar por Team+Agente
-    const key = (r)=> `${r.Team}|||${r.Agente}`;
-    const map = new Map();
-    aRows.forEach(r=>{
-      const k = key(r);
-      if(!map.has(k)){
-        map.set(k, {Team:r.Team, Agente:r.Agente, Dials:0, Contacts:0, SuccessHS:0, Facturado:0});
-      }
-      const o = map.get(k);
-      o.Dials += r.Dials;
-      o.Contacts += r.Contacts;
-      o.SuccessHS += r.SuccessHubspot;
-      o.Facturado += r.Facturado;
-    });
-
-    const ranked = [...map.values()].sort((a,b)=> (b.Facturado - a.Facturado));
-
-    // Tabla
-    document.getElementById("rankCount").textContent = `${ranked.length} agentes`;
-    const tbody = document.querySelector("#rankTable tbody");
-    tbody.innerHTML = ranked.map(r=>`
-      <tr>
-        <td>${r.Agente}</td>
-        <td>${r.Team}</td>
-        <td>${intf(r.Dials)}</td>
-        <td>${intf(r.Contacts)}</td>
-        <td>${intf(r.SuccessHS)}</td>
-        <td>${money(r.Facturado)}</td>
-      </tr>
-    `).join("");
-
-    // Scatter (solo puntos)
-    destroy(scatterChart);
-    scatterChart = new Chart(document.getElementById("scatterChart"),{
-      type:"scatter",
-      data:{
-        datasets: [{
-          label:"Agentes",
-          data: ranked.map(r=>({x:r.Contacts, y:r.Facturado, _name:r.Agente, _team:r.Team, _s:r.SuccessHS})),
-          pointRadius:4,
-          pointHoverRadius:6
-        }]
-      },
-      options:{
-        responsive:true,
-        plugins:{
-          tooltip:{
-            callbacks:{
-              label: (ctx)=>{
-                const p = ctx.raw;
-                return `${p._name} (${p._team}) - Contacts: ${intf(p.x)}, Facturado: ${money(p.y)}, Success HS: ${intf(p._s)}`;
-              }
-            }
-          },
-          legend:{display:false}
-        },
-        scales:{
-          x:{ beginAtZero:true, title:{display:true, text:"Contacts"}, grid:{ color:"rgba(0,0,0,0.04)" } },
-          y:{ beginAtZero:true, title:{display:true, text:"Facturado"}, grid:{ color:"rgba(0,0,0,0.04)" } }
-        }
-      }
-    });
-  }
-
-  // ---------- Main render ----------
-  function render(){
-    const {a2, d2} = applyFilters();
-
-    if(a2.length){
-      renderKPIs(a2);
-      renderTrend(d2, a2);
-      renderFunnelTable(a2);
-      renderRankingAndScatter(a2);
-    } else {
-      // fallback con daily (sin ranking/scatter útil)
-      const fake = d2.map(r=>({
-        Dials:r.Dials, Contacts:r.Contacts, SuccessFive9:r.SuccessFive9, SuccessHubspot:r.SuccessHubspot,
-        TalkTimeSec:r.TalkTimeSec, LeadInbound:r.LeadInbound, Presentation:r.Presentation, Cotizacion:r.Cotizaciones,
-        Campañas:r.Campañas, Facturado:r.Facturado
-      }));
-      renderKPIs(fake);
-      renderTrend(d2, []);
-      renderFunnelTable(fake);
-      document.querySelector("#rankTable tbody").innerHTML = "";
-      document.getElementById("rankCount").textContent = "0 agentes";
-      destroy(scatterChart);
-    }
-  }
-
-  // ---------- Start ----------
-  loadAll().catch(err=>{
-    console.error(err);
-    alert("Error cargando CSV. Revisa que existan: data/daily_summary.csv y data/agents_detail.csv");
+function parseCSV(txt){
+  const l = txt.trim().split(/\r?\n/);
+  const h = l[0].split(",");
+  return l.slice(1).map(r=>{
+    const o={};
+    r.split(",").forEach((v,i)=>o[h[i]]=v);
+    return o;
   });
+}
+
+function toISO(d){
+  if(d.includes("-")) return d;
+  const [dd,mm,yy]=d.split("/");
+  return `${yy}-${mm}-${dd}`;
+}
+
+/* ==========================
+   CARGA DE DATOS
+========================== */
+let agents=[], daily=[];
+
+async function load(){
+  daily = parseCSV(await fetch("data/daily_summary.csv").then(r=>r.text()))
+    .map(r=>({...r, Fecha:toISO(r.Fecha), Facturado:+r.Facturado||0}));
+
+  agents = parseCSV(await fetch("data/agents_detail.csv").then(r=>r.text()))
+    .map(r=>({...r, Fecha:toISO(r.Fecha), Facturado:+r.Facturado||0}));
+
+  initFilters();
+  render();
+}
+
+/* ==========================
+   FILTROS
+========================== */
+const ds=document.getElementById("dateStart");
+const de=document.getElementById("dateEnd");
+const ts=document.getElementById("teamSel");
+const as=document.getElementById("agentSel");
+
+function initFilters(){
+  const dates=[...new Set(agents.map(a=>a.Fecha))].sort();
+  ds.value=dates[0];
+  de.value=dates[dates.length-1];
+
+  ts.innerHTML=`<option value="all">Todos</option>`+
+    [...new Set(agents.map(a=>a.Team))].map(t=>`<option>${t}</option>`).join("");
+
+  fillAgents();
+  [ds,de,ts,as].forEach(e=>e.onchange=render);
+  ts.onchange=()=>{fillAgents();render();}
+}
+
+function fillAgents(){
+  const t=ts.value;
+  const list=agents.filter(a=>t==="all"||a.Team===t);
+  as.innerHTML=`<option value="all">Todos</option>`+
+    [...new Set(list.map(a=>a.Agente))].map(a=>`<option>${a}</option>`).join("");
+}
+
+function filtered(){
+  return agents.filter(a=>
+    a.Fecha>=ds.value && a.Fecha<=de.value &&
+    (ts.value==="all"||a.Team===ts.value) &&
+    (as.value==="all"||a.Agente===as.value)
+  );
+}
+
+/* ==========================
+   RENDER
+========================== */
+let trendChart, scatterChart;
+
+function render(){
+  const rows=filtered();
+
+  // KPIs
+  const kpis=[
+    ["Dials",sum(rows.map(r=>+r.Dials))],
+    ["Contacts",sum(rows.map(r=>+r.Contacts))],
+    ["Success",sum(rows.map(r=>+r["Success Hubspot"]))],
+    ["Facturado",money(sum(rows.map(r=>r.Facturado)))],
+  ];
+
+  document.getElementById("kpiGrid").innerHTML=
+    kpis.map(k=>`
+      <div class="card kpi">
+        <div class="name">${k[0]}</div>
+        <div class="val">${k[1]}</div>
+      </div>`).join("");
+
+  // Trend (line)
+  if(trendChart) trendChart.destroy();
+  const byDate={};
+  rows.forEach(r=>{
+    byDate[r.Fecha]=(byDate[r.Fecha]||0)+r.Facturado;
+  });
+
+  trendChart=new Chart(trendChart=document.getElementById("trendChart"),{
+    type:"line",
+    data:{
+      labels:Object.keys(byDate),
+      datasets:[{
+        label:"Facturado",
+        data:Object.values(byDate),
+        borderWidth:2,
+        tension:.3
+      }]
+    }
+  });
+
+  // Funnel
+  const funnel=[
+    ["Inbound",sum(rows.map(r=>+r["Lead Inbound"]))],
+    ["Presentación",sum(rows.map(r=>+r["Product Presentation"]))],
+    ["Cotización",sum(rows.map(r=>+r.Cotizacion))],
+    ["Success",sum(rows.map(r=>+r["Success Hubspot"]))],
+    ["Facturado",money(sum(rows.map(r=>r.Facturado)))]
+  ];
+
+  document.getElementById("funnelBox").innerHTML=
+    funnel.map(f=>`
+      <div class="frow">
+        <div>
+          <div class="fname">${f[0]}</div>
+          <div class="fmeta">—</div>
+        </div>
+        <div><strong>${f[1]}</strong></div>
+      </div>`).join("");
+
+  // Ranking
+  const map={};
+  rows.forEach(r=>{
+    map[r.Agente]=(map[r.Agente]||0)+r.Facturado;
+  });
+
+  document.querySelector("#rankTable tbody").innerHTML=
+    Object.entries(map).sort((a,b)=>b[1]-a[1]).map(r=>`
+      <tr>
+        <td>${r[0]}</td>
+        <td>${money(r[1])}</td>
+        <td colspan="4"></td>
+      </tr>`).join("");
+
+  // Scatter
+  if(scatterChart) scatterChart.destroy();
+  scatterChart=new Chart(scatterChart=document.getElementById("scatterChart"),{
+    type:"scatter",
+    data:{
+      datasets:[{
+        data:rows.map(r=>({x:+r.Contacts,y:r.Facturado}))
+      }]
+    }
+  });
+}
+
+load();
 </script>
 
 </body>
 </html>
+
+
+           
+
+       
