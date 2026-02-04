@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Resumen Ejecutivo | Dashboard Ventas</title>
+
+  <!-- Tipografía (opcional) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Chart.js (para gráficas) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg: #0b1020;
+      --panel: rgba(255,255,255,.06);
+      --panel2: rgba(255,255,255,.09);
+      --stroke: rgba(255,255,255,.12);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.65);
+      --good: #41d48a;
+      --bad: #ff5c7a;
+      --warn:#ffd166;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+      --radius2: 24px;
+      --max: 1100px;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(900px 500px at 10% 0%, rgba(90,120,255,.22), transparent 60%),
+        radial-gradient(800px 450px at 90% 10%, rgba(255,90,150,.18), transparent 55%),
+        radial-gradient(700px 420px at 60% 95%, rgba(60,220,170,.12), transparent 60%),
+        var(--bg);
+      min-height:100vh;
+    }
+
+    a{ color:inherit; }
+    .wrap{ max-width:var(--max); margin:0 auto; padding:28px 18px 70px; }
+
+    header{
+      display:flex; gap:14px; align-items:flex-start; justify-content:space-between;
+      margin-bottom:18px;
+    }
+    .title h1{
+      margin:0;
+      font-size: clamp(24px, 3.2vw, 40px);
+      letter-spacing:-0.02em;
+      line-height:1.05;
+    }
+    .title p{
+      margin:10px 0 0;
+      color:var(--muted);
+      max-width: 70ch;
+      line-height:1.5;
+    }
+
+    .chip-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
+    .chip{
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.04);
+      padding:8px 12px;
+      border-radius:999px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+      margin-top:18px;
+    }
+
+    .card{
+      grid-column: span 12;
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border:1px solid var(--stroke);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .card .pad{ padding:16px; }
+    .card h2{
+      margin:0;
+      font-size:16px;
+      letter-spacing:-0.01em;
+    }
+    .sub{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .kpi-grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+    }
+    .kpi{
+      grid-column: span 12;
+      background: rgba(255,255,255,.04);
+      border:1px solid var(--stroke);
+      border-radius: var(--radius);
+      padding:14px;
+    }
+    .kpi .label{
+      display:flex; align-items:center; justify-content:space-between;
+      color:var(--muted);
+      font-size:12px;
+      text-transform: uppercase;
+      letter-spacing:.08em;
+    }
+    .kpi .value{
+      margin-top:10px;
+      font-size:22px;
+      font-weight:700;
+      letter-spacing:-0.02em;
+    }
+    .kpi .meta{
+      margin-top:10px;
+      display:flex; flex-wrap:wrap; gap:10px;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .delta{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.18);
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .delta.good{ border-color: rgba(65,212,138,.35); color: rgba(65,212,138,.95); }
+    .delta.bad{ border-color: rgba(255,92,122,.35); color: rgba(255,92,122,.95); }
+    .delta.warn{ border-color: rgba(255,209,102,.35); color: rgba(255,209,102,.95); }
+
+    .split{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:14px;
+    }
+
+    .table{
+      width:100%;
+      border-collapse: collapse;
+      overflow:hidden;
+      border-radius: var(--radius);
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.03);
+    }
+    .table th, .table td{
+      padding:12px 12px;
+      text-align:left;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      font-size:13px;
+    }
+    .table th{ color:rgba(255,255,255,.78); font-weight:600; }
+    .table td{ color:rgba(255,255,255,.85); }
+    .table tr:last-child td{ border-bottom:none; }
+
+    .callouts{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    .callout{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.03);
+      border-radius: var(--radius);
+      padding:14px;
+    }
+    .callout b{ display:block; margin-bottom:6px; }
+    .callout p{ margin:0; color:var(--muted); line-height:1.5; font-size:13px; }
+
+    footer{
+      margin-top:26px;
+      color:var(--muted);
+      font-size:12px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    /* Responsive */
+    @media (min-width: 720px){
+      .kpi{ grid-column: span 6; }
+      .split{ grid-template-columns: 1.2fr .8fr; }
+      .callouts{ grid-template-columns: 1fr 1fr; }
+    }
+    @media (min-width: 980px){
+      .kpi{ grid-column: span 3; }
+    }
+
+    /* Canvas fix */
+    .chart-wrap{
+      padding: 10px 14px 16px;
+    }
+    canvas{ width:100% !important; height: 300px !important; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title">
+        <h1>Resumen Ejecutivo: Métricas Clave y Estadísticas del Mes</h1>
+        <p>
+          Tablero ejecutivo con KPIs, comparativas P1 vs P2, desempeño por equipos y recomendaciones.
+          Reemplaza los valores y nombres por los de tu operación.
+        </p>
+        <div class="chip-row">
+          <span class="chip">Período 1 (P1): <span id="p1Label">Ene 01–Ene 15</span></span>
+          <span class="chip">Período 2 (P2): <span id="p2Label">Ene 16–Ene 31</span></span>
+          <span class="chip">Última actualización: <span id="lastUpdated">—</span></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- KPIs principales -->
+    <section class="card">
+      <div class="pad">
+        <h2>KPIs Principales</h2>
+        <p class="sub">Comparativa directa entre P1 y P2 con delta automático (▲ / ▼).</p>
+      </div>
+      <div class="pad kpi-grid" id="kpiGrid"></div>
+    </section>
+
+    <div class="grid">
+      <!-- Estadísticas del mes -->
+      <section class="card" style="grid-column: span 12;">
+        <div class="pad">
+          <h2>Campañas y Clientes</h2>
+          <p class="sub">Indicadores de operación para complementar el análisis de rendimiento.</p>
+        </div>
+
+        <div class="pad split">
+          <div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Métrica</th>
+                  <th>Valor</th>
+                </tr>
+              </thead>
+              <tbody id="monthStats"></tbody>
+            </table>
+          </div>
+
+          <div class="callouts">
+            <div class="callout">
+              <b>Resultados Inbound</b>
+              <p id="inboundSummary">Inversión, monto vendido, leads y ROI.</p>
+            </div>
+            <div class="callout">
+              <b>Insight rápido</b>
+              <p id="quickInsight">Describe aquí el hallazgo principal del mes (ej. facturación crece pese a menos conversiones).</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Charts -->
+      <section class="card" style="grid-column: span 12;">
+        <div class="pad">
+          <h2>Resumen Ejecutivo: Comparativa de Períodos</h2>
+          <p class="sub">Gráficas rápidas para ver tendencias (puedes cambiar a tus métricas reales).</p>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chartKpis"></canvas>
+        </div>
+      </section>
+
+      <!-- Resumen por equipo -->
+      <section class="card" style="grid-column: span 12;">
+        <div class="pad">
+          <h2>Resumen General por Equipo</h2>
+          <p class="sub">Comparativa de rendimiento por equipo (llamadas, contactos, facturación y promedio por agente).</p>
+        </div>
+
+        <div class="pad split">
+          <div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Equipo</th>
+                  <th>Agentes</th>
+                  <th>Llamadas (P1 / P2)</th>
+                  <th>Contactos (P1 / P2)</th>
+                  <th>Facturación (P1 / P2)</th>
+                  <th>Prom. por agente (P1 / P2)</th>
+                </tr>
+              </thead>
+              <tbody id="teamTable"></tbody>
+            </table>
+          </div>
+          <div class="callouts">
+            <div class="callout">
+              <b>Top Performer</b>
+              <p id="topPerformer">—</p>
+            </div>
+            <div class="callout">
+              <b>Tendencia</b>
+              <p id="trendNote">—</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Eficiencia -->
+      <section class="card" style="grid-column: span 12;">
+        <div class="pad">
+          <h2>Análisis de Tiempo y Eficiencia Operativa</h2>
+          <p class="sub">Comparación del promedio de timer por agente y reducción lograda.</p>
+        </div>
+        <div class="pad kpi-grid" id="effGrid"></div>
+      </section>
+
+      <!-- Tabla performers -->
+      <section class="card" style="grid-column: span 12;">
+        <div class="pad">
+          <h2>Rendimiento por Agente</h2>
+          <p class="sub">Tabla de top performers y crecimiento. Ajusta nombres y notas.</p>
+        </div>
+        <div class="pad">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Agente</th>
+                <th>Equipo</th>
+                <th>P1</th>
+                <th>P2</th>
+                <th>Nota</th>
+              </tr>
+            </thead>
+            <tbody id="agentTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Conclusiones -->
+      <section class="card" style="grid-column: span 12;">
+        <div class="pad">
+          <h2>Conclusiones y Recomendaciones Estratégicas</h2>
+          <p class="sub">Resumen ejecutivo (3–5 bullets). Manténlo accionable.</p>
+        </div>
+        <div class="pad callouts" id="conclusions"></div>
+      </section>
+    </div>
+
+    <footer>
+      <div>Hecho en HTML/CSS/JS • Ideal para GitHub Pages</div>
+      <div>Tip: reemplaza el objeto <b>DATA</b> en el script por tus valores reales (HubSpot/Five9/Sheets)</div>
+    </footer>
+  </div>
+
+  <script>
+    // =========================
+    // 1) EDITA AQUÍ TU DATA
+    // =========================
+    const DATA = {
+      periodLabels: { p1: "P1", p2: "P2" },
+      lastUpdatedISO: new Date().toISOString(),
+
+      kpis: [
+        // Basado en estructura del ejemplo: Éxitos Five9, Lead Inbound, Éxitos HubSpot, Facturación Total :contentReference[oaicite:1]{index=1}
+        { name: "Éxitos en Five9", p1: 81, p2: 40, format: "int" },
+        { name: "Lead Inbound", p1: 336, p2: 70, format: "int" },
+        { name: "Éxitos en HubSpot", p1: 78, p2: 37, format: "int" },
+        { name: "Facturación Total", p1: 19425, p2: 23422, format: "money" }
+      ],
+
+      monthStats: [
+        // Basado en “Campañas y Clientes / Conversiones / Facturado Nuevo…” :contentReference[oaicite:2]{index=2}
+        { metric: "Campañas", value: 19 },
+        { metric: "Clientes", value: 40 },
+        { metric: "Conversiones MM", value: 18 },
+        { metric: "Facturado Nuevo", value: 69172, format: "money" }
+      ],
+
+      inbound: {
+        investment: 25537,
+        soldAmount: 23236,
+        leads: 851,
+        roi: -10.67
+      },
+
+      teams: [
+        // Basado en “Equipo de Ventas Anuar” y “Equipo Post Venta” :contentReference[oaicite:3]{index=3}
+        {
+          team: "Ventas Anuar",
+          agents: 6,
+          calls: { p1: 4744, p2: 5014 },
+          contacts: { p1: 577, p2: 507 },
+          billing: { p1: 7625, p2: 5936 },
+          avgPerAgent: { p1: 1270.83, p2: 989.33 },
+          topPerformer: "Mariett Castro",
+          topPerformerNote: "($3,375 → $2,505)"
+        },
+        {
+          team: "Post Venta",
+          agents: 9,
+          calls: { p1: 5429, p2: 5299 },
+          contacts: { p1: 2696, p2: 2671 },
+          billing: { p1: 11800, p2: 17486 },
+          avgPerAgent: { p1: 1311.11, p2: 1943.00 },
+          topPerformer: "Alejandra Rodríguez",
+          topPerformerNote: "($3,800 → $4,000)"
+        }
+      ],
+
+      efficiency: [
+        // Basado en “Promedio Timer… Reducción…” :contentReference[oaicite:4]{index=4}
+        { name: "Promedio Timer P1", value: "13:47:23 por agente" },
+        { name: "Promedio Timer P2", value: "11:09:43 por agente" },
+        { name: "Reducción de Tiempo", value: "2:37:40 menos por agente" }
+      ],
+
+      agents: [
+        // Basado en “Rendimiento…” :contentReference[oaicite:5]{index=5}
+        { name: "Mariett Castro", team: "Ventas Anuar", p1: 3375, p2: 2505, note: "Líder consistente (5 clientes en ambos períodos)" },
+        { name: "Alexia Rodríguez", team: "Ventas Anuar", p1: 1700, p2: 1150, note: "Desempeño sólido (3 clientes P1, 2 clientes P2)" },
+        { name: "Geraldine Murillo", team: "Ventas Anuar", p1: 1500, p2: 1000, note: "Resultados estables con alto volumen de marcaciones" },
+        { name: "Alejandra Rodríguez", team: "Post Venta", p1: 3800, p2: 4000, note: "Top performer absoluto" },
+        { name: "Andrea Rivera", team: "Post Venta", p1: 0, p2: 3150, note: "Mayor crecimiento del equipo" },
+        { name: "Ariana Leiva", team: "Post Venta", p1: 1050, p2: 2550, note: "Crecimiento consistente" }
+      ],
+
+      conclusions: [
+        // Basado en “Conclusiones y Recomendaciones…” :contentReference[oaicite:6]{index=6}
+        { title: "Facturación positiva", text: "Aumento de ingresos pese a variaciones en conversiones. Mantener foco en tickets de mayor valor." },
+        { title: "Optimizar conversión", text: "Mejorar tasa de éxito en contactos (scripts + segmentación + timing) para elevar ROI." },
+        { title: "Capacitación continua", text: "Refuerzo semanal de objeciones y seguimiento; establecer metas individuales por agente." },
+        { title: "Próximos pasos", text: "Seguimiento semanal de KPIs, programa de reconocimiento y revisión de pipeline por cohorte." }
+      ]
+    };
+
+    // =========================
+    // 2) HELPERS
+    // =========================
+    const fmtMoney = (n) => {
+      const num = Number(n || 0);
+      return num.toLocaleString("en-US", { style:"currency", currency:"USD" });
+    };
+    const fmtInt = (n) => Number(n || 0).toLocaleString("en-US");
+    const fmtNumber = (n) => Number(n || 0).toLocaleString("en-US", { maximumFractionDigits: 2 });
+
+    const calcDelta = (p1, p2) => {
+      const a = Number(p1 || 0), b = Number(p2 || 0);
+      const diff = b - a;
+      const sign = diff >= 0 ? "▲" : "▼";
+      return { diff, sign };
+    };
+
+    const deltaClass = (diff) => diff > 0 ? "good" : (diff < 0 ? "bad" : "warn");
+
+    const formatBy = (format, n) => {
+      if (format === "money") return fmtMoney(n);
+      if (format === "int") return fmtInt(n);
+      return fmtNumber(n);
+    };
+
+    // =========================
+    // 3) RENDER
+    // =========================
+    document.getElementById("lastUpdated").textContent = new Date(DATA.lastUpdatedISO).toLocaleString();
+
+    // KPI cards
+    const kpiGrid = document.getElementById("kpiGrid");
+    DATA.kpis.forEach(k => {
+      const d = calcDelta(k.p1, k.p2);
+      const el = document.createElement("div");
+      el.className = "kpi";
+      el.innerHTML = `
+        <div class="label">
+          <span>${k.name}</span>
+          <span class="delta ${deltaClass(d.diff)}">${d.sign} ${k.format === "money" ? fmtMoney(Math.abs(d.diff)) : fmtInt(Math.abs(d.diff))}</span>
+        </div>
+        <div class="value">${formatBy(k.format, k.p2)}</div>
+        <div class="meta">
+          <span><b>${DATA.periodLabels.p1}:</b> ${formatBy(k.format, k.p1)}</span>
+          <span>•</span>
+          <span><b>${DATA.periodLabels.p2}:</b> ${formatBy(k.format, k.p2)}</span>
+        </div>
+      `;
+      kpiGrid.appendChild(el);
+    });
+
+    // Month stats table
+    const monthStats = document.getElementById("monthStats");
+    DATA.monthStats.forEach(r => {
+      const tr = document.createElement("tr");
+      const val = r.format === "money" ? fmtMoney(r.value) : fmtInt(r.value);
+      tr.innerHTML = `<td>${r.metric}</td><td>${val}</td>`;
+      monthStats.appendChild(tr);
+    });
+
+    // Inbound summary
+    const inbound = DATA.inbound;
+    const inboundText = `
+      Inversión <b>${fmtMoney(inbound.investment)}</b> ·
+      Monto vendido <b>${fmtMoney(inbound.soldAmount)}</b> ·
+      Leads <b>${fmtInt(inbound.leads)}</b> ·
+      ROI <b>${fmtNumber(inbound.roi)}</b>
+    `;
+    document.getElementById("inboundSummary").innerHTML = inboundText;
+
+    // Quick insight (auto)
+    const billingKpi = DATA.kpis.find(x => x.name.toLowerCase().includes("facturación"));
+    const successFive9 = DATA.kpis.find(x => x.name.toLowerCase().includes("five9"));
+    let qi = "—";
+    if (billingKpi && successFive9){
+      const billD = calcDelta(billingKpi.p1, billingKpi.p2);
+      const sucD = calcDelta(successFive9.p1, successFive9.p2);
+      qi = `Facturación ${billD.diff >= 0 ? "crece" : "cae"} (${billD.sign} ${fmtMoney(Math.abs(billD.diff))}) mientras Éxitos Five9 ${sucD.diff >= 0 ? "suben" : "bajan"} (${sucD.sign} ${fmtInt(Math.abs(sucD.diff))}).`;
+    }
+    document.getElementById("quickInsight").textContent = qi;
+
+    // Teams table
+    const teamTable = document.getElementById("teamTable");
+    DATA.teams.forEach(t => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${t.team}</td>
+        <td>${fmtInt(t.agents)}</td>
+        <td>${fmtInt(t.calls.p1)} / ${fmtInt(t.calls.p2)}</td>
+        <td>${fmtInt(t.contacts.p1)} / ${fmtInt(t.contacts.p2)}</td>
+        <td>${fmtMoney(t.billing.p1)} / ${fmtMoney(t.billing.p2)}</td>
+        <td>${fmtMoney(t.avgPerAgent.p1)} / ${fmtMoney(t.avgPerAgent.p2)}</td>
+      `;
+      teamTable.appendChild(tr);
+    });
+
+    // Top performer + trend note (elige el equipo con mayor facturación P2)
+    const topTeam = [...DATA.teams].sort((a,b) => b.billing.p2 - a.billing.p2)[0];
+    const trend = calcDelta(topTeam.billing.p1, topTeam.billing.p2);
+    document.getElementById("topPerformer").textContent = `${topTeam.topPerformer} ${topTeam.topPerformerNote || ""}`.trim();
+    document.getElementById("trendNote").textContent = `El equipo ${topTeam.team} muestra ${trend.diff >= 0 ? "mejora" : "descenso"} (${trend.sign} ${fmtMoney(Math.abs(trend.diff))}) en facturación entre P1 y P2.`;
+
+    // Efficiency grid
+    const effGrid = document.getElementById("effGrid");
+    DATA.efficiency.forEach(e => {
+      const el = document.createElement("div");
+      el.className = "kpi";
+      el.innerHTML = `
+        <div class="label"><span>${e.name}</span></div>
+        <div class="value" style="font-size:18px">${e.value}</div>
+        <div class="meta"><span>Referencia: por agente</span></div>
+      `;
+      effGrid.appendChild(el);
+    });
+
+    // Agents table
+    const agentTable = document.getElementById("agentTable");
+    DATA.agents.forEach(a => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${a.name}</td>
+        <td>${a.team}</td>
+        <td>${fmtMoney(a.p1)}</td>
+        <td>${fmtMoney(a.p2)}</td>
+        <td style="color: rgba(255,255,255,.7)">${a.note || ""}</td>
+      `;
+      agentTable.appendChild(tr);
+    });
+
+    // Conclusions
+    const conclusions = document.getElementById("conclusions");
+    DATA.conclusions.forEach(c => {
+      const el = document.createElement("div");
+      el.className = "callout";
+      el.innerHTML = `<b>${c.title}</b><p>${c.text}</p>`;
+      conclusions.appendChild(el);
+    });
+
+    // =========================
+    // 4) CHARTS
+    // =========================
+    const labels = DATA.kpis.map(k => k.name);
+    const p1 = DATA.kpis.map(k => Number(k.p1 || 0));
+    const p2 = DATA.kpis.map(k => Number(k.p2 || 0));
+
+    const ctx = document.getElementById("chartKpis");
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          { label: DATA.periodLabels.p1, data: p1 },
+          { label: DATA.periodLabels.p2, data: p2 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: "rgba(255,255,255,.75)" } },
+          tooltip: { enabled: true }
+        },
+        scales: {
+          x: {
+            ticks: { color: "rgba(255,255,255,.7)" },
+            grid: { color: "rgba(255,255,255,.08)" }
+          },
+          y: {
+            ticks: { color: "rgba(255,255,255,.7)" },
+            grid: { color: "rgba(255,255,255,.08)" }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
