@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reporte de Auditoría</title>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -12,7 +12,6 @@
       font-family: Arial, sans-serif;
       background: #f3f6f9;
       margin: 0;
-      padding: 0;
       color: #001f3f;
     }
 
@@ -79,6 +78,23 @@
     .btn-add {
       background: #001f3f;
       color: white;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 20px;
+    }
+
+    .search-box div {
+      flex: 1;
     }
 
     .audit-card {
@@ -173,36 +189,11 @@
       display: inline-block;
     }
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-
-    .search-box {
-      display: flex;
-      gap: 12px;
-      align-items: end;
-      margin-bottom: 20px;
-    }
-
-    .search-box div {
-      flex: 1;
-    }
-
     @media print {
       button,
       .form-section,
       .search-box {
         display: none !important;
-      }
-
-      body {
-        background: white;
-      }
-
-      .container {
-        padding: 0;
       }
     }
   </style>
@@ -218,17 +209,17 @@
       <div class="form-grid">
         <div>
           <label>Fecha de Auditoría</label>
-          <input type="date" id="fechaAuditoria" />
+          <input type="date" id="fechaAuditoria">
         </div>
 
         <div>
           <label>Auditor</label>
-          <input type="text" id="auditor" value="Jorge VILLALOBOS" />
+          <input type="text" id="auditor" value="Jorge VILLALOBOS">
         </div>
 
         <div>
           <label>Team Responsable</label>
-          <input type="text" id="team" placeholder="Customer Services" />
+          <input type="text" id="team" placeholder="Customer Services">
         </div>
       </div>
 
@@ -237,17 +228,17 @@
       <div class="form-grid">
         <div>
           <label>Project URL</label>
-          <input type="url" id="projectUrl" placeholder="https://..." />
+          <input type="url" id="projectUrl" placeholder="https://...">
         </div>
 
         <div>
           <label>Categoría</label>
-          <input type="text" id="categoria" placeholder="Recuperación GBP" />
+          <input type="text" id="categoria" placeholder="Recuperación GBP">
         </div>
 
         <div>
           <label>Días Late</label>
-          <input type="number" id="diasLate" placeholder="50" />
+          <input type="number" id="diasLate" placeholder="50">
         </div>
       </div>
 
@@ -263,39 +254,39 @@
 
         <div>
           <label>Bloqueo</label>
-          <input type="text" id="bloqueo" placeholder="Opcional" />
+          <input type="text" id="bloqueo" placeholder="Opcional">
         </div>
 
         <div>
           <label>Acción Requerida</label>
-          <input type="text" id="accion" placeholder="Opcional" />
+          <input type="text" id="accion" placeholder="Opcional">
         </div>
       </div>
 
       <label>Última nota</label>
       <textarea id="ultimaNota" placeholder="Escribe la última nota del proyecto..."></textarea>
 
-      <button class="btn-add" onclick="agregarProyecto()">Agregar Proyecto</button>
+      <button class="btn-add" type="button" onclick="agregarProyecto()">Agregar Proyecto</button>
 
       <h3>Proyectos agregados</h3>
       <div id="previewProyectos"></div>
 
-      <button class="btn-save" onclick="guardarAuditoria()">Guardar Auditoría</button>
+      <button class="btn-save" type="button" onclick="guardarAuditoria()">Guardar Auditoría</button>
     </div>
 
-    <hr />
+    <hr>
 
     <h2>Historial de Auditorías</h2>
 
     <div class="search-box">
       <div>
         <label>Buscar auditoría por fecha</label>
-        <input type="date" id="buscarFecha" onchange="renderizarHistorial()" />
+        <input type="date" id="buscarFecha" onchange="renderizarHistorial()">
       </div>
 
-      <button class="btn-clear" onclick="limpiarBusqueda()">Limpiar búsqueda</button>
-      <button class="btn-pdf" onclick="guardarPDF()">Guardar Auditoría en PDF</button>
-      <button class="btn-delete" onclick="borrarTodo()">Borrar historial</button>
+      <button class="btn-clear" type="button" onclick="limpiarBusqueda()">Limpiar búsqueda</button>
+      <button class="btn-pdf" type="button" onclick="guardarPDF()">Guardar Auditoría en PDF</button>
+      <button class="btn-delete" type="button" onclick="borrarTodo()">Borrar historial</button>
     </div>
 
     <div id="historialAuditorias"></div>
@@ -410,17 +401,12 @@
         needsAttention: proyectosTemporales.filter(p => p.health === "Needs Attention").length,
         late: proyectosTemporales.filter(p => p.diasLate > 0).length,
         guardado: new Date().toLocaleString(),
-        bloqueos: proyectosTemporales
-          .filter(p => p.bloqueo)
-          .map(p => p.bloqueo),
-        acciones: proyectosTemporales
-          .filter(p => p.accion)
-          .map(p => p.accion),
+        bloqueos: proyectosTemporales.filter(p => p.bloqueo).map(p => p.bloqueo),
+        acciones: proyectosTemporales.filter(p => p.accion).map(p => p.accion),
         proyectos: proyectosTemporales
       };
 
       auditorias.unshift(auditoria);
-
       localStorage.setItem("auditorias", JSON.stringify(auditorias));
 
       proyectosTemporales = [];
@@ -447,7 +433,8 @@
       contenedor.innerHTML = filtradas.map((auditoria, index) => `
         <div class="audit-card">
           <h3>
-            Auditoría ${index + 1} | Fecha: ${auditoria.fecha} |
+            ▼ Auditoría ${index + 1} |
+            Fecha: ${auditoria.fecha} |
             Auditor: ${auditoria.auditor} |
             Total: ${auditoria.total} |
             Guardado: ${auditoria.guardado}
@@ -544,20 +531,41 @@
     }
 
     function guardarPDF() {
-      const historial = document.getElementById("historialAuditorias");
+      const historialOriginal = document.getElementById("historialAuditorias");
 
-      if (!historial.innerHTML.trim() || historial.innerText.includes("No hay auditorías")) {
+      if (!historialOriginal.innerHTML.trim() || historialOriginal.innerText.includes("No hay auditorías")) {
         alert("No hay auditorías para exportar.");
         return;
       }
 
+      const copia = historialOriginal.cloneNode(true);
+
+      copia.style.background = "white";
+      copia.style.color = "black";
+      copia.style.width = "1200px";
+      copia.style.padding = "20px";
+      copia.style.position = "fixed";
+      copia.style.left = "0";
+      copia.style.top = "0";
+      copia.style.zIndex = "9999";
+      copia.style.display = "block";
+
+      document.body.appendChild(copia);
+
       const opciones = {
         margin: 0.25,
         filename: "Auditoria_Guardada.pdf",
-        image: { type: "jpeg", quality: 0.98 },
+        image: {
+          type: "jpeg",
+          quality: 1
+        },
         html2canvas: {
           scale: 2,
-          useCORS: true
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: 1400
         },
         jsPDF: {
           unit: "in",
@@ -566,7 +574,15 @@
         }
       };
 
-      html2pdf().set(opciones).from(historial).save();
+      setTimeout(() => {
+        html2pdf()
+          .set(opciones)
+          .from(copia)
+          .save()
+          .then(() => {
+            document.body.removeChild(copia);
+          });
+      }, 500);
     }
 
     function borrarTodo() {
